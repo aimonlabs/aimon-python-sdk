@@ -1,0 +1,248 @@
+{
+	"info": {
+		"_postman_id": "09bcf8ba-8811-43b2-a410-4a61783f4364",
+		"name": "[Beta] Aimon Hallucination Detection",
+		"description": "## Overview\n\nThis is a beta version of **Aimon Rely.** It includes our proprietary hallucination detector. This is an beta-release, so please treat it as such. Check with us (send a note to [info@aimon.ai](https://mailto:info@aimon.ai)) before using this API in a production setting. There are limited uptime guarantees at the moment. Please report any issues to the Aimon team (at [info@aimon.ai](https://mailto:info@aimon.ai)).\n\n> Use the APIs with caution - do not send sensitive or protected data to this API. \n  \n\n## Features\n\nGiven a context and the generated text, we are able to detect 2 different types of model hallucinations: intrinsic and extrinsic.\n\n- The \"is_hallucinated\" field indicates whether the \"generated_text\" (passed in the input) is hallucinated.\n- A top level passage level \"score\" indicates if the entire set of sentences contain any hallucinations. The score is a probabilty measure of how hallucinated the text is compared to the context. A score >= 0.5 can be classified as a hallucination.\n- We also provide sentence level scores to help with explanability.\n    \n\n## **Limitations**\n\n- Input payloads with context sizes greater than 32,000 tokens will not work at the moment.\n- Maximum batch size is 25 items at the moment.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30634528",
+		"_collection_link": "https://aimon-trailblazers.postman.co/workspace/0c99cd4f-6ba5-41e9-9cbf-4f942a218086/collection/30634662-09bcf8ba-8811-43b2-a410-4a61783f4364?action=share&source=collection_link&creator=30634528"
+	},
+	"item": [
+		{
+			"name": "Batch Inference",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"Verify that the response is an array with at least one element\", function () {",
+							"  const responseData = pm.response.json();",
+							"",
+							"  pm.expect(responseData).to.be.an('array').and.to.have.lengthOf.at.least(1);",
+							"});",
+							"",
+							"",
+							"pm.test(\"Each element in the response has the 'score' and 'sentences' fields\", function () {",
+							"    const responseData = pm.response.json();",
+							"    ",
+							"    pm.expect(responseData).to.be.an('array').that.is.not.empty;",
+							"    ",
+							"    responseData.forEach(function(element) {",
+							"        pm.expect(element).to.have.property('score');",
+							"        pm.expect(element).to.have.property('sentences');",
+							"    });",
+							"});",
+							"",
+							"",
+							"pm.test(\"Validate that the 'score' field in each element is a number\", function () {",
+							"    const responseData = pm.response.json();",
+							"",
+							"    pm.expect(responseData).to.be.an('array');",
+							"",
+							"    responseData.forEach(function(element) {",
+							"        pm.expect(element.score).to.be.a('number');",
+							"    });",
+							"});",
+							"",
+							"",
+							"pm.test(\"Verify that the 'sentences' field in each element is an array with at least one element\", function () {",
+							"    const responseData = pm.response.json();",
+							"",
+							"    pm.expect(responseData).to.be.an('array');",
+							"",
+							"    responseData.forEach(function (element) {",
+							"        pm.expect(element.sentences).to.be.an('array').with.lengthOf.at.least(1);",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AIMON_API_KEY}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"those who receive centrelink payments that themselves were up 20% made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\"\n    },\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"the abc have reported that those who receive centrelink payments that themselves were up 20% made up three fourths of radio rental's income last year.\"\n    },\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"the abc have reported that those who receive centrelink payments made up three fourths of radio rental's income last year. Centrelink payments themselves were 20% up.\"\n    }\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{AIMON_HALLUCINATION_API_URL}}",
+					"host": [
+						"{{AIMON_HALLUCINATION_API_URL}}"
+					]
+				},
+				"description": "This request consists of an array of 3 items. The first item does not contain hallucinations but the 2nd and the 3rd items do contain hallucinations."
+			},
+			"response": [
+				{
+					"name": "Response",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"those who receive centrelink payments that themselves were up 20% made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\"\n    },\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"the abc have reported that those who receive centrelink payments that themselves were up 20% made up three fourths of radio rental's income last year.\"\n    },\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"the abc have reported that those who receive centrelink payments made up three fourths of radio rental's income last year. Centrelink payments themselves were 20% up.\"\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AIMON_HALLUCINATION_API_URL}}",
+							"host": [
+								"{{AIMON_HALLUCINATION_API_URL}}"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Mon, 11 Mar 2024 07:11:23 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Content-Length",
+							"value": "786"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=15724800; includeSubDomains"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"is_hallucinated\": \"False\",\n        \"score\": 0.07905,\n        \"sentences\": [\n            {\n                \"score\": 0.07905,\n                \"text\": \"those who receive centrelink payments that themselves were up 20% made up half of radio rental's income last year.\"\n            },\n            {\n                \"score\": 0.01975,\n                \"text\": \"Centrelink payments themselves were up 20%.\"\n            }\n        ]\n    },\n    {\n        \"is_hallucinated\": \"True\",\n        \"score\": 0.90819,\n        \"sentences\": [\n            {\n                \"score\": 0.90819,\n                \"text\": \"the abc have reported that those who receive centrelink payments that themselves were up 20% made up three fourths of radio rental's income last year.\"\n            }\n        ]\n    },\n    {\n        \"is_hallucinated\": \"True\",\n        \"score\": 0.99121,\n        \"sentences\": [\n            {\n                \"score\": 0.99121,\n                \"text\": \"the abc have reported that those who receive centrelink payments made up three fourths of radio rental's income last year.\"\n            },\n            {\n                \"score\": 0.02108,\n                \"text\": \"Centrelink payments themselves were 20% up.\"\n            }\n        ]\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "Point Inference",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AIMON_API_KEY}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n  {\n        \"context\": \"five ambitious clubs are locked in a scramble for two champions league places behind chelsea and manchester city and it could prove more tense and exciting than the barclays premier league title race itself.\",\n        \"generated_text\": \"five ambitious clubs are locked in a scramble for two champions league places.\"\n    }\n]\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{AIMON_HALLUCINATION_API_URL}}",
+					"host": [
+						"{{AIMON_HALLUCINATION_API_URL}}"
+					]
+				},
+				"description": "This is a point inference example i.e., the payload only contains one item for inference."
+			},
+			"response": [
+				{
+					"name": "Response",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n        \"context\": \"five ambitious clubs are locked in a scramble for two champions league places behind chelsea and manchester city and it could prove more tense and exciting than the barclays premier league title race itself.\",\n        \"generated_text\": \"five ambitious clubs are locked in a scramble for two champions league places.\"\n    }\n]\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AIMON_HALLUCINATION_API_URL}}",
+							"host": [
+								"{{AIMON_HALLUCINATION_API_URL}}"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Mon, 11 Mar 2024 07:53:18 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Content-Length",
+							"value": "166"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=15724800; includeSubDomains"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"is_hallucinated\": \"False\",\n        \"score\": 0.01675,\n        \"sentences\": [\n            {\n                \"score\": 0.01675,\n                \"text\": \"five ambitious clubs are locked in a scramble for two champions league places.\"\n            }\n        ]\n    }\n]"
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "AIMON_HALLUCINATION_API_URL",
+			"value": "https://am-hd-m1-ser-2380-7615d7e0-wkx4g8t7.onporter.run/inference"
+		}
+	]
+}

@@ -44,8 +44,7 @@ Here is how to try the API:
     - [OPTION 1] Try the simple langchain summarization application that is augmented with Aimon Rely to detect
       hallucinations at the sentence level.
         - Step 1: Run `cd src`,  `pip install -r requirements.txt && python setup.py install`
-        - Step 2: Make sure to add the Aimon API key to the `langchain_summarization_app.py`
-        - Step 3: Run `cd ..`, `streamlit run src/examples/langchain_summarization_app.py`
+        - Step 2: Run `cd ..`, `streamlit run src/examples/langchain_summarization_app.py`
     - [OPTION 2] Download the Postman collection specified below to access the API
         - Model Hallucination (Passage and Sentence
           Level): [Postman Collection](postman_collections/aimon_hallucination_detection_beta_march_2024.postman_collection.json)

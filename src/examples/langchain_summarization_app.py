@@ -9,26 +9,24 @@ from langchain.docstore.document import Document
 from langchain.llms.openai import OpenAI
 from langchain.chains.summarize import load_summarize_chain
 
-from aimon_rely_client.simple_client import SimpleAimonRelyClient
-
-API_KEY = "YOUR API KEY HERE"
+from aimon_rely_client.simple_client import SimpleAimonRelyClient, InvalidAPIKeyError
 
 # Streamlit app
 st.title('LangChain Text Summarizer')
 
 # Get OpenAI API key and source text input
 openai_api_key = st.text_input("OpenAI API Key", type="password")
+aimon_api_key = st.text_input("Aimon API Key", type="password")
 source_text = st.text_area("Source Text", height=200)
-
-aimon_rely_client = SimpleAimonRelyClient(API_KEY)
 
 # Check if the 'Summarize' button is clicked
 if st.button("Summarize"):
     # Validate inputs
-    if not openai_api_key.strip() or not source_text.strip():
+    if not openai_api_key.strip() or not aimon_api_key.strip() or not source_text.strip():
         st.write(f"Please complete the missing fields.")
     else:
         try:
+            aimon_rely_client = SimpleAimonRelyClient(aimon_api_key)
             # Split the source text
             text_splitter = CharacterTextSplitter()
             texts = text_splitter.split_text(source_text)
@@ -45,20 +43,21 @@ if st.button("Summarize"):
             st.header('Summary')
             st.write(summary)
 
-            # Call Aimon Rely and render response
+            # Call Aimon Rely to detect hallucinations
             ar_response = aimon_rely_client.detect([
                 {
                     "context": source_text,
                     "generated_text": summary
                 }
             ])
-
             # You could perform any action based on this reponse here
             # ....
 
             # Display the Aimon Rely response
             st.header('Aimon Rely - Hallucination Detector Response')
             st.json(ar_response)
-
+        except InvalidAPIKeyError as ivk:
+            st.header(":red[ERROR: Add a valid Aimon API key.]")
+            st.write("Request it at info@aimon.ai or on Discord.")
         except Exception as e:
             st.write(f"An error occurred: {e}")

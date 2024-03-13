@@ -1,57 +1,68 @@
-from typing import List, Dict
-
-import requests
-
 from functools import wraps
-def retry(ExceptionToCheck, tries=5, delay=3, backoff=2, logger=None):
-    """Retry calling the decorated function using an exponential backoff.
-
-    http://www.saltycrane.com/blog/2009/11/trying-out-retry-decorator-python/
-    original from: http://wiki.python.org/moin/PythonDecoratorLibrary#Retry
-
-    :param ExceptionToCheck: the exception to check. may be a tuple of
-        exceptions to check
-    :type ExceptionToCheck: Exception or tuple
-    :param tries: number of times to try (not retry) before giving up
-    :type tries: int
-    :param delay: initial delay between retries in seconds
-    :type delay: int
-    :param backoff: backoff multiplier e.g. value of 2 will double the delay
-        each retry
-    :type backoff: int
-    :param logger: logger to use. If None, print
-    :type logger: logging.Logger instance
-    """
-    def deco_retry(f):
-
-        @wraps(f)
-        def f_retry(*args, **kwargs):
-            mtries, mdelay = tries, delay
-            while mtries > 1:
-                try:
-                    return f(*args, **kwargs)
-                except ExceptionToCheck as e:
-                    msg = "%s, Retrying in %d seconds..." % (str(e), mdelay)
-                    if logger:
-                        #logger.exception(msg) # would print stack trace
-                        logger.warning(msg)
-                    else:
-                        print(msg)
-                    time.sleep(mdelay)
-                    mtries -= 1
-                    mdelay *= backoff
-            return f(*args, **kwargs)
-
-        return f_retry  # true decorator
-
-    return deco_retry
-
+import logging
+from typing import Callable, Type, Union, Tuple, Optional, List, Dict
+import random
 import time
 import requests
+
+def retry(
+    exception_to_check: Union[Type[BaseException], Tuple[Type[BaseException], ...]],
+    tries: int = 5,
+    delay: int = 3,
+    backoff: int = 2,
+    logger: Optional[logging.Logger] = None,
+    log_level: int = logging.WARNING,
+    re_raise: bool = True,
+    jitter: float = 0.1
+) -> Callable:
+    """
+    Retry calling the decorated function using an exponential backoff.
+
+    :param exception_to_check: Exception or a tuple of exceptions to check.
+    :param tries: Number of times to try (not retry) before giving up.
+    :param delay: Initial delay between retries in seconds.
+    :param backoff: Backoff multiplier e.g., a value of 2 will double the delay each retry.
+    :param logger: Logger to use. If None, print.
+    :param log_level: Logging level.
+    :param re_raise: Whether to re-raise the exception after the last retry.
+    :param jitter: The maximum jitter to apply to the delay as a fraction of the delay.
+    """
+    def deco_retry(func: Callable) -> Callable:
+        @wraps(func)
+        def f_retry(*args, **kwargs):
+            remaining_tries, current_delay = tries, delay
+            while remaining_tries > 1:
+                try:
+                    return func(*args, **kwargs)
+                except exception_to_check as e:
+                    msg = f"{e}, Retrying in {current_delay} seconds..."
+                    if logger:
+                        logger.log(log_level, msg)
+                    else:
+                        print(msg)
+                    time.sleep(current_delay * (1 + jitter * (2 * random.random() - 1)))
+                    remaining_tries -= 1
+                    current_delay *= backoff
+
+            try:
+                return func(*args, **kwargs)
+            except exception_to_check as e:
+                msg = f"Failed after {tries} tries. {e}"
+                if logger:
+                    logger.log(log_level, msg)
+                else:
+                    print(msg)
+                if re_raise:
+                    raise
+
+        return f_retry
+    return deco_retry
 
 class RetryableError(Exception):
     pass
 
+class InvalidAPIKeyError(Exception):
+    pass
 
 class SimpleAimonRelyClient(object):
     """
@@ -63,6 +74,8 @@ class SimpleAimonRelyClient(object):
         """
         :param api_key: the Aimon Rely API key. If you don't have one, request one by sending an email to info@aimon.ai
         """
+        if len(api_key) == 0 or "YOUR API KEY" in api_key:
+            raise InvalidAPIKeyError("Enter a valid Aimon API key. Request it at info@aimon.ai or on Discord.")
         self.api_key = api_key
 
     @retry(RetryableError)
@@ -83,6 +96,8 @@ class SimpleAimonRelyClient(object):
         response = requests.post(self.URL, json=data_to_send, headers=headers, timeout=30)
         if response.status_code in [503, 504]:
             raise RetryableError("Status code: {} received".format(response.status_code))
+        if response.status_code == 401:
+            raise InvalidAPIKeyError("Use a valid Aimon API key. Request it at info@aimon.ai or on Discord.")
         if response.status_code != 200:
             raise Exception(f"Error, bad response: {response}")
         if len(response.json()) == 0 or 'error' in response.json() or 'error' in response.json()[0]:

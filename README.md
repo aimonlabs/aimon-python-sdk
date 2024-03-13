@@ -52,7 +52,7 @@ Here is how to try the API:
 ✨**This GIF demonstrates a simple langchain based document summarization application that is augmented with Aimon Rely
 to demonstrate the ease of integration.**
 
-![Simple Langchain App with Aimon Rely](images/aimon-rely-langchain-app.gif)
+![Simple Langchain App with Aimon Rely](images/aimon-rely-app-example.gif)
 
 ## Benchmarks
 

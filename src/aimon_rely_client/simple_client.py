@@ -68,7 +68,7 @@ class SimpleAimonRelyClient(object):
     """
     A simple client that
     """
-    URL = "https://am-hd-m1-ser-2380-7615d7e0-wkx4g8t7.onporter.run/inference"
+    URL = "https://api.aimon.ai/v1/inference"
 
     def __init__(self, api_key: str):
         """

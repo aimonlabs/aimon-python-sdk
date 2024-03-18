@@ -1,11 +1,10 @@
 {
 	"info": {
-		"_postman_id": "09bcf8ba-8811-43b2-a410-4a61783f4364",
+		"_postman_id": "42cd78a7-e251-4446-ae3c-b64495613e38",
 		"name": "[Beta] Aimon Hallucination Detection",
 		"description": "## Overview\n\nThis is a beta version of **Aimon Rely.** It includes our proprietary hallucination detector. This is an beta-release, so please treat it as such. Check with us (send a note to [info@aimon.ai](https://mailto:info@aimon.ai)) before using this API in a production setting. There are limited uptime guarantees at the moment. Please report any issues to the Aimon team (at [info@aimon.ai](https://mailto:info@aimon.ai)).\n\n> Use the APIs with caution - do not send sensitive or protected data to this API. \n  \n\n## Features\n\nGiven a context and the generated text, we are able to detect 2 different types of model hallucinations: intrinsic and extrinsic.\n\n- The \"is_hallucinated\" field indicates whether the \"generated_text\" (passed in the input) is hallucinated.\n- A top level passage level \"score\" indicates if the entire set of sentences contain any hallucinations. The score is a probabilty measure of how hallucinated the text is compared to the context. A score >= 0.5 can be classified as a hallucination.\n- We also provide sentence level scores to help with explanability.\n    \n\n## **Limitations**\n\n- Input payloads with context sizes greater than 32,000 tokens will not work at the moment.\n- Maximum batch size is 25 items at the moment.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "30634528",
-		"_collection_link": "https://aimon-trailblazers.postman.co/workspace/0c99cd4f-6ba5-41e9-9cbf-4f942a218086/collection/30634662-09bcf8ba-8811-43b2-a410-4a61783f4364?action=share&source=collection_link&creator=30634528"
+		"_exporter_id": "30634528"
 	},
 	"item": [
 		{
@@ -122,7 +121,7 @@
 					"header": [
 						{
 							"key": "Date",
-							"value": "Mon, 11 Mar 2024 07:11:23 GMT"
+							"value": "Mon, 18 Mar 2024 06:32:01 GMT"
 						},
 						{
 							"key": "Content-Type",
@@ -146,7 +145,7 @@
 						}
 					],
 					"cookie": [],
-					"body": "[\n    {\n        \"is_hallucinated\": \"False\",\n        \"score\": 0.07905,\n        \"sentences\": [\n            {\n                \"score\": 0.07905,\n                \"text\": \"those who receive centrelink payments that themselves were up 20% made up half of radio rental's income last year.\"\n            },\n            {\n                \"score\": 0.01975,\n                \"text\": \"Centrelink payments themselves were up 20%.\"\n            }\n        ]\n    },\n    {\n        \"is_hallucinated\": \"True\",\n        \"score\": 0.90819,\n        \"sentences\": [\n            {\n                \"score\": 0.90819,\n                \"text\": \"the abc have reported that those who receive centrelink payments that themselves were up 20% made up three fourths of radio rental's income last year.\"\n            }\n        ]\n    },\n    {\n        \"is_hallucinated\": \"True\",\n        \"score\": 0.99121,\n        \"sentences\": [\n            {\n                \"score\": 0.99121,\n                \"text\": \"the abc have reported that those who receive centrelink payments made up three fourths of radio rental's income last year.\"\n            },\n            {\n                \"score\": 0.02108,\n                \"text\": \"Centrelink payments themselves were 20% up.\"\n            }\n        ]\n    }\n]"
+					"body": "[\n    {\n        \"is_hallucinated\": \"False\",\n        \"score\": 0.07985,\n        \"sentences\": [\n            {\n                \"score\": 0.07985,\n                \"text\": \"those who receive centrelink payments that themselves were up 20% made up half of radio rental's income last year.\"\n            },\n            {\n                \"score\": 0.00911,\n                \"text\": \"Centrelink payments themselves were up 20%.\"\n            }\n        ]\n    },\n    {\n        \"is_hallucinated\": \"True\",\n        \"score\": 0.89839,\n        \"sentences\": [\n            {\n                \"score\": 0.89839,\n                \"text\": \"the abc have reported that those who receive centrelink payments that themselves were up 20% made up three fourths of radio rental's income last year.\"\n            }\n        ]\n    },\n    {\n        \"is_hallucinated\": \"True\",\n        \"score\": 0.97911,\n        \"sentences\": [\n            {\n                \"score\": 0.97911,\n                \"text\": \"the abc have reported that those who receive centrelink payments made up three fourths of radio rental's income last year.\"\n            },\n            {\n                \"score\": 0.00262,\n                \"text\": \"Centrelink payments themselves were 20% up.\"\n            }\n        ]\n    }\n]"
 				}
 			]
 		},
@@ -210,7 +209,7 @@
 					"header": [
 						{
 							"key": "Date",
-							"value": "Mon, 11 Mar 2024 07:53:18 GMT"
+							"value": "Mon, 18 Mar 2024 06:33:21 GMT"
 						},
 						{
 							"key": "Content-Type",
@@ -234,15 +233,40 @@
 						}
 					],
 					"cookie": [],
-					"body": "[\n    {\n        \"is_hallucinated\": \"False\",\n        \"score\": 0.01675,\n        \"sentences\": [\n            {\n                \"score\": 0.01675,\n                \"text\": \"five ambitious clubs are locked in a scramble for two champions league places.\"\n            }\n        ]\n    }\n]"
+					"body": "[\n    {\n        \"is_hallucinated\": \"False\",\n        \"score\": 0.02867,\n        \"sentences\": [\n            {\n                \"score\": 0.02867,\n                \"text\": \"five ambitious clubs are locked in a scramble for two champions league places.\"\n            }\n        ]\n    }\n]"
 				}
 			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
 		}
 	],
 	"variable": [
 		{
 			"key": "AIMON_HALLUCINATION_API_URL",
-			"value": "https://am-hd-m1-ser-2380-7615d7e0-wkx4g8t7.onporter.run/inference"
+			"value": "https://api.aimon.ai/v1/inference"
+		},
+		{
+			"key": "AIMON_API_KEY",
+			"value": "",
+			"type": "string"
 		}
 	]
 }

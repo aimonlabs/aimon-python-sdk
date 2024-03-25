@@ -55,7 +55,12 @@ if st.button("Summarize"):
 
             # Display the Aimon Rely response
             st.header('Aimon Rely - Hallucination Detector Response')
-            st.json(ar_response)
+            st.json(ar_response['hallucination'])
+
+            st.header('Aimon Rely - Model Quality Detector Response')
+            st.json(ar_response['quality_metrics']['results'])
+
+
         except InvalidAPIKeyError as ivk:
             st.header(":red[ERROR: Add a valid Aimon API key.]")
             st.write("Request it at info@aimon.ai or on Discord.")

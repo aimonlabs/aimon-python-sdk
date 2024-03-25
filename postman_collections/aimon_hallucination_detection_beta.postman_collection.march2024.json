@@ -1,14 +1,15 @@
 {
 	"info": {
-		"_postman_id": "42cd78a7-e251-4446-ae3c-b64495613e38",
-		"name": "[Beta] Aimon Hallucination Detection",
+		"_postman_id": "81794dd9-392a-4646-9748-0b1ade43afbd",
+		"name": "[Beta] Aimon APIs",
 		"description": "## Overview\n\nThis is a beta version of **Aimon Rely.** It includes our proprietary hallucination detector. This is an beta-release, so please treat it as such. Check with us (send a note to [info@aimon.ai](https://mailto:info@aimon.ai)) before using this API in a production setting. There are limited uptime guarantees at the moment. Please report any issues to the Aimon team (at [info@aimon.ai](https://mailto:info@aimon.ai)).\n\n> Use the APIs with caution - do not send sensitive or protected data to this API. \n  \n\n## Features\n\nGiven a context and the generated text, we are able to detect 2 different types of model hallucinations: intrinsic and extrinsic.\n\n- The \"is_hallucinated\" field indicates whether the \"generated_text\" (passed in the input) is hallucinated.\n- A top level passage level \"score\" indicates if the entire set of sentences contain any hallucinations. The score is a probabilty measure of how hallucinated the text is compared to the context. A score >= 0.5 can be classified as a hallucination.\n- We also provide sentence level scores to help with explanability.\n    \n\n## **Limitations**\n\n- Input payloads with context sizes greater than 32,000 tokens will not work at the moment.\n- Maximum batch size is 25 items at the moment.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "30634528"
+		"_exporter_id": "30634528",
+		"_collection_link": "https://aimon-trailblazers.postman.co/workspace/Aimon-Sandbox~0c99cd4f-6ba5-41e9-9cbf-4f942a218086/collection/30634662-81794dd9-392a-4646-9748-0b1ade43afbd?action=share&source=collection_link&creator=30634528"
 	},
 	"item": [
 		{
-			"name": "Batch Inference",
+			"name": "V2 API Batch",
 			"event": [
 				{
 					"listen": "test",
@@ -78,7 +79,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "[\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"those who receive centrelink payments that themselves were up 20% made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\"\n    },\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"the abc have reported that those who receive centrelink payments that themselves were up 20% made up three fourths of radio rental's income last year.\"\n    },\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"the abc have reported that those who receive centrelink payments made up three fourths of radio rental's income last year. Centrelink payments themselves were 20% up.\"\n    }\n]",
+					"raw": "[\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"those who receive centrelink payments made up half of radio rental's income last year. \",\n        \"config\": {\n            \"toxicity\": {\n                \"detector_name\": \"default\"\n            },\n            \"conciseness\": {\n                \"detector_name\": \"default\"\n            },\n            \"hallucination\": {\n                \"detector_name\": \"default\"\n            }\n        }\n    },\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"those who receive centrelink payments made up half of radio rental's income last year. The Centrelink payments were 20% up.\",\n        \"config\": {\n            \"completeness\": {\n                \"detector_name\": \"default\"\n            },\n            \"toxicity\": {\n                \"detector_name\": \"default\"\n            },\n            \"conciseness\": {\n                \"detector_name\": \"default\"\n            },\n            \"hallucination\": {\n                \"detector_name\": \"default\"\n            }\n        }\n    }\n]",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -101,7 +102,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"those who receive centrelink payments that themselves were up 20% made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\"\n    },\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"the abc have reported that those who receive centrelink payments that themselves were up 20% made up three fourths of radio rental's income last year.\"\n    },\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"the abc have reported that those who receive centrelink payments made up three fourths of radio rental's income last year. Centrelink payments themselves were 20% up.\"\n    }\n]",
+							"raw": "[\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"those who receive centrelink payments made up half of radio rental's income last year. \",\n        \"config\": {\n            \"toxicity\": {\n                \"detector_name\": \"default\"\n            },\n            \"conciseness\": {\n                \"detector_name\": \"default\"\n            },\n            \"hallucination\": {\n                \"detector_name\": \"default\"\n            }\n        }\n    },\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"those who receive centrelink payments made up half of radio rental's income last year. The Centrelink payments were 20% up.\",\n        \"config\": {\n            \"completeness\": {\n                \"detector_name\": \"default\"\n            },\n            \"toxicity\": {\n                \"detector_name\": \"default\"\n            },\n            \"conciseness\": {\n                \"detector_name\": \"default\"\n            },\n            \"hallucination\": {\n                \"detector_name\": \"default\"\n            }\n        }\n    }\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -121,7 +122,196 @@
 					"header": [
 						{
 							"key": "Date",
-							"value": "Mon, 18 Mar 2024 06:32:01 GMT"
+							"value": "Sun, 24 Mar 2024 22:30:52 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Content-Length",
+							"value": "1831"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=15724800; includeSubDomains"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"hallucination\": {\n            \"is_hallucinated\": \"False\",\n            \"score\": 0.01099,\n            \"sentences\": [\n                {\n                    \"score\": 0.01099,\n                    \"text\": \"those who receive centrelink payments made up half of radio rental's income last year.\"\n                }\n            ]\n        },\n        \"quality_metrics\": {\n            \"results\": {\n                \"conciseness\": {\n                    \"reasoning\": \"The generated answer is very concise and properly addresses the user query by mentioning that Centrelink payments made up half of Radio Rental's income last year.\",\n                    \"score\": 0.9\n                }\n            },\n            \"score\": 0.9\n        },\n        \"toxicity\": {\n            \"results\": {\n                \"generated_text\": {\n                    \"detected_labels\": {\n                        \"identity_hate\": 0.14745043218135834,\n                        \"insult\": 0.3756120800971985,\n                        \"obscene\": 0.20862571895122528,\n                        \"severe_toxic\": 0.05401869863271713,\n                        \"threat\": 0.13896740972995758,\n                        \"toxic\": 0.07532554864883423\n                    },\n                    \"text\": \"those who receive centrelink payments made up half of radio rental's income last year. \"\n                }\n            },\n            \"score\": 0.3756120800971985\n        }\n    },\n    {\n        \"hallucination\": {\n            \"is_hallucinated\": \"False\",\n            \"score\": 0.02941,\n            \"sentences\": [\n                {\n                    \"score\": 0.02526,\n                    \"text\": \"those who receive centrelink payments made up half of radio rental's income last year.\"\n                },\n                {\n                    \"score\": 0.02941,\n                    \"text\": \"The Centrelink payments were 20% up.\"\n                }\n            ]\n        },\n        \"quality_metrics\": {\n            \"results\": {\n                \"completeness\": {\n                    \"reasoning\": \"The generated answer fully captures all of the information provided in the user query.\",\n                    \"score\": 1\n                },\n                \"conciseness\": {\n                    \"reasoning\": \"The generated answer is very concise and properly addresses all important points for the user query without any unnecessary information.\",\n                    \"score\": 1\n                }\n            },\n            \"score\": 1.5\n        },\n        \"toxicity\": {\n            \"results\": {\n                \"generated_text\": {\n                    \"detected_labels\": {\n                        \"identity_hate\": 0.14106225967407227,\n                        \"insult\": 0.3401033878326416,\n                        \"obscene\": 0.25143611431121826,\n                        \"severe_toxic\": 0.05252644792199135,\n                        \"threat\": 0.1252502053976059,\n                        \"toxic\": 0.08962154388427734\n                    },\n                    \"text\": \"those who receive centrelink payments made up half of radio rental's income last year. The Centrelink payments were 20% up.\"\n                }\n            },\n            \"score\": 0.3401033878326416\n        }\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "V2 API Point Inference",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AIMON_API_KEY}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"those who receive centrelink payments made up half of radio rental's income last year. \",\n        \"config\": {\n            \"toxicity\": {\n                \"detector_name\": \"default\"\n            },\n            \"conciseness\": {\n                \"detector_name\": \"default\"\n            },\n            \"hallucination\": {\n                \"detector_name\": \"default\"\n            }\n        }\n    }\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{AIMON_HALLUCINATION_API_URL}}",
+					"host": [
+						"{{AIMON_HALLUCINATION_API_URL}}"
+					]
+				},
+				"description": "This is a point inference example i.e., the payload only contains one item for inference."
+			},
+			"response": [
+				{
+					"name": "Response",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"those who receive centrelink payments made up half of radio rental's income last year. \",\n        \"config\": {\n            \"toxicity\": {\n                \"detector_name\": \"default\"\n            },\n            \"conciseness\": {\n                \"detector_name\": \"default\"\n            },\n            \"hallucination\": {\n                \"detector_name\": \"default\"\n            }\n        }\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AIMON_HALLUCINATION_API_URL}}",
+							"host": [
+								"{{AIMON_HALLUCINATION_API_URL}}"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Sun, 24 Mar 2024 22:36:31 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Content-Length",
+							"value": "828"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=15724800; includeSubDomains"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"hallucination\": {\n            \"is_hallucinated\": \"False\",\n            \"score\": 0.0062,\n            \"sentences\": [\n                {\n                    \"score\": 0.0062,\n                    \"text\": \"those who receive centrelink payments made up half of radio rental's income last year.\"\n                }\n            ]\n        },\n        \"quality_metrics\": {\n            \"results\": {\n                \"conciseness\": {\n                    \"reasoning\": \"The generated answer is very concise and properly addresses the user query by stating that those who receive Centrelink payments made up half of Radio Rental's income last year.\",\n                    \"score\": 0.9\n                }\n            },\n            \"score\": 0.9\n        },\n        \"toxicity\": {\n            \"results\": {\n                \"generated_text\": {\n                    \"detected_labels\": {\n                        \"identity_hate\": 0.14745043218135834,\n                        \"insult\": 0.3756120800971985,\n                        \"obscene\": 0.20862571895122528,\n                        \"severe_toxic\": 0.05401869863271713,\n                        \"threat\": 0.13896740972995758,\n                        \"toxic\": 0.07532554864883423\n                    },\n                    \"text\": \"those who receive centrelink payments made up half of radio rental's income last year. \"\n                }\n            },\n            \"score\": 0.3756120800971985\n        }\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "[Deprecated] V1 API",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AIMON_API_KEY}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"those who receive centrelink payments that themselves were up 20% made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\"\n    },\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"the abc have reported that those who receive centrelink payments that themselves were up 20% made up three fourths of radio rental's income last year.\"\n    },\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"the abc have reported that those who receive centrelink payments made up three fourths of radio rental's income last year. Centrelink payments themselves were 20% up.\"\n    }\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://api.aimon.ai/v1/inference",
+					"protocol": "https",
+					"host": [
+						"api",
+						"aimon",
+						"ai"
+					],
+					"path": [
+						"v1",
+						"inference"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Response",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"those who receive centrelink payments that themselves were up 20% made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\"\n    },\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"the abc have reported that those who receive centrelink payments that themselves were up 20% made up three fourths of radio rental's income last year.\"\n    },\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"the abc have reported that those who receive centrelink payments made up three fourths of radio rental's income last year. Centrelink payments themselves were 20% up.\"\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.aimon.ai/v1/inference",
+							"protocol": "https",
+							"host": [
+								"api",
+								"aimon",
+								"ai"
+							],
+							"path": [
+								"v1",
+								"inference"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Mon, 25 Mar 2024 06:02:21 GMT"
 						},
 						{
 							"key": "Content-Type",
@@ -145,99 +335,21 @@
 						}
 					],
 					"cookie": [],
-					"body": "[\n    {\n        \"is_hallucinated\": \"False\",\n        \"score\": 0.07985,\n        \"sentences\": [\n            {\n                \"score\": 0.07985,\n                \"text\": \"those who receive centrelink payments that themselves were up 20% made up half of radio rental's income last year.\"\n            },\n            {\n                \"score\": 0.00911,\n                \"text\": \"Centrelink payments themselves were up 20%.\"\n            }\n        ]\n    },\n    {\n        \"is_hallucinated\": \"True\",\n        \"score\": 0.89839,\n        \"sentences\": [\n            {\n                \"score\": 0.89839,\n                \"text\": \"the abc have reported that those who receive centrelink payments that themselves were up 20% made up three fourths of radio rental's income last year.\"\n            }\n        ]\n    },\n    {\n        \"is_hallucinated\": \"True\",\n        \"score\": 0.97911,\n        \"sentences\": [\n            {\n                \"score\": 0.97911,\n                \"text\": \"the abc have reported that those who receive centrelink payments made up three fourths of radio rental's income last year.\"\n            },\n            {\n                \"score\": 0.00262,\n                \"text\": \"Centrelink payments themselves were 20% up.\"\n            }\n        ]\n    }\n]"
-				}
-			]
-		},
-		{
-			"name": "Point Inference",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{AIMON_API_KEY}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "[\n  {\n        \"context\": \"five ambitious clubs are locked in a scramble for two champions league places behind chelsea and manchester city and it could prove more tense and exciting than the barclays premier league title race itself.\",\n        \"generated_text\": \"five ambitious clubs are locked in a scramble for two champions league places.\"\n    }\n]\n",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{AIMON_HALLUCINATION_API_URL}}",
-					"host": [
-						"{{AIMON_HALLUCINATION_API_URL}}"
-					]
-				},
-				"description": "This is a point inference example i.e., the payload only contains one item for inference."
-			},
-			"response": [
-				{
-					"name": "Response",
-					"originalRequest": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "[\n  {\n        \"context\": \"five ambitious clubs are locked in a scramble for two champions league places behind chelsea and manchester city and it could prove more tense and exciting than the barclays premier league title race itself.\",\n        \"generated_text\": \"five ambitious clubs are locked in a scramble for two champions league places.\"\n    }\n]\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{AIMON_HALLUCINATION_API_URL}}",
-							"host": [
-								"{{AIMON_HALLUCINATION_API_URL}}"
-							]
-						}
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Date",
-							"value": "Mon, 18 Mar 2024 06:33:21 GMT"
-						},
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						},
-						{
-							"key": "Content-Length",
-							"value": "166"
-						},
-						{
-							"key": "Connection",
-							"value": "keep-alive"
-						},
-						{
-							"key": "Access-Control-Allow-Origin",
-							"value": "*"
-						},
-						{
-							"key": "Strict-Transport-Security",
-							"value": "max-age=15724800; includeSubDomains"
-						}
-					],
-					"cookie": [],
-					"body": "[\n    {\n        \"is_hallucinated\": \"False\",\n        \"score\": 0.02867,\n        \"sentences\": [\n            {\n                \"score\": 0.02867,\n                \"text\": \"five ambitious clubs are locked in a scramble for two champions league places.\"\n            }\n        ]\n    }\n]"
+					"body": "[\n    {\n        \"is_hallucinated\": \"False\",\n        \"score\": 0.08488,\n        \"sentences\": [\n            {\n                \"score\": 0.08488,\n                \"text\": \"those who receive centrelink payments that themselves were up 20% made up half of radio rental's income last year.\"\n            },\n            {\n                \"score\": 0.00772,\n                \"text\": \"Centrelink payments themselves were up 20%.\"\n            }\n        ]\n    },\n    {\n        \"is_hallucinated\": \"True\",\n        \"score\": 0.91379,\n        \"sentences\": [\n            {\n                \"score\": 0.91379,\n                \"text\": \"the abc have reported that those who receive centrelink payments that themselves were up 20% made up three fourths of radio rental's income last year.\"\n            }\n        ]\n    },\n    {\n        \"is_hallucinated\": \"True\",\n        \"score\": 0.99431,\n        \"sentences\": [\n            {\n                \"score\": 0.99431,\n                \"text\": \"the abc have reported that those who receive centrelink payments made up three fourths of radio rental's income last year.\"\n            },\n            {\n                \"score\": 0.02981,\n                \"text\": \"Centrelink payments themselves were 20% up.\"\n            }\n        ]\n    }\n]"
 				}
 			]
 		}
 	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{AIMON_API_KEY}}",
+				"type": "string"
+			}
+		]
+	},
 	"event": [
 		{
 			"listen": "prerequest",
@@ -261,11 +373,11 @@
 	"variable": [
 		{
 			"key": "AIMON_HALLUCINATION_API_URL",
-			"value": "https://api.aimon.ai/v1/inference"
+			"value": "https://am-hd-m1-ser-2380-7615d7e0-wkx4g8t7.onporter.run/inference"
 		},
 		{
 			"key": "AIMON_API_KEY",
-			"value": "",
+			"value": "pQMAGPwDjZ3XOQ4QqauUng",
 			"type": "string"
 		}
 	]

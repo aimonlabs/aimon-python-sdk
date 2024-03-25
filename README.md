@@ -20,10 +20,10 @@ available in a future release.
 | Metric                                           | Status                                                       |
 |--------------------------------------------------|--------------------------------------------------------------|
 | Model Hallucination (Passage and Sentence Level) | <span style="font-size: 24px; color: green;">&#10003;</span> | 
+| Completeness                                     | <span style="font-size: 24px; color: green;">&#10003;</span>                     |
+| Conciseness                                      | <span style="font-size: 24px; color: green;">&#10003;</span>                    |
+| Toxicity                                         | <span style="font-size: 24px; color: green;">&#10003;</span>                      |
 | Semantic Similarity                              | <span style="font-size: 24px;">⌛</span>                      |
-| Completeness                                     | <span style="font-size: 24px;">⌛</span>                      |
-| Conciseness                                      | <span style="font-size: 24px;">⌛</span>                      |
-| Toxicity                                         | <span style="font-size: 24px;">⌛</span>                      |
 | Sentiment                                        | <span style="font-size: 24px;">⌛</span>                      |
 | Coherence                                        | <span style="font-size: 24px;">⌛</span>                      |
 | Sensitive Data (PII/PHI/PCI)                     | <span style="font-size: 24px;">⌛</span>                      |

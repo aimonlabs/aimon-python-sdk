@@ -153,7 +153,6 @@ class SimpleAimonRelyClient(object):
             if 'config' not in item:
                 item['config'] = self.config.detectors
             payload.append(item)
-        print(payload)
         response = requests.post(self.URL, json=payload, headers=headers, timeout=30)
         if response.status_code in [503, 504]:
             raise RetryableError("Status code: {} received".format(response.status_code))

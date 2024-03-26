@@ -9,7 +9,7 @@ from langchain.docstore.document import Document
 from langchain.llms.openai import OpenAI
 from langchain.chains.summarize import load_summarize_chain
 
-from aimon_rely_client.simple_client import SimpleAimonRelyClient, InvalidAPIKeyError
+from aimon_rely_client.simple_client import SimpleAimonRelyClient, Config, InvalidAPIKeyError
 
 # Streamlit app
 st.title('LangChain Text Summarizer')
@@ -26,7 +26,8 @@ if st.button("Summarize"):
         st.write(f"Please complete the missing fields.")
     else:
         try:
-            aimon_rely_client = SimpleAimonRelyClient(aimon_api_key)
+            aimon_rely_client = SimpleAimonRelyClient(aimon_api_key, config=Config(
+                {'hallucination': 'default', 'conciseness': 'default', 'completeness': 'default'}))
             # Split the source text
             text_splitter = CharacterTextSplitter()
             texts = text_splitter.split_text(source_text)

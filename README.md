@@ -56,6 +56,7 @@ to demonstrate the ease of integration.**
 
 ## Benchmarks
 
+### Hallucination Detection
 To demonstrate the effectiveness of our system, we benchmarked it against popular industry benchmarks for the
 hallucination detection task. The table below shows our results.
 
@@ -75,6 +76,11 @@ making it a suitable choice for both offline and online detection of hallucinati
 <div align="center">
     <img src="images/hallucination-benchmarks.png" alt="Hallucination Benchmarks">
 </div>
+
+### Completeness, Conciseness Detection
+
+There is a lack of industry standard benchmark datasets here. We will be publishing an evaluation dataset soon.
+Stay Tuned! <span style="font-size: 16px;">⌛</span>
 
 ## Pricing
 

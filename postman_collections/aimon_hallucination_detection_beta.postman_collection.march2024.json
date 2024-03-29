@@ -2,10 +2,10 @@
 	"info": {
 		"_postman_id": "81794dd9-392a-4646-9748-0b1ade43afbd",
 		"name": "[Beta] Aimon APIs",
-		"description": "## Overview\n\nThis is a beta version of **Aimon Rely.** It includes our proprietary hallucination detector. This is an beta-release, so please treat it as such. Check with us (send a note to [info@aimon.ai](https://mailto:info@aimon.ai)) before using this API in a production setting. There are limited uptime guarantees at the moment. Please report any issues to the Aimon team (at [info@aimon.ai](https://mailto:info@aimon.ai)).\n\n> Use the APIs with caution - do not send sensitive or protected data to this API. \n  \n\n## Features\n\nGiven a context and the generated text, we are able to detect 2 different types of model hallucinations: intrinsic and extrinsic.\n\n- The \"is_hallucinated\" field indicates whether the \"generated_text\" (passed in the input) is hallucinated.\n- A top level passage level \"score\" indicates if the entire set of sentences contain any hallucinations. The score is a probabilty measure of how hallucinated the text is compared to the context. A score >= 0.5 can be classified as a hallucination.\n- We also provide sentence level scores to help with explanability.\n    \n\n## **Limitations**\n\n- Input payloads with context sizes greater than 32,000 tokens will not work at the moment.\n- Maximum batch size is 25 items at the moment.",
+		"description": "## Overview\n\nThis is a beta version of **Aimon Rely.** It includes our proprietary hallucination detector. This is an beta-release, so please treat it as such. Check with us (send a note to [info@aimon.ai](https://mailto:info@aimon.ai)) before using this API in a production setting. There are limited uptime guarantees at the moment. Please report any issues to the Aimon team (at [info@aimon.ai](https://mailto:info@aimon.ai)).\n\n> Use the APIs with caution - do not send sensitive or protected data to this API. \n  \n\n## Features\n\n#### Hallucination detection\n\nGiven a context and the generated text, this API is able to detect 2 different types of model hallucinations: intrinsic and extrinsic.\n\n- The \"is_hallucinated\" field indicates whether the \"generated_text\" (passed in the input) is hallucinated.\n- A top level passage level \"score\" indicates if the entire set of sentences contain any hallucinations. The score is a probabilty measure of how hallucinated the text is compared to the context. A score >= 0.5 can be classified as a hallucination.\n- We also provide sentence level scores to help with explanability.\n    \n\n#### Completeness detection\n\nGiven a context, generated text and optionally a reference text, this API is able to detect if the generated text completely answered the user's question. The context should include the context documents along with the user query as passed in to the LLM.\n\nThe output contains a \"score\" that is between 0.0 and 1.0 which indicates the degree of completeness. If the generated answer is not at all relevant to the user query, a score between 0.0 to 0.2 is possible. If the generated answer is relevant but misses some information, a score between 0.2 and 0.7 is possible. If the generated answer is relevant and fully captures all of the information, a score between 0.7 and 1.0 is possible.\n\nThe API also includes a \"reasoning\" field that is a text based explanation of the score. It also does a best effort method of pointing out the points that were missed from the expected answer.\n\n#### Conciseness detection\n\nGiven a context, generated text and optionally a reference text, this API is able to detect if the generated text was concise or verbose in terms of addressing the user query. The context should include the context documents along with the user query as passed in to the LLM.\n\nThe output contains a \"score\" that is between 0.0 and 1.0 which indicates the degree of conciseness. If the generated answer is very verbose and contains a lot of un-necessary information that is not relevant to the user query, a score between 0.0 to 0.2 is possible. If the generated answer is mostly relevant to the user query but has some amount of text that is not necessary for the user query a score between 0.2 and 0.7 is possible. If the generated answer is very concise and properly addresses all important points for the user query, a score between 0.7 and 1.0 is possible.\n\nThe API also includes a \"reasoning\" field that is a text based explanation of the score. It also does a best effort method of pointing out the un-necessary information that was included in the output.\n\n## **Limitations**\n\n- Input payloads with context sizes greater than 32,000 tokens will not work at the moment.\n- Maximum batch size is 25 items at the moment.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "30634528",
-		"_collection_link": "https://aimon-trailblazers.postman.co/workspace/Aimon-Sandbox~0c99cd4f-6ba5-41e9-9cbf-4f942a218086/collection/30634662-81794dd9-392a-4646-9748-0b1ade43afbd?action=share&source=collection_link&creator=30634528"
+		"_collection_link": "https://aimon-trailblazers.postman.co/workspace/0c99cd4f-6ba5-41e9-9cbf-4f942a218086/collection/30634662-81794dd9-392a-4646-9748-0b1ade43afbd?action=share&source=collection_link&creator=30634528"
 	},
 	"item": [
 		{
@@ -92,7 +92,7 @@
 						"{{AIMON_HALLUCINATION_API_URL}}"
 					]
 				},
-				"description": "This request consists of an array of 3 items. The first item does not contain hallucinations but the 2nd and the 3rd items do contain hallucinations."
+				"description": "This request consists of an array of 2 items to demonstrate the batch inference mode. A maximum of 25 items is possible in the array."
 			},
 			"response": [
 				{
@@ -167,7 +167,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "[\n    {\n        \"context\": \"the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.\",\n        \"generated_text\": \"those who receive centrelink payments made up half of radio rental's income last year. \",\n        \"config\": {\n            \"toxicity\": {\n                \"detector_name\": \"default\"\n            },\n            \"conciseness\": {\n                \"detector_name\": \"default\"\n            },\n            \"hallucination\": {\n                \"detector_name\": \"default\"\n            }\n        }\n    }\n]",
+					"raw": "[\n    {\n        \"context\": \"Hi, I'm planning a trip to Paris and I need to know if there are any travel restrictions due to COVID-19?\",\n        \"generated_text\": \"Travel restrictions can vary. Please check current guidelines before your trip.\",\n        \"config\": {\n            \"conciseness\": {\n                \"detector_name\": \"default\"\n            },\n            \"completeness\": {\n                \"detector_name\": \"default\"\n            }\n        }\n    }\n]",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -373,7 +373,7 @@
 	"variable": [
 		{
 			"key": "AIMON_HALLUCINATION_API_URL",
-			"value": "https://am-hd-m1-ser-2380-7615d7e0-wkx4g8t7.onporter.run/inference"
+			"value": "https://api.aimon.ai/v2/inference"
 		},
 		{
 			"key": "AIMON_API_KEY",

@@ -163,4 +163,4 @@ class SimpleAimonRelyClient(object):
         if len(response.json()) == 0 or 'error' in response.json() or 'error' in response.json()[0]:
             raise Exception(
                 f"Received an error in the response: {response if len(response.json()) == 0 else response.json()}")
-        return response.json()[0]
+        return response.json()

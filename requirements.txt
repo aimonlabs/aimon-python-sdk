@@ -3,3 +3,5 @@ langchain
 requests
 pytest
 streamlit
+pandas
+boto3

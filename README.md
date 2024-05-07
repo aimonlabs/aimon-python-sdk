@@ -47,7 +47,7 @@ Here is how to try the API:
         - Step 2: Run `cd ..`, `streamlit run src/examples/langchain_summarization_app.py`
     - [OPTION 2] Download the Postman collection specified below to access the API
         - Model Hallucination (Passage and Sentence
-          Level): [Postman Collection](postman_collections/aimon_hallucination_detection_beta_march_2024.postman_collection.json)
+          Level): [Postman Collection](postman_collections/aimon_apis_beta.postman_collection.may_2024.json)
 
 ✨**This GIF demonstrates a simple langchain based document summarization application that is augmented with Aimon Rely
 to demonstrate the ease of integration.**

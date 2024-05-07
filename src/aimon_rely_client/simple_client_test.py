@@ -22,6 +22,19 @@ class TestSimpleAimonRelyClient:
         assert len(response['hallucination']["sentences"]) == 1
         assert "This is the context" in response['hallucination']["sentences"][0]["text"]
 
+    def test_valid_data_valid_response_user_query(self):
+        config = Config({'hallucination': 'default'})
+        client = SimpleAimonRelyClient(api_key=API_KEY, config=config)
+        data_to_send = [{"context": "This is the context", "user_query": "This is the user query", "generated_text": "This is the context"}]
+        response = client.detect(data_to_send)[0]
+        assert "hallucination" in response
+        assert "is_hallucinated" in response['hallucination']
+        assert response['hallucination']["is_hallucinated"] == "False"
+        assert "score" in response['hallucination']
+        assert "sentences" in response['hallucination']
+        assert len(response['hallucination']["sentences"]) == 1
+        assert "This is the context" in response['hallucination']["sentences"][0]["text"]
+
     def test_valid_batch_data_valid_response(self):
         config = Config({'hallucination': 'default'})
         client = SimpleAimonRelyClient(api_key=API_KEY, config=config)

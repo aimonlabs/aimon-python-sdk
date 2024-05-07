@@ -119,7 +119,7 @@ class SimpleAimonRelyClient(object):
         """
         Sends an HTTP POST request to the Aimon Rely Hallucination Detection API
         :param data_to_send: An array of dict objects where each dict contains a "context", a "generated_text" and
-                             optionally a "config" object
+                             optionally a "user_query" and "config" object
         :return: A JSON object containing the following fields (if applicable):
                 "hallucination": Indicates whether the response consisted of intrinsic or extrinsic hallucinations.
                     "is_hallucinated": top level string indicating if hallucinated or not,

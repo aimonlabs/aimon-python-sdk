@@ -56,10 +56,10 @@ if st.button("Summarize"):
 
             # Display the Aimon Rely response
             st.header('Aimon Rely - Hallucination Detector Response')
-            st.json(ar_response['hallucination'])
+            st.json(ar_response[0]['hallucination'])
 
             st.header('Aimon Rely - Model Quality Detector Response')
-            st.json(ar_response['quality_metrics']['results'])
+            st.json(ar_response[0]['quality_metrics']['results'])
 
 
         except InvalidAPIKeyError as ivk:

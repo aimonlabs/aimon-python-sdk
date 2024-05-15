@@ -1,47 +1,40 @@
+from .utils.http import get_request
+from .utils import AIMON_SDK_BACKEND_URL
+
 class Dataset(object):
-    def __init__(self, name, description, creation_time, last_updated_time, s3_location, sha, user_id):
+    def __init__(self, api_key, name, description, creation_time, last_updated_time, sha, user_id):
+        self.api_key = api_key
         self.name = name
         self.description = description
         self.creation_time = creation_time
         self.last_updated_time = last_updated_time
-        self.s3_location = s3_location
         self.sha = sha
         self.user_id = user_id
 
     def to_pandas(self):
-        import boto3
         import pandas as pd
-        # Load the dataset from the S3 location and return a pandas dataframe
-        s3_client = boto3.client('s3')
-        # parse s3_location string to get bucket and key. Example: "s3://bucket/path/to/file.csv"
-        s3_location = self.s3_location
-        bucket = self.s3_location.replace("s3://", "").split("/")[0]
-        key  = self.s3_location.replace(f"s3://{bucket}/", "")
-        print("Bucket: {}, key: {}".format(bucket, key))
-        file = s3_client.get_object(Bucket=bucket, Key=key)
-        return pd.read_json(file['Body'])
+        json_records = self.get_raw_records_json()
+        return pd.read_json(json_records)
 
     def records(self):
-        import boto3
-        import json
-        import pandas as pd
-        # Load the dataset from the S3 location and return a pandas dataframe
-        s3_client = boto3.client('s3')
-        # parse s3_location string to get bucket and key. Example: "s3://bucket/path/to/file.csv"
-        s3_location = self.s3_location
-        bucket = self.s3_location.replace("s3://", "").split("/")[0]
-        key = self.s3_location.replace(f"s3://{bucket}/", "")
-        print("Bucket: {}, key: {}".format(bucket, key))
-        file = s3_client.get_object(Bucket=bucket, Key=key)
-        json_records = json.loads(file['Body'].read())
-        dataset_records = [DatasetRecord(r['prompt'], r['user_query'], r['context_docs']) for r in json_records]
+        res = self.get_raw_records_json()
+        # Call the dataset API to get the dataset and return a list of DatasetRecord objects
+        dataset_records = [DatasetRecord(r['prompt'], r['user_query'], r['context_docs']) for r in res]
         return dataset_records
 
+    def get_raw_records_json(self):
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+        }
+        return get_request("{}/v1/dataset-records".format(AIMON_SDK_BACKEND_URL), headers=headers,
+                          params={'sha': self.sha})
+
     def __str__(self):
-        return f"Dataset(name={self.name}, description={self.description}, creation_time={self.creation_time}, last_updated_time={self.last_updated_time}, s3_location={self.s3_location}, sha={self.sha}, user_id={self.user_id})"
+        return f"Dataset(name={self.name}, description={self.description}, creation_time={self.creation_time}, last_updated_time={self.last_updated_time}, sha={self.sha}, user_id={self.user_id})"
 
     def __repr__(self):
         return self.__str__()
+
 
 class DatasetCollection(object):
     def __init__(self, ds_id, name, user_id, datasets, description=None):
@@ -50,6 +43,12 @@ class DatasetCollection(object):
         self.user_id = user_id
         self.datasets = datasets
         self.description = description
+
+    def records(self):
+        records = []
+        for dataset in self.datasets:
+            records.extend(dataset.records())
+        return records
 
     def __iter__(self):
         # Return an iterator for the datasets in the collection

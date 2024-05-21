@@ -191,8 +191,8 @@ class Client(object):
 
         res_ds = post_form_request('{}/v1/dataset'.format(AIMON_SDK_BACKEND_URL), file_path_to_upload=file_path,
                                  headers=headers, data=data)
-        return Dataset(res_ds['name'], res_ds['description'], res_ds['creation_time'], res_ds['last_updated_time'],
-                       res_ds['s3_location'], res_ds['sha'], res_ds['user_id'])
+        return Dataset(self.api_key, res_ds['name'], res_ds['description'], res_ds['creation_time'], res_ds['last_updated_time'],
+                        res_ds['sha'], res_ds['user_id'])
 
     def dataset_collection(self, name, datasets, description=None):
         """

@@ -1,0 +1,9 @@
+openai
+langchain
+langchain-community
+tiktoken
+requests
+pytest
+streamlit
+pandas
+boto3

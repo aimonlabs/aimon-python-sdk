@@ -1,5 +1,0 @@
-openai
-langchain
-requests
-pytest
-streamlit

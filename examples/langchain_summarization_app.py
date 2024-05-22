@@ -9,7 +9,7 @@ from langchain.docstore.document import Document
 from langchain.llms.openai import OpenAI
 from langchain.chains.summarize import load_summarize_chain
 
-from aimon_rely_client.simple_client import SimpleAimonRelyClient, Config, InvalidAPIKeyError
+from aimon import SimpleAimonRelyClient, Config, InvalidAPIKeyError
 
 # Streamlit app
 st.title('LangChain Text Summarizer')

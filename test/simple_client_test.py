@@ -3,7 +3,7 @@ import pytest
 from aimon import SimpleAimonRelyClient, Config
 
 
-API_KEY = "cfc819b4d923f5d86fb344655efac1cea0f0a247819716ad50c9b837fd188683"
+API_KEY = "YOUR API KEY HERE"
 class TestSimpleAimonRelyClient:
 
     #  Sends an HTTP POST request to the Aimon Rely Hallucination Detection API with valid data and receives a valid response

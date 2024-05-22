@@ -56,7 +56,7 @@ Steps to use the API:
         - Step 2: Run `streamlit run examples/langchain_summarization_app.py`
     - [OPTION 2] Download the Postman collection specified below to access the API
         - Model Hallucination (Passage and Sentence
-          Level): [Postman Collection](postman_collections/aimon_apis_beta.postman_collection.may_2024.json)
+          Level): [Postman Collection](examples/postman_collections)
 
 ### Sandbox
 
@@ -100,4 +100,4 @@ Please reach out to info@aimon.ai for pricing details related to the product and
 - In addition, we are working on something awesome to make the offline evaluation and continuous model quality
   monitoring experience more seamless.
 
-Join our [discord](https://discord.gg/Cp6YZ9qTdm) for the latest updates and discussions on generative AI reliability.
+Join our [Slack](https://join.slack.com/t/generativeair/shared_invite/zt-2jab62lsj-xM9a_s~Qweu8lf3YS2cANg) for the latest updates and discussions on generative AI reliability.

@@ -1,15 +1,16 @@
-# 🎉**Welcome to Aimon Rely**
+# 🎉**Welcome to AIMon Rely**
 
-Aimon Rely is a state-of-the-art, multi-model system for detecting LLM quality issues both offline and online. Our
-Hallucination detector performs well on the popular industry benchmarks. It is available via a convenient hosted API
-(currently in beta).
+AIMon Rely is a state-of-the-art system consisting of multiple models for detecting LLM quality issues during offline evaluations and continuous production monitoring. We offer
+hallucination metrics that is fast, reliable and cost-effective. We also support additional metrics such as
+completeness, conciseness and toxicity. 
 
 Read our [blog post](https://aimon.ai/blogs/introducing-rely) for more details.
 
-✨ **Join our [discord](https://discord.gg/Cp6YZ9qTdm) or reach out to us at info@aimon.ai to get your API key.**
+✨ **Join our community on [Slack](https://join.slack.com/t/generativeair/shared_invite/zt-2jab62lsj-xM9a_s~Qweu8lf3YS2cANg) 
+or reach out to us at info@aimon.ai to get your API key.**
 
 <div align="center">
-    <img src="images/aimon-rely-image.png" alt="Aimon Rely" width="550" height="450">
+    <img src="images/aimon-rely-image.png" alt="AIMon Rely" width="550" height="450">
 </div>
 
 ## Metrics Supported
@@ -28,31 +29,38 @@ available in a future release.
 | Coherence                                        | <span style="font-size: 24px;">⌛</span>                      |
 | Sensitive Data (PII/PHI/PCI)                     | <span style="font-size: 24px;">⌛</span>                      |
 
-## Quick Usage
+## Product
 
-### Sandbox
+Follow these steps to use the product:
 
-You can play with a [Sandbox](https://aimon.ai/tryproduct) that is available on our website.
+- Step 1: Get access to the beta product by joining the wait list on our [website](https://aimon.ai/) or by requesting
+          it on [Slack](https://join.slack.com/t/generativeair/shared_invite/zt-2jab62lsj-xM9a_s~Qweu8lf3YS2cANg) or 
+          sending an email to info@aimon.ai
+- Step 2: Install the AIMon SDK by running `pip install aimon` in your terminal.
+- Step 3: Refer to the [sample notebook](notebooks/aimon_sdk_langchain_summarization.ipynb) for an example of how to instrument an LLM application using our SDK.
 
-### API
+<div align="center">
+    <img src="images/product_apps_page.png" alt="AIMon Product">
+</div>
 
-Here is how to try the API:
+## API
 
-- Step 1: Get your API key by requesting it on our [discord](https://discord.gg/Cp6YZ9qTdm) or sending an email
+Steps to use the API:
+
+- Step 1: Get your API key by requesting it on our [Slack](https://join.slack.com/t/generativeair/shared_invite/zt-2jab62lsj-xM9a_s~Qweu8lf3YS2cANg) or sending an email
   to info@aimon.ai
 - Step 2: You can try the API using either of these methods
-    - [OPTION 1] Try the simple langchain summarization application that is augmented with Aimon Rely to detect
+    - [OPTION 1] Try the simple langchain summarization application that is augmented with AIMon Rely to detect
       hallucinations at the sentence level.
-        - Step 1: Run `cd src`,  `pip install -r requirements.txt && python setup.py install`
+        - Step 1: Run `cd src`,  `pip install -r examples/requirements.txt && pip install aimon`
         - Step 2: Run `cd ..`, `streamlit run src/examples/langchain_summarization_app.py`
     - [OPTION 2] Download the Postman collection specified below to access the API
         - Model Hallucination (Passage and Sentence
           Level): [Postman Collection](postman_collections/aimon_apis_beta.postman_collection.may_2024.json)
 
-✨**This GIF demonstrates a simple langchain based document summarization application that is augmented with Aimon Rely
-to demonstrate the ease of integration.**
+### Sandbox
 
-![Simple Langchain App with Aimon Rely](images/aimon-rely-app-example.gif)
+You can play with a [Sandbox](https://aimon.ai/tryproduct) that is available on our website.
 
 ## Benchmarks
 
@@ -62,15 +70,15 @@ hallucination detection task. The table below shows our results.
 
 A few key takeaways:
 
-✅ Aimon Rely is **10x cheaper** than GPT-4 Turbo.
+✅ AIMon Rely is **10x cheaper** than GPT-4 Turbo.
 
-✅ Aimon Rely is **4x faster** than GPT-4 Turbo.
+✅ AIMon Rely is **4x faster** than GPT-4 Turbo.
 
-✅ Aimon Rely provides the convenience of a fully hosted API that includes baked-in explainability.
+✅ AIMon Rely provides the convenience of a fully hosted API that includes baked-in explainability.
 
 ✅ Support for a context length of up to 32,000 tokens (with plans to further expand this in the near future).
 
-Overall, Aimon Rely is 10 times cheaper, 4 times faster and close to or even **better than GPT-4** on the benchmarks
+Overall, AIMon Rely is 10 times cheaper, 4 times faster and close to or even **better than GPT-4** on the benchmarks
 making it a suitable choice for both offline and online detection of hallucinations.
 
 <div align="center">
@@ -79,21 +87,12 @@ making it a suitable choice for both offline and online detection of hallucinati
 
 ### Completeness, Conciseness Detection
 
-There is a lack of industry standard benchmark datasets here. We will be publishing an evaluation dataset soon.
+There is a lack of industry standard benchmark datasets for these metrics. We will be publishing an evaluation dataset soon.
 Stay Tuned! <span style="font-size: 16px;">⌛</span>
 
 ## Pricing
 
-We offer a generous free tier and an attractive low cost, low latency API.
-
-### Model Hallucination (Passage and Sentence Level)
-
-*Only the input payload is used for pricing calculations.*
-
-| Number of tokens           | Price per 1M tokens |
-|----------------------------|---------------------|
-| First 5M tokens            | **FREE**            | 
-| Subsequent price/1M tokens | $1                  |
+Please reach out to info@aimon.ai for pricing details related to the product and the API.
 
 ## Future Work
 

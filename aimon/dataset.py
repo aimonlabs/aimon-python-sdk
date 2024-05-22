@@ -11,11 +11,6 @@ class Dataset(object):
         self.sha = sha
         self.user_id = user_id
 
-    def to_pandas(self):
-        import pandas as pd
-        json_records = self.get_raw_records_json()
-        return pd.read_json(json_records)
-
     def records(self):
         res = self.get_raw_records_json()
         # Call the dataset API to get the dataset and return a list of DatasetRecord objects

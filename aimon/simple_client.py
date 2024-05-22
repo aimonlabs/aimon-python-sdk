@@ -2,13 +2,17 @@ from typing import List, Dict, Any
 import requests
 from .utils import InvalidAPIKeyError
 from .utils.retry import retry, RetryableError
+from .utils import deprecated_class
 
 from .metrics_config import Config
 
 
+@deprecated_class
 class SimpleAimonRelyClient(object):
     """
-    A simple client that
+    DEPRECATED: This class will be removed in a future release. Use the `Client` class instead.
+
+    A simple client that sends requests to the Aimon Rely Hallucination Detection API.
     """
     URL = "https://api.aimon.ai/v2/inference"
     DEFAULT_CONFIG = Config()

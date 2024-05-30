@@ -1,4 +1,5 @@
 from .client import Client
+from .client import ApplicationStage
 from .dataset import Dataset, DatasetCollection, DatasetRecord
 from .evaluation import Evaluation, Run
 from .models import MLModel

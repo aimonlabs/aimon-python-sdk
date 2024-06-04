@@ -29,38 +29,34 @@ available in a future release.
 | Coherence                                        | <span style="font-size: 24px;">⌛</span>                      |
 | Sensitive Data (PII/PHI/PCI)                     | <span style="font-size: 24px;">⌛</span>                      |
 
-## Product
 
-Follow these steps to use the product:
+## Getting Started
+
+AIMon supports asynchronous instrumentation or synchronous detections for the metrics mentioned above. Use these steps
+to get started with using the AIMon SDK and the product.
 
 - Step 1: Get access to the beta product by joining the wait list on our [website](https://aimon.ai/) or by requesting
           it on [Slack](https://join.slack.com/t/generativeair/shared_invite/zt-2jab62lsj-xM9a_s~Qweu8lf3YS2cANg) or 
           sending an email to info@aimon.ai
 - Step 2: Install the AIMon SDK by running `pip install aimon` in your terminal.
-- Step 3: Refer to the [sample notebook](notebooks/aimon_sdk_langchain_summarization.ipynb) for an example of how to instrument an LLM application using our SDK.
+- Step 3: Refer to the [sample notebook](examples/notebooks/aimon_sdk_langchain_summarization.ipynb) for an example of how to instrument an LLM application asynchronously using the SDK.
+          You can also refer to the sample [streamlit application](examples/langchain_summarization_app.py) for an example for synchronous detections.
 
 <div align="center">
     <img src="images/product_apps_page.png" alt="AIMon Product">
 </div>
 
-## API
+### API
 
-Steps to use the API:
+AIMon detections can be accessed via REST APIs. Here are the steps to access the API:
 
 - Step 1: Get your API key by requesting it on our [Slack](https://join.slack.com/t/generativeair/shared_invite/zt-2jab62lsj-xM9a_s~Qweu8lf3YS2cANg) or sending an email
   to info@aimon.ai
-- Step 2: You can try the API using either of these methods
-    - [OPTION 1] Try the simple langchain summarization application that is augmented with AIMon Rely to detect
-      hallucinations at the sentence level.
-        - Step 1: Run `pip install -r examples/requirements.txt && pip install aimon`
-        - Step 2: Run `streamlit run examples/langchain_summarization_app.py`
-    - [OPTION 2] Download the Postman collection specified below to access the API
-        - Model Hallucination (Passage and Sentence
-          Level): [Postman Collection](examples/postman_collections)
+- Step 2: Download the [Postman Collection](examples/postman_collections) specified below to access the API
 
 ### Sandbox
 
-You can play with a [Sandbox](https://aimon.ai/tryproduct) that is available on our website.
+You can try our [Sandbox](https://aimon.ai/tryproduct) that is available on our website to try our Hallucination detection models quickly.
 
 ## Benchmarks
 

@@ -179,8 +179,8 @@ class Client(object):
         dataset = get_request('{}/v1/dataset'.format(AIMON_SDK_BACKEND_URL), headers=headers,
                               params={'name': name})
         if dataset:
-            return Dataset(dataset['name'], dataset['description'], dataset['creation_time'],
-                           dataset['last_updated_time'], dataset['s3_location'], dataset['sha'], dataset['user_id'])
+            return Dataset(self.api_key, dataset['name'], dataset['description'], dataset['creation_time'],
+                           dataset['last_updated_time'], dataset['sha'], dataset['user_id'])
 
         # Dataset does not exist, create a new one
         if not file_path:

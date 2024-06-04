@@ -10,6 +10,10 @@ from typing import List, Dict, Any
 class InvalidAPIKeyError(Exception):
     pass
 
+# An Enum for the different stages of an application
+class ApplicationStage:
+    PRODUCTION = "production"
+    EVALUATION = "evaluation"
 
 class Client(object):
 
@@ -80,11 +84,13 @@ class Client(object):
         Gets or creates an Application object.
         :param name: The name of the model
         :param model: An MLModel object
-        :param stage: The stage of the application. Should be either "production" or "experimentation"
+        :param stage: The stage of the application. Should be either "production" or "evaluation"
         :param app_type: The type of the application
         :param metadata: The metadata associated with the model
         """
         headers = self.create_header()
+        if stage.lower() not in ['production', 'evaluation']:
+            raise Exception("Invalid stage specified. Should be either 'production' or 'evaluation'")
         data = {
             "name": name,
             "model_name": model.name,
@@ -173,8 +179,8 @@ class Client(object):
         dataset = get_request('{}/v1/dataset'.format(AIMON_SDK_BACKEND_URL), headers=headers,
                               params={'name': name})
         if dataset:
-            return Dataset(dataset['name'], dataset['description'], dataset['creation_time'],
-                           dataset['last_updated_time'], dataset['s3_location'], dataset['sha'], dataset['user_id'])
+            return Dataset(self.api_key, dataset['name'], dataset['description'], dataset['creation_time'],
+                           dataset['last_updated_time'], dataset['sha'], dataset['user_id'])
 
         # Dataset does not exist, create a new one
         if not file_path:

@@ -32,12 +32,13 @@ available in a future release.
 
 ## Getting Started
 
+### SDK and UI
+
 AIMon supports asynchronous instrumentation or synchronous detections for the metrics mentioned above. Use these steps
 to get started with using the AIMon SDK and the product.
 
 - Step 1: Get access to the beta product by joining the wait list on our [website](https://aimon.ai/) or by requesting
-          it on [Slack](https://join.slack.com/t/generativeair/shared_invite/zt-2jab62lsj-xM9a_s~Qweu8lf3YS2cANg) or 
-          sending an email to info@aimon.ai
+          it on [Slack](https://join.slack.com/t/generativeair/shared_invite/zt-2jab62lsj-xM9a_s~Qweu8lf3YS2cANg) or sending an email to info@aimon.ai
 - Step 2: Install the AIMon SDK by running `pip install aimon` in your terminal.
 - Step 3: Refer to the [sample notebook](examples/notebooks/aimon_sdk_langchain_summarization.ipynb) for an example of how to instrument an LLM application asynchronously using the SDK.
           You can also refer to the sample [streamlit application](examples/langchain_summarization_app.py) for an example for synchronous detections.

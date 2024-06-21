@@ -49,7 +49,7 @@ if st.button("Summarize"):
                     "context": source_text,
                     "generated_text": summary
                 }
-            ], config=Config({'hallucination': 'default', 'conciseness': 'default', 'completeness': 'default'}))
+            ], config=Config({'hallucination': 'hall_v2', 'conciseness': 'default', 'completeness': 'default'}))
             # You could perform any action based on this response here
             # ....
 

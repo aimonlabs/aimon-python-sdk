@@ -4,7 +4,7 @@ import json
 class Config:
     SUPPORTED_DETECTORS = {'hallucination': 'default', 'toxicity': 'default', 'conciseness': 'default',
                            'completeness': 'default'}
-    SUPPORTED_VALUES = {'default'}
+    SUPPORTED_VALUES = {'default', 'hall_v2'}
 
     def __init__(self, detectors: Dict[str, str] = None):
         """

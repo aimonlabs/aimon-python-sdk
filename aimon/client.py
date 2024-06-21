@@ -1,10 +1,13 @@
 from .utils.http import get_request, post_request, post_form_request
 from .utils import AIMON_SDK_BACKEND_URL
+from .utils.retry import retry, RetryableError
 from .models import MLModel, Application
 from .dataset import Dataset, DatasetCollection
 from .evaluation import Evaluation, Run
 from .simple_client import SimpleAimonRelyClient
+from .metrics_config import Config
 from typing import List, Dict, Any
+import requests
 
 
 class InvalidAPIKeyError(Exception):
@@ -16,6 +19,8 @@ class ApplicationStage:
     EVALUATION = "evaluation"
 
 class Client(object):
+
+    DETECTION_API_URL = "https://api.aimon.ai/v2/inference"
 
     def __init__(self, api_key, email):
         self.api_key = api_key
@@ -129,11 +134,14 @@ class Client(object):
             data["evaluation_run_id"] = eval_run.id
         return post_request('{}/v1/save-compute-metrics'.format(AIMON_SDK_BACKEND_URL), headers=headers, data=[data])
 
-    def detect(self, data_to_send: List[Dict[str, Any]]):
+    @retry(RetryableError)
+    def detect(self, data_to_send: List[Dict[str, Any]], config=Config()):
         """
         A synchronous API to detect quality metrics in the response of a language model.
         :param data_to_send: An array of dict objects where each dict contains a "context", a "generated_text" and
                              optionally a "config" object
+        :param config: The detector configuration that will be applied to every single request.
+
         :return: A JSON object containing the following fields (if applicable):
                 "hallucination": Indicates whether the response consisted of intrinsic or extrinsic hallucinations.
                     "is_hallucinated": top level string indicating if hallucinated or not,
@@ -158,7 +166,26 @@ class Client(object):
                     "severe_toxic", "toxic": The response did not fall into the above 4 labels but is still considered
                                              either severely toxic or generally toxic content.
         """
-        return self._inline_client.detect(data_to_send)
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            'Content-Type': 'application/json'
+        }
+        payload = []
+        for item in data_to_send:
+            if 'config' not in item:
+                item['config'] = config.detectors
+            payload.append(item)
+        response = requests.post(self.DETECTION_API_URL, json=payload, headers=headers, timeout=30)
+        if response.status_code in [503, 504]:
+            raise RetryableError("Status code: {} received".format(response.status_code))
+        if response.status_code == 401:
+            raise InvalidAPIKeyError("Use a valid Aimon API key. Request it at info@aimon.ai or on Discord.")
+        if response.status_code != 200:
+            raise Exception(f"Error, bad response: {response}")
+        if len(response.json()) == 0 or 'error' in response.json() or 'error' in response.json()[0]:
+            raise Exception(
+                f"Received an error in the response: {response if len(response.json()) == 0 else response.json()}")
+        return response.json()
 
     def get_dataset(self, name):
         headers = self.create_auth_header()

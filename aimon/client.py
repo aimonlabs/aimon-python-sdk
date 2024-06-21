@@ -4,7 +4,6 @@ from .utils.retry import retry, RetryableError
 from .models import MLModel, Application
 from .dataset import Dataset, DatasetCollection
 from .evaluation import Evaluation, Run
-from .simple_client import SimpleAimonRelyClient
 from .metrics_config import Config
 from typing import List, Dict, Any
 import requests
@@ -26,7 +25,6 @@ class Client(object):
         self.api_key = api_key
         self.check_api_key()
         self.user = self.get_user(email)
-        self._inline_client = SimpleAimonRelyClient(api_key)
 
     def get_user(self, email):
         headers = self.create_auth_header()

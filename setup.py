@@ -4,7 +4,7 @@ setup(
     name='aimon',
     python_requires='>3.8.0',
     packages=find_packages(),
-    version="0.3.0",
+    version="0.3.1",
     install_requires=[
         "requests"
     ],

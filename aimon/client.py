@@ -156,6 +156,22 @@ class Client(object):
                                         given query and context documents
                             "reasoning": An explanation of the score that was provided.
                             "score": A probability score of how complete the response is for the user query and context documents.
+                        "instruction_adherence": This detector checks whether the response followed the specified instructions.
+                            Results are returned in this JSON format
+                            ```json
+                                {
+                                  "instruction_adherence": [
+                                    {
+                                      "instruction": "<String>",
+                                      "adherence": "<Boolean>",
+                                      "detailed_explanation": "<String>",
+                                      "examples": [
+                                        "<String>"
+                                      ]
+                                    }
+                                  ]
+                                }
+                            ```
                 "toxicity": Indicates whether there was toxic content in the response. It uses 6 different label types for this.
                     "identity_hate": The response contained hateful content that calls out real or perceived "identity factors" of an individual or a group.
                     "insult": The response contained insulting content.

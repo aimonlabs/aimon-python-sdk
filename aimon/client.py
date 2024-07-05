@@ -164,10 +164,7 @@ class Client(object):
                                     {
                                       "instruction": "<String>",
                                       "adherence": "<Boolean>",
-                                      "detailed_explanation": "<String>",
-                                      "examples": [
-                                        "<String>"
-                                      ]
+                                      "detailed_explanation": "<String>"
                                     }
                                   ]
                                 }

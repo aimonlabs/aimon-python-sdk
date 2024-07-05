@@ -18,6 +18,7 @@ The following is a list of quality metrics that are currently available and on o
 | Completeness                                     | <span style="font-size: 24px; color: green;">&#10003;</span>                     |
 | Conciseness                                      | <span style="font-size: 24px; color: green;">&#10003;</span>                    |
 | Toxicity                                         | <span style="font-size: 24px; color: green;">&#10003;</span>                      |
+| Instruction Adherence                            | <span style="font-size: 24px; color: green;">&#10003;</span>                      |
 | Semantic Similarity                              | <span style="font-size: 24px;">⌛</span>                      |
 | Sentiment                                        | <span style="font-size: 24px;">⌛</span>                      |
 | Coherence                                        | <span style="font-size: 24px;">⌛</span>                      |
@@ -78,7 +79,7 @@ making it a suitable choice for both offline and online detection of hallucinati
     <img src="images/hallucination-benchmarks.png" alt="Hallucination Benchmarks">
 </div>
 
-### Completeness, Conciseness Detection
+### Benchmarks on other Detectors
 
 There is a lack of industry-standard benchmark datasets for these metrics. We will be publishing an evaluation dataset soon.
 Stay Tuned! <span style="font-size: 16px;">⌛</span>

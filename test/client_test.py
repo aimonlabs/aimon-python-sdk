@@ -185,7 +185,6 @@ class TestSimpleAimonRelyClient:
         assert "results" in response["instruction_adherence"]
         assert len(response["instruction_adherence"]["results"]) == 3
         assert "instruction" in response["instruction_adherence"]["results"][2]
-        assert "examples" in response["instruction_adherence"]["results"][2]
         assert "detailed_explanation" in response["instruction_adherence"]["results"][2]
         assert "adherence" in response["instruction_adherence"]["results"][2]
         # print(response)

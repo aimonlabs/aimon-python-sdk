@@ -19,7 +19,7 @@ class ApplicationStage:
 
 class Client(object):
 
-    DETECTION_API_URL = "https://api.aimon.ai/v2/inference"
+    DETECTION_API_URL = "https://api.aimon.ai/v3/inference"
 
     def __init__(self, api_key, email):
         self.api_key = api_key

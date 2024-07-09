@@ -123,7 +123,7 @@ class TestSimpleAimonRelyClient:
         config = Config({'hallucination_v0.2': 'default'})
         client = Client(api_key=API_KEY, email="preetam@aimon.ai")
         short_text = "Yes"
-        data_to_send = [{"context": "This is the context", "generated_text": short_text}]
+        data_to_send = [{"context": "This is the context", "user_query": "summarization", "generated_text": short_text}]
         response = client.detect(data_to_send, config=config)[0]
         assert "hallucination_v0.2" in response
         assert "is_hallucinated" in response['hallucination_v0.2']
@@ -138,7 +138,7 @@ class TestSimpleAimonRelyClient:
         config = Config({'hallucination_v0.2': 'default'})
         client = Client(api_key=API_KEY, email="preetam@aimon.ai")
         special_text = "!@#$%^&*()_+"
-        data_to_send = [{"context": "This is the context", "generated_text": special_text}]
+        data_to_send = [{"context": "This is the context", "user_query": "summarization", "generated_text": special_text}]
         response = client.detect(data_to_send, config=config)[0]
         assert "hallucination_v0.2" in response
         assert "is_hallucinated" in response['hallucination_v0.2']

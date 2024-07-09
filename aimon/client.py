@@ -186,7 +186,7 @@ class Client(object):
             if 'config' not in item:
                 item['config'] = config.detectors
             payload.append(item)
-        response = requests.post(self.DETECTION_API_URL, json=payload, headers=headers, timeout=30)
+        response = requests.post(self.DETECTION_API_URL, json=payload, headers=headers, timeout=90)
         if response.status_code in [503, 504]:
             raise RetryableError("Status code: {} received".format(response.status_code))
         if response.status_code == 401:

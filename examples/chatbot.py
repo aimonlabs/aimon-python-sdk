@@ -138,16 +138,19 @@ def chatbot(user_query, instructions, openai_api_key, api_key):
         "instructions": "\n".join(instructions)
     }])
 
-    logging.debug("Generated text: %s", chat_response.response)
-    logging.debug("Request payload: %s", json.dumps(data_to_send, indent=2))
-
     max_retries = 3
     for attempt in range(max_retries):
         try:
             logging.info(f"Sending data to Aimon API for detection (attempt {attempt + 1})...")
             client = Client(api_key=api_key, email=email)
 
-            config = Config({'instruction_adherence': 'default'})
+            config = Config({
+                'hallucination': 'default',
+                'conciseness': 'default',
+                'completeness': 'default',
+                'toxicity': 'default',
+                'instruction_adherence': 'default'
+            })
 
             response = client.detect(data_to_send, config=config)[0]
 
@@ -166,7 +169,7 @@ def chatbot(user_query, instructions, openai_api_key, api_key):
     hallucination_score = response.get('hallucination', {}).get('score', None)
     toxicity = response.get('toxicity', None)
     conciseness = response.get('conciseness', None)
-    completeness = response.get('conciseness', None)
+    completeness = response.get('completeness', None)
     adherence_details = response.get('instruction_adherence', [])
 
     return (
@@ -175,6 +178,6 @@ def chatbot(user_query, instructions, openai_api_key, api_key):
         toxicity,
         conciseness,
         adherence_details,
-        completeness
+        completeness,
+        response 
     )
-

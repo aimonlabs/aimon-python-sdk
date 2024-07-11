@@ -111,27 +111,10 @@ def validate_and_format_json(data):
         logging.error(f"Error parsing JSON: {e}")
         raise
 
-def filter_contexts_by_similarity(query, contexts, threshold=0.8):
-    if not contexts:
-        logging.info("No contexts to filter.")
-        return []
-    
-    documents = [query] + contexts
-    tfidf_vectorizer = TfidfVectorizer().fit_transform(documents)
-    cosine_matrix = cosine_similarity(tfidf_vectorizer[0:1], tfidf_vectorizer[1:]).flatten()
-    
-    filtered_contexts = []
-    for i, score in enumerate(cosine_matrix):
-        logging.info(f"Context: {contexts[i]}, Similarity Score: {score}")
-        if score >= threshold:
-            filtered_contexts.append(contexts[i])
-    
-    logging.info(f"Filtered contexts: {filtered_contexts}")
-    return filtered_contexts
-
-def chatbot(user_query, instructions, openai_api_key, api_key, similarity_threshold=0.8):
+def chatbot(user_query, instructions, openai_api_key, api_key, similarity_threshold=0.1):
     openai.api_key = openai_api_key
     contexts = []
+    relevance_scores = []
     input_text = f"Instructions: {instructions}\nQuery: {user_query}"
 
     logging.info("Sending request to OpenAI API...")
@@ -140,18 +123,22 @@ def chatbot(user_query, instructions, openai_api_key, api_key, similarity_thresh
 
     if hasattr(chat_response, 'source_nodes'):
         for node in chat_response.source_nodes:
-            if hasattr(node, 'node') and hasattr(node.node, 'text'):
+            if hasattr(node, 'node') and hasattr(node.node, 'text') and hasattr(node, 'score'):
                 contexts.append(node.node.text)
-            elif hasattr(node, 'text'):
+                relevance_scores.append(node.score)
+            elif hasattr(node, 'text') and hasattr(node, 'score'):
                 contexts.append(node.text)
+                relevance_scores.append(node.score)
             else:
-                logging.info("Node does not have 'node' or 'text' attribute.")
+                logging.info("Node does not have required attributes.")
     else:
         logging.info("No source_nodes attribute found in the chat response.")
 
-    # Filter contexts based on similarity to user_query
-    filtered_contexts = filter_contexts_by_similarity(user_query, contexts, threshold=similarity_threshold)
+    # Filter contexts based on relevance score
+    filtered_contexts = [contexts[i] for i, score in enumerate(relevance_scores) if score >= similarity_threshold]
+    logging.info(f"Filtered contexts: {filtered_contexts}")
     combined_context = "\n".join(filtered_contexts)
+    logging.info(f"Filtered and combined context created: {combined_context}")
 
     logging.info(f"Filtered and combined context created: {combined_context}")
 
@@ -209,4 +196,3 @@ def chatbot(user_query, instructions, openai_api_key, api_key, similarity_thresh
         completeness,
         response 
     )
-

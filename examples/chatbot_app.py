@@ -2,6 +2,10 @@ import streamlit as st
 from chatbot import chatbot, extract_instructions
 import os
 import json
+import time
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 email = os.getenv('EMAIL')
 
@@ -42,6 +46,7 @@ for message in st.session_state.conversation:
 
 user_query = st.text_area("User Query", height=100)
 system_prompt = st.text_area("System Prompt", height=100)
+similarity_threshold = st.slider("Similarity Threshold", 0.0, 1.0, 0.8, 0.05)
 
 if st.button("Chat with Chatbot"):
     if not user_query.strip():
@@ -51,6 +56,8 @@ if st.button("Chat with Chatbot"):
     elif not system_prompt.strip():
         st.write("Please enter a system prompt.")
     else:
+        start_time = time.time() 
+
         user_message = {"role": "user", "content": user_query}
         st.session_state.conversation.append(user_message)
 
@@ -58,10 +65,17 @@ if st.button("Chat with Chatbot"):
         st.session_state["system_prompt"] = system_prompt
 
         try:
-            (chatbot_response, hallucination_score, toxicity,conciseness, adherence_details, completeness,detection_response) = chatbot(user_query, instructions, openai_api_key, api_key)
+            (
+                chatbot_response, hallucination_score, toxicity, conciseness, 
+                adherence_details, completeness, detection_response
+            ) = chatbot(user_query, instructions, openai_api_key, api_key, similarity_threshold)
         except Exception as e:
             st.write(f"Error occurred: {e}")
             chatbot_response = "Error occurred while processing your request."
+
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        logging.info(f"Time taken for response: {elapsed_time:.2f} seconds")    
 
         if chatbot_response == "Error occurred while processing your request.":
             st.write(chatbot_response)
@@ -105,5 +119,3 @@ if st.button("Chat with Chatbot"):
                 st.json(detection_response['instruction_adherence'])
             else:
                 st.write("Instruction adherence data is not available.")
-
-

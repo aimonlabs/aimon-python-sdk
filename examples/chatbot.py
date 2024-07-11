@@ -20,8 +20,10 @@ from botocore.exceptions import ClientError
 import boto3
 from aimon import Config
 import logging
-import logging
 import time
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 load_dotenv()
 
@@ -109,7 +111,25 @@ def validate_and_format_json(data):
         logging.error(f"Error parsing JSON: {e}")
         raise
 
-def chatbot(user_query, instructions, openai_api_key, api_key):
+def filter_contexts_by_similarity(query, contexts, threshold=0.8):
+    if not contexts:
+        logging.info("No contexts to filter.")
+        return []
+    
+    documents = [query] + contexts
+    tfidf_vectorizer = TfidfVectorizer().fit_transform(documents)
+    cosine_matrix = cosine_similarity(tfidf_vectorizer[0:1], tfidf_vectorizer[1:]).flatten()
+    
+    filtered_contexts = []
+    for i, score in enumerate(cosine_matrix):
+        logging.info(f"Context: {contexts[i]}, Similarity Score: {score}")
+        if score >= threshold:
+            filtered_contexts.append(contexts[i])
+    
+    logging.info(f"Filtered contexts: {filtered_contexts}")
+    return filtered_contexts
+
+def chatbot(user_query, instructions, openai_api_key, api_key, similarity_threshold=0.8):
     openai.api_key = openai_api_key
     contexts = []
     input_text = f"Instructions: {instructions}\nQuery: {user_query}"
@@ -129,14 +149,19 @@ def chatbot(user_query, instructions, openai_api_key, api_key):
     else:
         logging.info("No source_nodes attribute found in the chat response.")
 
-    combined_context = "\n".join(contexts)
-    logging.info("Combined context created.")
+    # Filter contexts based on similarity to user_query
+    filtered_contexts = filter_contexts_by_similarity(user_query, contexts, threshold=similarity_threshold)
+    combined_context = "\n".join(filtered_contexts)
+
+    logging.info(f"Filtered and combined context created: {combined_context}")
 
     data_to_send = validate_and_format_json([{
         "context": combined_context,
         "generated_text": chat_response.response,
         "instructions": "\n".join(instructions)
     }])
+
+    logging.debug(f"Data to send: {json.dumps(data_to_send, indent=2)}")
 
     max_retries = 3
     for attempt in range(max_retries):
@@ -161,10 +186,13 @@ def chatbot(user_query, instructions, openai_api_key, api_key):
             if attempt < max_retries - 1:
                 time.sleep(2 ** attempt)
             else:
-                return "Error occurred while processing your request due to timeout.", None, None, None
+                return "Error occurred while processing your request due to timeout.", None, None, None, None, None, None
+        except requests.exceptions.RequestException as e:
+            logging.error(f"RequestException occurred: {e}")
+            return "Error occurred while processing your request due to a request exception.", None, None, None, None, None, None
         except Exception as e:
             logging.error(f"Error occurred while processing your request: {e}")
-            return "Error occurred while processing your request.", None, None, None
+            return "Error occurred while processing your request.", None, None, None, None, None, None
 
     hallucination_score = response.get('hallucination', {}).get('score', None)
     toxicity = response.get('toxicity', None)
@@ -181,3 +209,4 @@ def chatbot(user_query, instructions, openai_api_key, api_key):
         completeness,
         response 
     )
+

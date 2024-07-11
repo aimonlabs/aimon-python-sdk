@@ -134,14 +134,14 @@ def chatbot(user_query, instructions, openai_api_key, api_key):
     else:
         logging.info("No source_nodes attribute found in the chat response.")
 
-    similarity_threshold = st.session_state.get('similarity_threshold', 0.1)
-    filtered_contexts = [contexts[i] for i, score in enumerate(relevance_scores) if score >= similarity_threshold]
+    sorted_contexts = [context for _, context in sorted(zip(relevance_scores, contexts), reverse=True)]
+    top_contexts = sorted_contexts[:20]
 
-    if not filtered_contexts:
-        logging.info("No contexts met the threshold. Using all available contexts.")
-        combined_context = "\n".join(contexts)
+    if not top_contexts:
+        logging.info("No contexts found.")
+
     else:
-        combined_context = "\n".join(filtered_contexts)
+        combined_context = "\n".join(top_contexts)
 
     data_to_send = validate_and_format_json([{
         "context": combined_context,

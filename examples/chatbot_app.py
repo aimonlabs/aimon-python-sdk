@@ -46,7 +46,6 @@ for message in st.session_state.conversation:
 
 user_query = st.text_area("User Query", height=100)
 system_prompt = st.text_area("System Prompt", height=100)
-similarity_threshold = st.slider("Similarity Threshold", 0.0, 1.0, 0.8, 0.05)
 
 if st.button("Chat with Chatbot"):
     if not user_query.strip():
@@ -56,7 +55,6 @@ if st.button("Chat with Chatbot"):
     elif not system_prompt.strip():
         st.write("Please enter a system prompt.")
     else:
-        st.session_state['similarity_threshold'] = similarity_threshold
         start_time = time.time() 
 
         user_message = {"role": "user", "content": user_query}

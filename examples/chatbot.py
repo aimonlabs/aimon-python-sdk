@@ -111,7 +111,7 @@ def validate_and_format_json(data):
         logging.error(f"Error parsing JSON: {e}")
         raise
 
-def chatbot(user_query, instructions, openai_api_key, api_key, similarity_threshold=0.1):
+def chatbot(user_query, instructions, openai_api_key, api_key):
     openai.api_key = openai_api_key
     contexts = []
     relevance_scores = []
@@ -123,10 +123,10 @@ def chatbot(user_query, instructions, openai_api_key, api_key, similarity_thresh
 
     if hasattr(chat_response, 'source_nodes'):
         for node in chat_response.source_nodes:
-            if hasattr(node, 'node') and hasattr(node.node, 'text') and hasattr(node, 'score'):
+            if hasattr(node, 'node') and hasattr(node.node, 'text') and hasattr(node, 'score') and node.score is not None:
                 contexts.append(node.node.text)
                 relevance_scores.append(node.score)
-            elif hasattr(node, 'text') and hasattr(node, 'score'):
+            elif hasattr(node, 'text') and hasattr(node, 'score') and node.score is not None:
                 contexts.append(node.text)
                 relevance_scores.append(node.score)
             else:
@@ -134,21 +134,20 @@ def chatbot(user_query, instructions, openai_api_key, api_key, similarity_thresh
     else:
         logging.info("No source_nodes attribute found in the chat response.")
 
-    # Filter contexts based on relevance score
+    similarity_threshold = st.session_state.get('similarity_threshold', 0.1)
     filtered_contexts = [contexts[i] for i, score in enumerate(relevance_scores) if score >= similarity_threshold]
-    logging.info(f"Filtered contexts: {filtered_contexts}")
-    combined_context = "\n".join(filtered_contexts)
-    logging.info(f"Filtered and combined context created: {combined_context}")
 
-    logging.info(f"Filtered and combined context created: {combined_context}")
+    if not filtered_contexts:
+        logging.info("No contexts met the threshold. Using all available contexts.")
+        combined_context = "\n".join(contexts)
+    else:
+        combined_context = "\n".join(filtered_contexts)
 
     data_to_send = validate_and_format_json([{
         "context": combined_context,
         "generated_text": chat_response.response,
         "instructions": "\n".join(instructions)
     }])
-
-    logging.debug(f"Data to send: {json.dumps(data_to_send, indent=2)}")
 
     max_retries = 3
     for attempt in range(max_retries):

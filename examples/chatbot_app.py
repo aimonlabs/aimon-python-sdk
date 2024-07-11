@@ -56,6 +56,7 @@ if st.button("Chat with Chatbot"):
     elif not system_prompt.strip():
         st.write("Please enter a system prompt.")
     else:
+        st.session_state['similarity_threshold'] = similarity_threshold
         start_time = time.time() 
 
         user_message = {"role": "user", "content": user_query}
@@ -68,7 +69,7 @@ if st.button("Chat with Chatbot"):
             (
                 chatbot_response, hallucination_score, toxicity, conciseness, 
                 adherence_details, completeness, detection_response
-            ) = chatbot(user_query, instructions, openai_api_key, api_key, similarity_threshold)
+            ) = chatbot(user_query, instructions, openai_api_key, api_key)
         except Exception as e:
             st.write(f"Error occurred: {e}")
             chatbot_response = "Error occurred while processing your request."

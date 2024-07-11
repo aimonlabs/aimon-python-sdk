@@ -146,29 +146,27 @@ class Client(object):
                     "score": A score indicating the probability that the whole "generated_text" is hallucinated
                     "sentences": An array of objects where each object contains a sentence level hallucination "score" and
                                  the "text" of the sentence.
-                "quality_metrics": A collection of quality metrics for the response of the LLM
-                    "results": A dict containing results of response quality detectors like conciseness and completeness
-                        "conciseness": This detector checks whether or not the response had un-necessary information
-                                       for the given query and the context documents
-                            "reasoning": An explanation of the score that was provided.
-                            "score": A probability score of how concise the response is for the user query and context documents.
-                        "completeness": This detector checks whether or not the response was complete enough for the
+                "conciseness": This detector checks whether the response had un-necessary information
+                               for the given query and the context documents. It includes the following fields:
+                    "reasoning": An explanation of the score that was provided.
+                    "score": A probability score of how concise the response is for the user query and context documents.
+                "completeness": This detector checks whether the response was complete enough for the
                                         given query and context documents
-                            "reasoning": An explanation of the score that was provided.
-                            "score": A probability score of how complete the response is for the user query and context documents.
-                        "instruction_adherence": This detector checks whether the response followed the specified instructions.
-                            Results are returned in this JSON format
-                            ```json
-                                {
-                                  "instruction_adherence": [
-                                    {
-                                      "instruction": "<String>",
-                                      "adherence": "<Boolean>",
-                                      "detailed_explanation": "<String>"
-                                    }
-                                  ]
-                                }
-                            ```
+                    "reasoning": An explanation of the score that was provided.
+                    "score": A probability score of how complete the response is for the user query and context documents.
+                "instruction_adherence": This detector checks whether the response followed the specified instructions.
+                    Results are returned in this JSON format:
+                    ```json
+                        {
+                          "instruction_adherence": [
+                            {
+                              "instruction": "<String>", # The instruction provided by the user
+                              "adherence": "<Boolean>",  # Whether the response adhered to the instruction
+                              "detailed_explanation": "<String>" # A detailed explanation of the adherence
+                            }
+                          ]
+                        }
+                    ```
                 "toxicity": Indicates whether there was toxic content in the response. It uses 6 different label types for this.
                     "identity_hate": The response contained hateful content that calls out real or perceived "identity factors" of an individual or a group.
                     "insult": The response contained insulting content.

@@ -11,19 +11,13 @@ from llama_index.llms.openai import OpenAI
 from llama_index.core.query_engine import SubQuestionQueryEngine
 from llama_index.agent.openai import OpenAIAgent
 from aimon.client import Client
-import streamlit as st
 from llama_index.embeddings.openai import OpenAIEmbedding
 from dotenv import load_dotenv
 import requests
 import json
-from botocore.exceptions import ClientError
-import boto3
 from aimon import Config
 import logging
 import time
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
 
 load_dotenv()
 

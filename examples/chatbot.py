@@ -118,6 +118,7 @@ def chatbot(user_query, instructions, openai_api_key, api_key):
     input_text = f"Instructions: {instructions}\nQuery: {user_query}"
 
     logging.info("Sending request to OpenAI API...")
+    st.write("Waiting for response from OpenAI API...")
     chat_response = agent.chat(input_text)
     logging.info("Received response from OpenAI API.")
 
@@ -162,7 +163,7 @@ def chatbot(user_query, instructions, openai_api_key, api_key):
                 'toxicity': 'default',
                 'instruction_adherence': 'default'
             })
-
+            st.write(f"Waiting for response from Aimon API...")
             response = client.detect(data_to_send, config=config)[0]
 
             logging.info("Received response from Aimon API.")

@@ -12,7 +12,10 @@ setup(
     packages=find_packages(),
     version="0.4.0",
     install_requires=[
-        "requests"
+        "httpx",
+        "distro",
+        "pydantic==2.7.1",
+        "pydantic-core==2.18.2",
     ],
     author='AIMon',
     author_email='info@aimon.ai',

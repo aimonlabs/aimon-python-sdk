@@ -18,11 +18,11 @@ __all__ = [
 ]
 
 
-class AimonError(Exception):
+class ClientError(Exception):
     pass
 
 
-class APIError(AimonError):
+class APIError(ClientError):
     message: str
     request: httpx.Request
 

@@ -32,28 +32,18 @@ from ._base_client import (
     AsyncAPIClient,
 )
 
-__all__ = [
-    "Timeout",
-    "Transport",
-    "ProxiesTypes",
-    "RequestOptions",
-    "resources",
-    "Aimon",
-    "AsyncAimon",
-    "Client",
-    "AsyncClient",
-]
+__all__ = ["Timeout", "Transport", "ProxiesTypes", "RequestOptions", "resources", "Client", "AsyncClient"]
 
 
-class Aimon(SyncAPIClient):
+class Client(SyncAPIClient):
     users: resources.UsersResource
     models: resources.ModelsResource
     applications: resources.ApplicationsResource
     datasets: resources.DatasetsResource
     evaluations: resources.EvaluationsResource
     inference: resources.InferenceResource
-    with_raw_response: AimonWithRawResponse
-    with_streaming_response: AimonWithStreamedResponse
+    with_raw_response: ClientWithRawResponse
+    with_streaming_response: ClientWithStreamedResponse
 
     # client options
     auth_header: str
@@ -81,11 +71,11 @@ class Aimon(SyncAPIClient):
         # part of our public interface in the future.
         _strict_response_validation: bool = False,
     ) -> None:
-        """Construct a new synchronous aimon client instance."""
+        """Construct a new synchronous client client instance."""
         self.auth_header = auth_header
 
         if base_url is None:
-            base_url = os.environ.get("AIMON_BASE_URL")
+            base_url = os.environ.get("CLIENT_BASE_URL")
         if base_url is None:
             base_url = f"https://pbe-api.aimon.ai"
 
@@ -106,8 +96,8 @@ class Aimon(SyncAPIClient):
         self.datasets = resources.DatasetsResource(self)
         self.evaluations = resources.EvaluationsResource(self)
         self.inference = resources.InferenceResource(self)
-        self.with_raw_response = AimonWithRawResponse(self)
-        self.with_streaming_response = AimonWithStreamedResponse(self)
+        self.with_raw_response = ClientWithRawResponse(self)
+        self.with_streaming_response = ClientWithStreamedResponse(self)
 
     @property
     @override
@@ -214,15 +204,15 @@ class Aimon(SyncAPIClient):
         return APIStatusError(err_msg, response=response, body=body)
 
 
-class AsyncAimon(AsyncAPIClient):
+class AsyncClient(AsyncAPIClient):
     users: resources.AsyncUsersResource
     models: resources.AsyncModelsResource
     applications: resources.AsyncApplicationsResource
     datasets: resources.AsyncDatasetsResource
     evaluations: resources.AsyncEvaluationsResource
     inference: resources.AsyncInferenceResource
-    with_raw_response: AsyncAimonWithRawResponse
-    with_streaming_response: AsyncAimonWithStreamedResponse
+    with_raw_response: AsyncClientWithRawResponse
+    with_streaming_response: AsyncClientWithStreamedResponse
 
     # client options
     auth_header: str
@@ -250,11 +240,11 @@ class AsyncAimon(AsyncAPIClient):
         # part of our public interface in the future.
         _strict_response_validation: bool = False,
     ) -> None:
-        """Construct a new async aimon client instance."""
+        """Construct a new async client client instance."""
         self.auth_header = auth_header
 
         if base_url is None:
-            base_url = os.environ.get("AIMON_BASE_URL")
+            base_url = os.environ.get("CLIENT_BASE_URL")
         if base_url is None:
             base_url = f"https://pbe-api.aimon.ai"
 
@@ -275,8 +265,8 @@ class AsyncAimon(AsyncAPIClient):
         self.datasets = resources.AsyncDatasetsResource(self)
         self.evaluations = resources.AsyncEvaluationsResource(self)
         self.inference = resources.AsyncInferenceResource(self)
-        self.with_raw_response = AsyncAimonWithRawResponse(self)
-        self.with_streaming_response = AsyncAimonWithStreamedResponse(self)
+        self.with_raw_response = AsyncClientWithRawResponse(self)
+        self.with_streaming_response = AsyncClientWithStreamedResponse(self)
 
     @property
     @override
@@ -383,8 +373,8 @@ class AsyncAimon(AsyncAPIClient):
         return APIStatusError(err_msg, response=response, body=body)
 
 
-class AimonWithRawResponse:
-    def __init__(self, client: Aimon) -> None:
+class ClientWithRawResponse:
+    def __init__(self, client: Client) -> None:
         self.users = resources.UsersResourceWithRawResponse(client.users)
         self.models = resources.ModelsResourceWithRawResponse(client.models)
         self.applications = resources.ApplicationsResourceWithRawResponse(client.applications)
@@ -393,8 +383,8 @@ class AimonWithRawResponse:
         self.inference = resources.InferenceResourceWithRawResponse(client.inference)
 
 
-class AsyncAimonWithRawResponse:
-    def __init__(self, client: AsyncAimon) -> None:
+class AsyncClientWithRawResponse:
+    def __init__(self, client: AsyncClient) -> None:
         self.users = resources.AsyncUsersResourceWithRawResponse(client.users)
         self.models = resources.AsyncModelsResourceWithRawResponse(client.models)
         self.applications = resources.AsyncApplicationsResourceWithRawResponse(client.applications)
@@ -403,8 +393,8 @@ class AsyncAimonWithRawResponse:
         self.inference = resources.AsyncInferenceResourceWithRawResponse(client.inference)
 
 
-class AimonWithStreamedResponse:
-    def __init__(self, client: Aimon) -> None:
+class ClientWithStreamedResponse:
+    def __init__(self, client: Client) -> None:
         self.users = resources.UsersResourceWithStreamingResponse(client.users)
         self.models = resources.ModelsResourceWithStreamingResponse(client.models)
         self.applications = resources.ApplicationsResourceWithStreamingResponse(client.applications)
@@ -413,8 +403,8 @@ class AimonWithStreamedResponse:
         self.inference = resources.InferenceResourceWithStreamingResponse(client.inference)
 
 
-class AsyncAimonWithStreamedResponse:
-    def __init__(self, client: AsyncAimon) -> None:
+class AsyncClientWithStreamedResponse:
+    def __init__(self, client: AsyncClient) -> None:
         self.users = resources.AsyncUsersResourceWithStreamingResponse(client.users)
         self.models = resources.AsyncModelsResourceWithStreamingResponse(client.models)
         self.applications = resources.AsyncApplicationsResourceWithStreamingResponse(client.applications)
@@ -423,6 +413,6 @@ class AsyncAimonWithStreamedResponse:
         self.inference = resources.AsyncInferenceResourceWithStreamingResponse(client.inference)
 
 
-Client = Aimon
+Client = Client
 
-AsyncClient = AsyncAimon
+AsyncClient = AsyncClient

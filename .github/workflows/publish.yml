@@ -31,21 +31,3 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
           twine upload dist/*
-
-      - name: Extract Release Notes
-        id: release_notes
-        run: |
-          VERSION=$(python setup.py --version)
-          RELEASE_NOTES=$(awk '/## \[${VERSION}\]/,/^## /' CHANGELOG.md | sed '$d')
-          echo "::set-output name=notes::$RELEASE_NOTES"
-
-      - name: Create GitHub Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: "v${{ steps.release_notes.outputs.version }}"
-          release_name: "v${{ steps.release_notes.outputs.version }}"
-          body: "${{ steps.release_notes.outputs.notes }}"
-          draft: false
-          prerelease: false

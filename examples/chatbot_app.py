@@ -7,8 +7,6 @@ import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-email = os.getenv('EMAIL')
-
 st.header("Chatbot")
 
 st.markdown("""
@@ -34,6 +32,7 @@ st.markdown("""
 
 openai_api_key = st.text_input("Enter OpenAI API Key:", type="password")
 api_key = st.text_input("Enter API Key:", type="password")
+email = st.text_input("Enter Email:")
 
 if 'conversation' not in st.session_state:
     st.session_state.conversation = []
@@ -55,8 +54,8 @@ if not st.session_state.show_new_query:
     if st.button("Chat with Chatbot"):
         if not user_query.strip():
             st.write("Please enter a user query.")
-        elif not openai_api_key.strip() or not api_key.strip():
-            st.write("Please enter both API keys.")
+        elif not openai_api_key.strip() or not api_key.strip() or not email.strip():
+            st.write("Please enter both API keys and email.")
         elif not system_prompt.strip():
             st.write("Please enter a system prompt.")
         else:
@@ -72,7 +71,7 @@ if not st.session_state.show_new_query:
                 (
                     chatbot_response, hallucination_score, toxicity, conciseness, 
                     adherence_details, completeness, detection_response
-                ) = chatbot(user_query, instructions, openai_api_key, api_key)
+                ) = chatbot(user_query, instructions, openai_api_key, api_key, email)
             except Exception as e:
                 st.write(f"Error occurred: {e}")
                 chatbot_response = "Error occurred while processing your request."
@@ -147,7 +146,7 @@ if st.session_state.show_new_query:
                 (
                     chatbot_response, hallucination_score, toxicity, conciseness, 
                     adherence_details, completeness, detection_response
-                ) = chatbot(new_user_query, instructions, openai_api_key, api_key)
+                ) = chatbot(new_user_query, instructions, openai_api_key, api_key, email)
             except Exception as e:
                 st.write(f"Error occurred: {e}")
                 chatbot_response = "Error occurred while processing your request."

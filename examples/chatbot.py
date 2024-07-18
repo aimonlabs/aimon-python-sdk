@@ -21,8 +21,6 @@ import boto3
 from aimon import Config
 import logging
 import time
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
 load_dotenv()
@@ -111,7 +109,7 @@ def validate_and_format_json(data):
         logging.error(f"Error parsing JSON: {e}")
         raise
 
-def chatbot(user_query, instructions, openai_api_key, api_key):
+def chatbot(user_query, instructions, openai_api_key, api_key, email):
     openai.api_key = openai_api_key
     contexts = []
     relevance_scores = []

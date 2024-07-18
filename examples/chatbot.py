@@ -48,87 +48,94 @@ def retry(max_retries):
         return wrapper_retry
     return decorator_retry
 
-# Check if embeddings need to be recomputed
-def embeddings_exist(embedding_dir, years):
-    for year in years:
-        if not os.path.exists(os.path.join(embedding_dir, f'embeddings_{year}.pkl')):
-            return False
-    return True
+class EmbeddingsManager:
+    def __init__(self, years, embedding_dir="./embeddings"):
+        self.years = years
+        self.embedding_dir = embedding_dir
+        self.loader = UnstructuredReader()
+        self.doc_set = {}
+        self.all_docs = []
+        self.index_set = {}
 
-# Save embeddings to disk
-def save_embeddings(embedding_dir, embeddings, year):
-    with open(os.path.join(embedding_dir, f'embeddings_{year}.pkl'), 'wb') as f:
-        pickle.dump(embeddings, f)
-
-# Load embeddings from disk
-def load_embeddings(embedding_dir, year):
-    with open(os.path.join(embedding_dir, f'embeddings_{year}.pkl'), 'rb') as f:
-        return pickle.load(f)
-
-# Download UBER dataset
-os.system("mkdir -p data")
-os.system('wget "https://www.dropbox.com/s/948jr9cfs7fgj99/UBER.zip?dl=1" -O data/UBER.zip')
-os.system("unzip -o data/UBER.zip -d data")
-nltk.download('averaged_perceptron_tagger')
-
-# Load UBER documents
-years = [2022, 2021, 2020, 2019]
-loader = UnstructuredReader()
-doc_set = {}
-all_docs = []
-index_set = {}
-embedding_dir = "./embeddings"
-
-# Create embedding directory if it does not exist
-if not os.path.exists(embedding_dir):
-    os.makedirs(embedding_dir)
-
-Settings.chunk_size = 512
-Settings.chunk_overlap = 64
-Settings.llm = OpenAI(model="gpt-3.5-turbo")
-Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
-
-# Initialize simple vector indices
-index_set = {}
-
-if embeddings_exist(embedding_dir, years):
-    for year in years:
-        year_docs = loader.load_data(file=Path(f"./data/UBER/UBER_{year}.html"), split_documents=False)
-        for d in year_docs:
-            d.metadata = {"year": year}
-        doc_set[year] = year_docs
-        all_docs.extend(year_docs)
-
-        embeddings = load_embeddings(embedding_dir, year)
-        storage_context = StorageContext.from_defaults()
-        cur_index = VectorStoreIndex.from_documents(
-            doc_set[year],
-            storage_context=storage_context,
-            precomputed_embeddings=embeddings
-        )
-        index_set[year] = cur_index
-        storage_context.persist(persist_dir=f"./storage/{year}")
-else:
-    for year in years:
-        year_docs = loader.load_data(file=Path(f"./data/UBER/UBER_{year}.html"), split_documents=False)
-        for d in year_docs:
-            d.metadata = {"year": year}
-        doc_set[year] = year_docs
-        all_docs.extend(year_docs)
-
-        storage_context = StorageContext.from_defaults()
-        cur_index = VectorStoreIndex.from_documents(
-            doc_set[year],
-            storage_context=storage_context,
-        )
-        index_set[year] = cur_index
+        if not os.path.exists(embedding_dir):
+            os.makedirs(embedding_dir)
         
-        embeddings = []
-        for doc in doc_set[year]:
-            embeddings.append(doc.embedding)
-        save_embeddings(embedding_dir, embeddings, year)
-        
-        storage_context.persist(persist_dir=f"./storage/{year}")
+        Settings.chunk_size = 512
+        Settings.chunk_overlap = 64
+        Settings.llm = OpenAI(model="gpt-3.5-turbo")
+        Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
+
+    def embeddings_exist(self):
+        for year in self.years:
+            if not os.path.exists(os.path.join(self.embedding_dir, f'embeddings_{year}.pkl')):
+                return False
+        return True
+
+    def save_embeddings(self, embeddings, year):
+        with open(os.path.join(self.embedding_dir, f'embeddings_{year}.pkl'), 'wb') as f:
+            pickle.dump(embeddings, f)
+
+    def load_embeddings(self, year):
+        with open(os.path.join(self.embedding_dir, f'embeddings_{year}.pkl'), 'rb') as f:
+            return pickle.load(f)
+
+    def load_documents_and_create_indices(self):
+        if self.embeddings_exist():
+            for year in self.years:
+                year_docs = self.loader.load_data(file=Path(f"./data/UBER/UBER_{year}.html"), split_documents=False)
+                for d in year_docs:
+                    d.metadata = {"year": year}
+                self.doc_set[year] = year_docs
+                self.all_docs.extend(year_docs)
+
+                embeddings = self.load_embeddings(year)
+                storage_context = StorageContext.from_defaults()
+                cur_index = VectorStoreIndex.from_documents(
+                    self.doc_set[year],
+                    storage_context=storage_context,
+                    precomputed_embeddings=embeddings
+                )
+                self.index_set[year] = cur_index
+                storage_context.persist(persist_dir=f"./storage/{year}")
+        else:
+            for year in self.years:
+                year_docs = self.loader.load_data(file=Path(f"./data/UBER/UBER_{year}.html"), split_documents=False)
+                for d in year_docs:
+                    d.metadata = {"year": year}
+                self.doc_set[year] = year_docs
+                self.all_docs.extend(year_docs)
+
+                storage_context = StorageContext.from_defaults()
+                cur_index = VectorStoreIndex.from_documents(
+                    self.doc_set[year],
+                    storage_context=storage_context,
+                )
+                self.index_set[year] = cur_index
+
+                embeddings = [doc.embedding for doc in self.doc_set[year]]
+                self.save_embeddings(embeddings, year)
+
+                storage_context.persist(persist_dir=f"./storage/{year}")
+
+    def get_index_set(self):
+        return self.index_set
+
+def get_source_docs(chat_response):
+    contexts = []
+    relevance_scores = []
+    if hasattr(chat_response, 'source_nodes'):
+        for node in chat_response.source_nodes:
+            if hasattr(node, 'node') and hasattr(node.node, 'text') and hasattr(node, 'score') and node.score is not None:
+                contexts.append(node.node.text)
+                relevance_scores.append(node.score)
+            elif hasattr(node, 'text') and hasattr(node, 'score') and node.score is not None:
+                contexts.append(node.text)
+                relevance_scores.append(node.score)
+            else:
+                logging.info("Node does not have required attributes.")
+    else:
+        logging.info("No source_nodes attribute found in the chat response.")
+    return contexts, relevance_scores
 
 def construct_agent(years, index_set):
     individual_query_engine_tools = [
@@ -157,6 +164,10 @@ def construct_agent(years, index_set):
     agent = OpenAIAgent.from_tools(tools, verbose=True)
     return agent
 
+years = [2022, 2021, 2020, 2019]
+embedding_manager = EmbeddingsManager(years)
+embedding_manager.load_documents_and_create_indices()
+index_set = embedding_manager.get_index_set()
 agent = construct_agent(years, index_set)
 
 def extract_instructions(system_prompt):
@@ -177,23 +188,6 @@ def validate_and_format_json(data):
 def send_to_aimon(client, data_to_send, config):
     response = client.detect(data_to_send, config=config)[0]
     return response
-
-def get_source_docs(chat_response):
-    contexts = []
-    relevance_scores = []
-    if hasattr(chat_response, 'source_nodes'):
-        for node in chat_response.source_nodes:
-            if hasattr(node, 'node') and hasattr(node.node, 'text') and hasattr(node, 'score') and node.score is not None:
-                contexts.append(node.node.text)
-                relevance_scores.append(node.score)
-            elif hasattr(node, 'text') and hasattr(node, 'score') and node.score is not None:
-                contexts.append(node.text)
-                relevance_scores.append(node.score)
-            else:
-                logging.info("Node does not have required attributes.")
-    else:
-        logging.info("No source_nodes attribute found in the chat response.")
-    return contexts, relevance_scores
 
 def chatbot(user_query, instructions, openai_api_key, api_key, email):
     openai.api_key = openai_api_key

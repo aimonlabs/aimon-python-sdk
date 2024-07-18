@@ -1,7 +1,5 @@
 import streamlit as st
 from chatbot import chatbot, extract_instructions
-import os
-import json
 import time
 import logging
 

@@ -26,8 +26,6 @@ import pickle
 
 load_dotenv()
 
-email = os.getenv('EMAIL')
-
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
 nest_asyncio.apply()

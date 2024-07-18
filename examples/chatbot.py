@@ -23,6 +23,7 @@ import logging
 import time
 import numpy as np
 import pickle
+from functools import wraps
 
 load_dotenv()
 
@@ -31,7 +32,23 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 nest_asyncio.apply()
 os.environ['SSL_CERT_FILE'] = certifi.where()
 
-#check if embeddings need to be recomputed
+def retry(max_retries):
+    def decorator_retry(func):
+        @wraps(func)
+        def wrapper_retry(*args, **kwargs):
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    logging.error(f"Error occurred: {e}")
+                    if attempt < max_retries - 1:
+                        time.sleep(2 ** attempt)
+                    else:
+                        raise
+        return wrapper_retry
+    return decorator_retry
+
+# Check if embeddings need to be recomputed
 def embeddings_exist(embedding_dir, years):
     for year in years:
         if not os.path.exists(os.path.join(embedding_dir, f'embeddings_{year}.pkl')):
@@ -113,30 +130,34 @@ else:
         
         storage_context.persist(persist_dir=f"./storage/{year}")
 
-individual_query_engine_tools = [
-    QueryEngineTool(
-        query_engine=index_set[year].as_query_engine(),
+def construct_agent(years, index_set):
+    individual_query_engine_tools = [
+        QueryEngineTool(
+            query_engine=index_set[year].as_query_engine(),
+            metadata=ToolMetadata(
+                name=f"vector_index_{year}",
+                description=f"useful for when you want to answer queries about the {year} SEC 10-K for Uber",
+            ),
+        )
+        for year in years
+    ]
+
+    # Initialize SubQuestionQueryEngine
+    query_engine = SubQuestionQueryEngine.from_defaults(
+        query_engine_tools=individual_query_engine_tools,)
+
+    query_engine_tool = QueryEngineTool(
+        query_engine=query_engine,
         metadata=ToolMetadata(
-            name=f"vector_index_{year}",
-            description=f"useful for when you want to answer queries about the {year} SEC 10-K for Uber",
+            name="sub_question_query_engine",
+            description="useful for when you want to answer queries that require analyzing multiple SEC 10-K documents for Uber",
         ),
     )
-    for year in years
-]
+    tools = individual_query_engine_tools + [query_engine_tool]
+    agent = OpenAIAgent.from_tools(tools, verbose=True)
+    return agent
 
-# Initialize SubQuestionQueryEngine
-query_engine = SubQuestionQueryEngine.from_defaults(
-    query_engine_tools=individual_query_engine_tools,)
-
-query_engine_tool = QueryEngineTool(
-    query_engine=query_engine,
-    metadata=ToolMetadata(
-        name="sub_question_query_engine",
-        description="useful for when you want to answer queries that require analyzing multiple SEC 10-K documents for Uber",
-    ),
-)
-tools = individual_query_engine_tools + [query_engine_tool]
-agent = OpenAIAgent.from_tools(tools, verbose=True)
+agent = construct_agent(years, index_set)
 
 def extract_instructions(system_prompt):
     instructions = system_prompt.split("\n")
@@ -152,18 +173,14 @@ def validate_and_format_json(data):
         logging.error(f"Error parsing JSON: {e}")
         raise
 
-def chatbot(user_query, instructions, openai_api_key, api_key, email):
-    openai.api_key = openai_api_key
+@retry(max_retries=3)
+def send_to_aimon(client, data_to_send, config):
+    response = client.detect(data_to_send, config=config)[0]
+    return response
+
+def get_source_docs(chat_response):
     contexts = []
     relevance_scores = []
-    input_text = f"Instructions: {instructions}\nQuery: {user_query}"
-
-    logging.info("Sending request to OpenAI API...")
-    st.write("Waiting for response from OpenAI API...")
-    chat_response = agent.chat(input_text)
-    st.write("Received response from OpenAI API.")
-    logging.info("Received response from OpenAI API.")
-
     if hasattr(chat_response, 'source_nodes'):
         for node in chat_response.source_nodes:
             if hasattr(node, 'node') and hasattr(node.node, 'text') and hasattr(node, 'score') and node.score is not None:
@@ -176,15 +193,26 @@ def chatbot(user_query, instructions, openai_api_key, api_key, email):
                 logging.info("Node does not have required attributes.")
     else:
         logging.info("No source_nodes attribute found in the chat response.")
+    return contexts, relevance_scores
 
+def chatbot(user_query, instructions, openai_api_key, api_key, email):
+    openai.api_key = openai_api_key
+    input_text = f"Instructions: {instructions}\nQuery: {user_query}"
+
+    logging.info("Sending request to OpenAI API...")
+    st.write("Waiting for response from OpenAI API...")
+
+    chat_response = agent.chat(input_text)
+
+    st.write("Received response from OpenAI API.")
+    logging.info("Received response from OpenAI API.")
+
+    contexts, relevance_scores = get_source_docs(chat_response)
+    
     sorted_contexts = [context for _, context in sorted(zip(relevance_scores, contexts), reverse=True)]
     top_contexts = sorted_contexts[:20]
 
-    if not top_contexts:
-        logging.info("No contexts found.")
-        combined_context = ""
-    else:
-        combined_context = "\n".join(top_contexts)
+    combined_context = "\n".join(top_contexts) if top_contexts else ""
 
     data_to_send = validate_and_format_json([{
         "context": combined_context,
@@ -192,37 +220,35 @@ def chatbot(user_query, instructions, openai_api_key, api_key, email):
         "instructions": "\n".join(instructions)
     }])
 
-    max_retries = 3
-    for attempt in range(max_retries):
-        try:
-            logging.info(f"Sending data to Aimon API for detection (attempt {attempt + 1})...")
-            client = Client(api_key=api_key, email=email)
+    try:
+        logging.info(f"Sending data to Aimon API for detection...")
+        client = Client(api_key=api_key, email=email)
 
-            config = Config({
-                'hallucination': 'default',
-                'conciseness': 'default',
-                'completeness': 'default',
-                'toxicity': 'default',
-                'instruction_adherence': 'default'
-            })
-            st.write(f"Waiting for response from Aimon API...")
-            response = client.detect(data_to_send, config=config)[0]
+        config = Config({
+            'hallucination': 'default',
+            'conciseness': 'default',
+            'completeness': 'default',
+            'toxicity': 'default',
+            'instruction_adherence': 'default'
+        })
+        st.write(f"Waiting for response from Aimon API...")
 
-            logging.info("Received response from Aimon API.")
-            st.write("Received response from Aimon API.")
-            break
-        except requests.exceptions.Timeout as e:
-            logging.error(f"Timeout occurred while processing your request: {e}")
-            if attempt < max_retries - 1:
-                time.sleep(2 ** attempt)
-            else:
-                return "Error occurred while processing your request due to timeout.", None, None, None, None, None, None
-        except requests.exceptions.RequestException as e:
-            logging.error(f"RequestException occurred: {e}")
-            return "Error occurred while processing your request due to a request exception.", None, None, None, None, None, None
-        except Exception as e:
-            logging.error(f"Error occurred while processing your request: {e}")
-            return "Error occurred while processing your request.", None, None, None, None, None, None
+        response = send_to_aimon(client, data_to_send, config)
+
+        logging.info("Received response from Aimon API.")
+        st.write("Received response from Aimon API.")
+
+    except requests.exceptions.Timeout as e:
+        logging.error(f"Timeout occurred while processing your request: {e}")
+        return "Error occurred while processing your request due to timeout.", None, None, None, None, None, None
+    
+    except requests.exceptions.RequestException as e:
+        logging.error(f"RequestException occurred: {e}")
+        return "Error occurred while processing your request due to a request exception.", None, None, None, None, None, None
+    
+    except Exception as e:
+        logging.error(f"Error occurred while processing your request: {e}")
+        return "Error occurred while processing your request.", None, None, None, None, None, None
 
     hallucination_score = response.get('hallucination', {}).get('score', None)
     toxicity = response.get('toxicity', None)

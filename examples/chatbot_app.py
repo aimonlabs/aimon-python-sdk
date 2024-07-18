@@ -5,7 +5,7 @@ import json
 import time
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
 st.header("Chatbot")
 
@@ -36,16 +36,49 @@ email = st.text_input("Enter Email:")
 
 if 'conversation' not in st.session_state:
     st.session_state.conversation = []
+
 if 'show_new_query' not in st.session_state:
     st.session_state.show_new_query = False
 
-# previous conversation
-for message in st.session_state.conversation:
-    if message["role"] == "user":
-        st.markdown(f"<div class='message-box user-message'><strong>User:</strong> {message['content']}</div>", unsafe_allow_html=True)
-    else:
-        st.markdown(f"<div class='message-box bot-message'><strong>Chatbot:</strong> {message['content']}</div>", unsafe_allow_html=True)
+# Display previous conversation and responses
+for idx, entry in enumerate(st.session_state.conversation):
+    user_message = entry["user_message"]
+    bot_message = entry["bot_message"]
+    detector_response = entry["detector_response"]
 
+    st.markdown(f"<div class='message-box user-message'><strong>User:</strong> {user_message['content']}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='message-box bot-message'><strong>Chatbot:</strong> {bot_message['content']}</div>", unsafe_allow_html=True)
+
+    with st.expander(f'Detector Responses for Query {idx + 1}'):
+        st.header('Aimon Rely - Hallucination Detector Response')
+        if 'hallucination' in detector_response:
+            st.json(detector_response['hallucination'])
+        else:
+            st.write("Hallucination data is not available.")
+
+        st.header('Aimon Rely - Model Conciseness Detector Response')
+        if 'conciseness' in detector_response:
+            st.json(detector_response['conciseness'])
+        else:
+            st.write("Conciseness data is not available.")
+
+        st.header('Aimon Rely - Model Completeness Detector Response')
+        if 'completeness' in detector_response:
+            st.json(detector_response['completeness'])
+        else:
+            st.write("Completeness data is not available.")
+
+        st.header('Aimon Rely - Toxicity Detector Response')
+        if 'toxicity' in detector_response:
+            st.json(detector_response['toxicity']['results'])
+        else:
+            st.write("Toxicity data is not available.")
+        
+        st.header('Adherence Detector Response')
+        if 'instruction_adherence' in detector_response:
+            st.json(detector_response['instruction_adherence'])
+        else:
+            st.write("Instruction adherence data is not available.")
 
 if not st.session_state.show_new_query:
     user_query = st.text_area("User Query", height=100)
@@ -62,8 +95,6 @@ if not st.session_state.show_new_query:
             start_time = time.time()
 
             user_message = {"role": "user", "content": user_query}
-            st.session_state.conversation.append(user_message)
-
             instructions = extract_instructions(system_prompt)
             st.session_state["system_prompt"] = system_prompt
 
@@ -83,45 +114,44 @@ if not st.session_state.show_new_query:
             if chatbot_response == "Error occurred while processing your request.":
                 st.write(chatbot_response)
             else:
-                st.session_state['hallucination_score'] = hallucination_score
-                st.session_state['toxicity'] = toxicity
-                st.session_state['conciseness'] = conciseness
-                st.session_state['completeness'] = completeness
-                st.session_state['adherence_details'] = adherence_details
-
                 bot_message = {"role": "bot", "content": chatbot_response}
-                st.session_state.conversation.append(bot_message)
+                st.session_state.conversation.append({
+                    "user_message": user_message,
+                    "bot_message": bot_message,
+                    "detector_response": detection_response
+                })
                 st.markdown(f"<div class='message-box bot-message'><strong>Chatbot:</strong> {chatbot_response}</div>", unsafe_allow_html=True)
 
-                st.header('Aimon Rely - Hallucination Detector Response')
-                if 'hallucination' in detection_response:
-                    st.json(detection_response['hallucination'])
-                else:
-                    st.write("Hallucination data is not available.")
+                with st.expander(f'Detector Responses for Query {len(st.session_state.conversation)}'):
+                    st.header('Aimon Rely - Hallucination Detector Response')
+                    if 'hallucination' in detection_response:
+                        st.json(detection_response['hallucination'])
+                    else:
+                        st.write("Hallucination data is not available.")
 
-                st.header('Aimon Rely - Model Conciseness Detector Response')
-                if 'conciseness' in detection_response:
-                    st.json(detection_response['conciseness'])
-                else:
-                    st.write("Conciseness data is not available.")
+                    st.header('Aimon Rely - Model Conciseness Detector Response')
+                    if 'conciseness' in detection_response:
+                        st.json(detection_response['conciseness'])
+                    else:
+                        st.write("Conciseness data is not available.")
 
-                st.header('Aimon Rely - Model Completeness Detector Response')
-                if 'completeness' in detection_response:
-                    st.json(detection_response['completeness'])
-                else:
-                    st.write("Completeness data is not available.")    
-                
-                st.header('Aimon Rely - Toxicity Detector Response')
-                if 'toxicity' in detection_response:
-                    st.json(detection_response['toxicity']['results'])
-                else:
-                    st.write("Toxicity data is not available.")
-                
-                st.header('Adherence Detector Response')
-                if 'instruction_adherence' in detection_response:
-                    st.json(detection_response['instruction_adherence'])
-                else:
-                    st.write("Instruction adherence data is not available.")
+                    st.header('Aimon Rely - Model Completeness Detector Response')
+                    if 'completeness' in detection_response:
+                        st.json(detection_response['completeness'])
+                    else:
+                        st.write("Completeness data is not available.")    
+
+                    st.header('Aimon Rely - Toxicity Detector Response')
+                    if 'toxicity' in detection_response:
+                        st.json(detection_response['toxicity']['results'])
+                    else:
+                        st.write("Toxicity data is not available.")
+                    
+                    st.header('Adherence Detector Response')
+                    if 'instruction_adherence' in detection_response:
+                        st.json(detection_response['instruction_adherence'])
+                    else:
+                        st.write("Instruction adherence data is not available.")
 
                 st.session_state.show_new_query = True
 
@@ -137,8 +167,6 @@ if st.session_state.show_new_query:
             st.write("Please enter a new system prompt.")
         else:
             user_message = {"role": "user", "content": new_user_query}
-            st.session_state.conversation.append(user_message)
-
             instructions = extract_instructions(new_system_prompt)
             st.session_state["system_prompt"] = new_system_prompt
 
@@ -154,47 +182,45 @@ if st.session_state.show_new_query:
             if chatbot_response == "Error occurred while processing your request.":
                 st.write(chatbot_response)
             else:
-                st.session_state['hallucination_score'] = hallucination_score
-                st.session_state['toxicity'] = toxicity
-                st.session_state['conciseness'] = conciseness
-                st.session_state['completeness'] = completeness
-                st.session_state['adherence_details'] = adherence_details
-
                 bot_message = {"role": "bot", "content": chatbot_response}
-                st.session_state.conversation.append(bot_message)
+                st.session_state.conversation.append({
+                    "user_message": user_message,
+                    "bot_message": bot_message,
+                    "detector_response": detection_response
+                })
                 st.markdown(f"<div class='message-box bot-message'><strong>Chatbot:</strong> {chatbot_response}</div>", unsafe_allow_html=True)
 
-                st.header('Aimon Rely - Hallucination Detector Response')
-                if 'hallucination' in detection_response:
-                    st.json(detection_response['hallucination'])
-                else:
-                    st.write("Hallucination data is not available.")
+                with st.expander(f'Detector Responses for Query {len(st.session_state.conversation)}'):
+                    st.header('Aimon Rely - Hallucination Detector Response')
+                    if 'hallucination' in detection_response:
+                        st.json(detection_response['hallucination'])
+                    else:
+                        st.write("Hallucination data is not available.")
 
-                st.header('Aimon Rely - Model Conciseness Detector Response')
-                if 'conciseness' in detection_response:
-                    st.json(detection_response['conciseness'])
-                else:
-                    st.write("Conciseness data is not available.")
+                    st.header('Aimon Rely - Model Conciseness Detector Response')
+                    if 'conciseness' in detection_response:
+                        st.json(detection_response['conciseness'])
+                    else:
+                        st.write("Conciseness data is not available.")
 
-                st.header('Aimon Rely - Model Completeness Detector Response')
-                if 'completeness' in detection_response:
-                    st.json(detection_response['completeness'])
-                else:
-                    st.write("Completeness data is not available.")    
-                
-                st.header('Aimon Rely - Toxicity Detector Response')
-                if 'toxicity' in detection_response:
-                    st.json(detection_response['toxicity']['results'])
-                else:
-                    st.write("Toxicity data is not available.")
-                
-                st.header('Adherence Detector Response')
-                if 'instruction_adherence' in detection_response:
-                    st.json(detection_response['instruction_adherence'])
-                else:
-                    st.write("Instruction adherence data is not available.")
+                    st.header('Aimon Rely - Model Completeness Detector Response')
+                    if 'completeness' in detection_response:
+                        st.json(detection_response['completeness'])
+                    else:
+                        st.write("Completeness data is not available.")    
+
+                    st.header('Aimon Rely - Toxicity Detector Response')
+                    if 'toxicity' in detection_response:
+                        st.json(detection_response['toxicity']['results'])
+                    else:
+                        st.write("Toxicity data is not available.")
+                    
+                    st.header('Adherence Detector Response')
+                    if 'instruction_adherence' in detection_response:
+                        st.json(detection_response['instruction_adherence'])
+                    else:
+                        st.write("Instruction adherence data is not available.")
 
             st.session_state.new_user_query = ""
             st.session_state.new_system_prompt = ""
             st.session_state.show_new_query = False
-

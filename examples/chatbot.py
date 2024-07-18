@@ -118,6 +118,7 @@ def chatbot(user_query, instructions, openai_api_key, api_key, email):
     logging.info("Sending request to OpenAI API...")
     st.write("Waiting for response from OpenAI API...")
     chat_response = agent.chat(input_text)
+    st.write("Received response from OpenAI API.")
     logging.info("Received response from OpenAI API.")
 
     if hasattr(chat_response, 'source_nodes'):
@@ -165,6 +166,7 @@ def chatbot(user_query, instructions, openai_api_key, api_key, email):
             response = client.detect(data_to_send, config=config)[0]
 
             logging.info("Received response from Aimon API.")
+            st.write("Received response from Aimon API.")
             break
         except requests.exceptions.Timeout as e:
             logging.error(f"Timeout occurred while processing your request: {e}")

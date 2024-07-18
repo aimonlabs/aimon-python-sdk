@@ -22,16 +22,33 @@ from aimon import Config
 import logging
 import time
 import numpy as np
+import pickle
 
 load_dotenv()
 
 email = os.getenv('EMAIL')
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
 nest_asyncio.apply()
 os.environ['SSL_CERT_FILE'] = certifi.where()
+
+#check if embeddings need to be recomputed
+def embeddings_exist(embedding_dir, years):
+    for year in years:
+        if not os.path.exists(os.path.join(embedding_dir, f'embeddings_{year}.pkl')):
+            return False
+    return True
+
+# Save embeddings to disk
+def save_embeddings(embedding_dir, embeddings, year):
+    with open(os.path.join(embedding_dir, f'embeddings_{year}.pkl'), 'wb') as f:
+        pickle.dump(embeddings, f)
+
+# Load embeddings from disk
+def load_embeddings(embedding_dir, year):
+    with open(os.path.join(embedding_dir, f'embeddings_{year}.pkl'), 'rb') as f:
+        return pickle.load(f)
 
 # Download UBER dataset
 os.system("mkdir -p data")
@@ -45,14 +62,11 @@ loader = UnstructuredReader()
 doc_set = {}
 all_docs = []
 index_set = {}
+embedding_dir = "./embeddings"
 
-for year in years:
-    year_docs = loader.load_data(file=Path(f"./data/UBER/UBER_{year}.html"), split_documents=False)
-    # Insert year metadata into each document
-    for d in year_docs:
-        d.metadata = {"year": year}
-    doc_set[year] = year_docs
-    all_docs.extend(year_docs)
+# Create embedding directory if it does not exist
+if not os.path.exists(embedding_dir):
+    os.makedirs(embedding_dir)
 
 Settings.chunk_size = 512
 Settings.chunk_overlap = 64
@@ -61,14 +75,45 @@ Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
 
 # Initialize simple vector indices
 index_set = {}
-for year in years:
-    storage_context = StorageContext.from_defaults()
-    cur_index = VectorStoreIndex.from_documents(
-        doc_set[year],
-        storage_context=storage_context,
-    )
-    index_set[year] = cur_index
-    storage_context.persist(persist_dir=f"./storage/{year}")
+
+if embeddings_exist(embedding_dir, years):
+    for year in years:
+        year_docs = loader.load_data(file=Path(f"./data/UBER/UBER_{year}.html"), split_documents=False)
+        for d in year_docs:
+            d.metadata = {"year": year}
+        doc_set[year] = year_docs
+        all_docs.extend(year_docs)
+
+        embeddings = load_embeddings(embedding_dir, year)
+        storage_context = StorageContext.from_defaults()
+        cur_index = VectorStoreIndex.from_documents(
+            doc_set[year],
+            storage_context=storage_context,
+            precomputed_embeddings=embeddings
+        )
+        index_set[year] = cur_index
+        storage_context.persist(persist_dir=f"./storage/{year}")
+else:
+    for year in years:
+        year_docs = loader.load_data(file=Path(f"./data/UBER/UBER_{year}.html"), split_documents=False)
+        for d in year_docs:
+            d.metadata = {"year": year}
+        doc_set[year] = year_docs
+        all_docs.extend(year_docs)
+
+        storage_context = StorageContext.from_defaults()
+        cur_index = VectorStoreIndex.from_documents(
+            doc_set[year],
+            storage_context=storage_context,
+        )
+        index_set[year] = cur_index
+        
+        embeddings = []
+        for doc in doc_set[year]:
+            embeddings.append(doc.embedding)
+        save_embeddings(embedding_dir, embeddings, year)
+        
+        storage_context.persist(persist_dir=f"./storage/{year}")
 
 individual_query_engine_tools = [
     QueryEngineTool(
@@ -139,7 +184,7 @@ def chatbot(user_query, instructions, openai_api_key, api_key, email):
 
     if not top_contexts:
         logging.info("No contexts found.")
-
+        combined_context = ""
     else:
         combined_context = "\n".join(top_contexts)
 

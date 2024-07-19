@@ -5,7 +5,7 @@ import certifi
 import nltk
 from pathlib import Path
 from llama_index.readers.file import UnstructuredReader
-from llama_index.core import VectorStoreIndex, StorageContext, Settings, load_index_from_storage
+from llama_index.core import VectorStoreIndex, StorageContext, Settings
 from llama_index.core.tools import QueryEngineTool, ToolMetadata
 from llama_index.llms.openai import OpenAI
 from llama_index.core.query_engine import SubQuestionQueryEngine
@@ -16,12 +16,9 @@ from llama_index.embeddings.openai import OpenAIEmbedding
 from dotenv import load_dotenv
 import requests
 import json
-from botocore.exceptions import ClientError
-import boto3
 from aimon import Config
 import logging
 import time
-import numpy as np
 import pickle
 from functools import wraps
 

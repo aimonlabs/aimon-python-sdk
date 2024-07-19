@@ -121,6 +121,6 @@ if st.button("Chat with Chatbot"):
                 "bot_message": bot_message,
                 "detector_response": detection_response
             })
-            st.experimental_rerun()  # Rerun to update the display with the new conversation entry
+            st.rerun()
 
 st.button("Reset", on_click=reset_input)

@@ -198,7 +198,7 @@ def chatbot(user_query, instructions, openai_api_key, api_key, email):
 
     chat_response = agent.chat(input_text)
 
-    st.write("Received response from OpenAI API.")
+    st.write("Received response from OpenAI API...")
     logging.info("Received response from OpenAI API.")
 
     contexts, relevance_scores = get_source_docs(chat_response)
@@ -230,7 +230,7 @@ def chatbot(user_query, instructions, openai_api_key, api_key, email):
         response = send_to_aimon(client, data_to_send, config)
 
         logging.info("Received response from Aimon API.")
-        st.write("Received response from Aimon API.")
+        st.write("Received response from Aimon API...")
 
     except requests.exceptions.Timeout as e:
         logging.error(f"Timeout occurred while processing your request: {e}")

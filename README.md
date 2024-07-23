@@ -51,7 +51,7 @@ data_to_send = [{
 response = client.inference.detect(body=data_to_send)[0]
 ```
 
-- Step 4: For an example of how to instrument an LLM application **asynchronously** using the SDK, please refer to the [sample notebook](examples/notebooks/aimon_sdk_langchain_summarization.ipynb)
+- Step 4: For an example of how to instrument an LLM application **asynchronously** using the SDK, please refer to the [sample notebook](examples/notebooks/aimon_sdk_langchain_summarization_0_5_0.ipynb)
 - Step 5: For an example of synchronous detections using the SDK, please refer to the sample [streamlit application](examples/langchain_summarization_app.py)
 
 <div align="center">

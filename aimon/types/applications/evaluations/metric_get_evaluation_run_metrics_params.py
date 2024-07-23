@@ -8,10 +8,10 @@ from typing_extensions import Required, Annotated, TypedDict
 
 from ...._utils import PropertyInfo
 
-__all__ = ["MetricListRunMetricsParams"]
+__all__ = ["MetricGetEvaluationRunMetricsParams"]
 
 
-class MetricListRunMetricsParams(TypedDict, total=False):
+class MetricGetEvaluationRunMetricsParams(TypedDict, total=False):
     evaluation_id: Required[str]
 
     application_name: Required[str]

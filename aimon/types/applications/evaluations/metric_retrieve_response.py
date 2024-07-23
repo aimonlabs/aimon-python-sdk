@@ -12,13 +12,10 @@ __all__ = ["MetricRetrieveResponse", "Evaluation"]
 
 class Evaluation(BaseModel):
     metric_name: Optional[str] = FieldInfo(alias="metricName", default=None)
-    """The name of the metric"""
 
     timestamp: Optional[datetime] = None
-    """The timestamp when the metric was recorded"""
 
     value: Optional[float] = None
-    """The value of the metric"""
 
 
 class MetricRetrieveResponse(BaseModel):

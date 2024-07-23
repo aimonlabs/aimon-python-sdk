@@ -4,8 +4,8 @@ from typing import Optional
 
 from .._models import BaseModel
 
-__all__ = ["EvaluationAnalyzeResponse"]
+__all__ = ["AnalyzeCreateResponse"]
 
 
-class EvaluationAnalyzeResponse(BaseModel):
+class AnalyzeCreateResponse(BaseModel):
     message: Optional[str] = None

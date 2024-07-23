@@ -8,14 +8,18 @@ from typing_extensions import Required, Annotated, TypedDict
 
 from ...._utils import PropertyInfo
 
-__all__ = ["MetricListParams"]
+__all__ = ["MetricGetEvaluationMetricsParams"]
 
 
-class MetricListParams(TypedDict, total=False):
+class MetricGetEvaluationMetricsParams(TypedDict, total=False):
     application_name: Required[str]
+    """The name of the application for which metrics are being fetched"""
 
     end_timestamp: Annotated[Union[str, datetime], PropertyInfo(format="iso8601")]
+    """The end timestamp for filtering metrics data"""
 
     start_timestamp: Annotated[Union[str, datetime], PropertyInfo(format="iso8601")]
+    """The start timestamp for filtering metrics data"""
 
     version: str
+    """The version of the application"""

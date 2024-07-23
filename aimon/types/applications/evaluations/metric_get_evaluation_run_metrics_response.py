@@ -7,7 +7,7 @@ from pydantic import Field as FieldInfo
 
 from ...._models import BaseModel
 
-__all__ = ["MetricListRunMetricsResponse", "Evaluation"]
+__all__ = ["MetricGetEvaluationRunMetricsResponse", "Evaluation"]
 
 
 class Evaluation(BaseModel):
@@ -21,5 +21,5 @@ class Evaluation(BaseModel):
     """The value of the metric"""
 
 
-class MetricListRunMetricsResponse(BaseModel):
+class MetricGetEvaluationRunMetricsResponse(BaseModel):
     evaluations: Optional[List[Evaluation]] = None

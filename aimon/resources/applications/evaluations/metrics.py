@@ -22,13 +22,15 @@ from ...._response import (
 )
 from ...._base_client import make_request_options
 from ....types.applications.evaluations import (
-    metric_list_params,
     metric_retrieve_params,
-    metric_list_run_metrics_params,
+    metric_get_evaluation_metrics_params,
+    metric_get_evaluation_run_metrics_params,
 )
-from ....types.applications.evaluations.metric_list_response import MetricListResponse
 from ....types.applications.evaluations.metric_retrieve_response import MetricRetrieveResponse
-from ....types.applications.evaluations.metric_list_run_metrics_response import MetricListRunMetricsResponse
+from ....types.applications.evaluations.metric_get_evaluation_metrics_response import MetricGetEvaluationMetricsResponse
+from ....types.applications.evaluations.metric_get_evaluation_run_metrics_response import (
+    MetricGetEvaluationRunMetricsResponse,
+)
 
 __all__ = ["MetricsResource", "AsyncMetricsResource"]
 
@@ -44,7 +46,6 @@ class MetricsResource(SyncAPIResource):
 
     def retrieve(
         self,
-        evaluation_id: str,
         *,
         application_name: str,
         end_timestamp: Union[str, datetime] | NotGiven = NOT_GIVEN,
@@ -57,6 +58,53 @@ class MetricsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
     ) -> MetricRetrieveResponse:
+        """
+        Fetch metrics for all evaluations of an application
+
+        Args:
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        return self._get(
+            "/v1/application/evaluations/metrics",
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                query=maybe_transform(
+                    {
+                        "application_name": application_name,
+                        "end_timestamp": end_timestamp,
+                        "start_timestamp": start_timestamp,
+                        "version": version,
+                    },
+                    metric_retrieve_params.MetricRetrieveParams,
+                ),
+            ),
+            cast_to=MetricRetrieveResponse,
+        )
+
+    def get_evaluation_metrics(
+        self,
+        evaluation_id: str,
+        *,
+        application_name: str,
+        end_timestamp: Union[str, datetime] | NotGiven = NOT_GIVEN,
+        start_timestamp: Union[str, datetime] | NotGiven = NOT_GIVEN,
+        version: str | NotGiven = NOT_GIVEN,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+    ) -> MetricGetEvaluationMetricsResponse:
         """
         Fetch metrics for a specific evaluation of an application
 
@@ -93,59 +141,13 @@ class MetricsResource(SyncAPIResource):
                         "start_timestamp": start_timestamp,
                         "version": version,
                     },
-                    metric_retrieve_params.MetricRetrieveParams,
+                    metric_get_evaluation_metrics_params.MetricGetEvaluationMetricsParams,
                 ),
             ),
-            cast_to=MetricRetrieveResponse,
+            cast_to=MetricGetEvaluationMetricsResponse,
         )
 
-    def list(
-        self,
-        *,
-        application_name: str,
-        end_timestamp: Union[str, datetime] | NotGiven = NOT_GIVEN,
-        start_timestamp: Union[str, datetime] | NotGiven = NOT_GIVEN,
-        version: str | NotGiven = NOT_GIVEN,
-        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
-        # The extra values given here take precedence over values defined on the client or passed to this method.
-        extra_headers: Headers | None = None,
-        extra_query: Query | None = None,
-        extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> MetricListResponse:
-        """
-        Fetch metrics for all evaluations of an application
-
-        Args:
-          extra_headers: Send extra headers
-
-          extra_query: Add additional query parameters to the request
-
-          extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
-        """
-        return self._get(
-            "/v1/application/evaluations/metrics",
-            options=make_request_options(
-                extra_headers=extra_headers,
-                extra_query=extra_query,
-                extra_body=extra_body,
-                timeout=timeout,
-                query=maybe_transform(
-                    {
-                        "application_name": application_name,
-                        "end_timestamp": end_timestamp,
-                        "start_timestamp": start_timestamp,
-                        "version": version,
-                    },
-                    metric_list_params.MetricListParams,
-                ),
-            ),
-            cast_to=MetricListResponse,
-        )
-
-    def list_run_metrics(
+    def get_evaluation_run_metrics(
         self,
         evaluation_run_id: str,
         *,
@@ -160,7 +162,7 @@ class MetricsResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> MetricListRunMetricsResponse:
+    ) -> MetricGetEvaluationRunMetricsResponse:
         """
         Fetch metrics for a specific run of a specific evaluation
 
@@ -199,10 +201,10 @@ class MetricsResource(SyncAPIResource):
                         "start_timestamp": start_timestamp,
                         "version": version,
                     },
-                    metric_list_run_metrics_params.MetricListRunMetricsParams,
+                    metric_get_evaluation_run_metrics_params.MetricGetEvaluationRunMetricsParams,
                 ),
             ),
-            cast_to=MetricListRunMetricsResponse,
+            cast_to=MetricGetEvaluationRunMetricsResponse,
         )
 
 
@@ -217,7 +219,6 @@ class AsyncMetricsResource(AsyncAPIResource):
 
     async def retrieve(
         self,
-        evaluation_id: str,
         *,
         application_name: str,
         end_timestamp: Union[str, datetime] | NotGiven = NOT_GIVEN,
@@ -230,6 +231,53 @@ class AsyncMetricsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
     ) -> MetricRetrieveResponse:
+        """
+        Fetch metrics for all evaluations of an application
+
+        Args:
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        return await self._get(
+            "/v1/application/evaluations/metrics",
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                query=await async_maybe_transform(
+                    {
+                        "application_name": application_name,
+                        "end_timestamp": end_timestamp,
+                        "start_timestamp": start_timestamp,
+                        "version": version,
+                    },
+                    metric_retrieve_params.MetricRetrieveParams,
+                ),
+            ),
+            cast_to=MetricRetrieveResponse,
+        )
+
+    async def get_evaluation_metrics(
+        self,
+        evaluation_id: str,
+        *,
+        application_name: str,
+        end_timestamp: Union[str, datetime] | NotGiven = NOT_GIVEN,
+        start_timestamp: Union[str, datetime] | NotGiven = NOT_GIVEN,
+        version: str | NotGiven = NOT_GIVEN,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+    ) -> MetricGetEvaluationMetricsResponse:
         """
         Fetch metrics for a specific evaluation of an application
 
@@ -266,59 +314,13 @@ class AsyncMetricsResource(AsyncAPIResource):
                         "start_timestamp": start_timestamp,
                         "version": version,
                     },
-                    metric_retrieve_params.MetricRetrieveParams,
+                    metric_get_evaluation_metrics_params.MetricGetEvaluationMetricsParams,
                 ),
             ),
-            cast_to=MetricRetrieveResponse,
+            cast_to=MetricGetEvaluationMetricsResponse,
         )
 
-    async def list(
-        self,
-        *,
-        application_name: str,
-        end_timestamp: Union[str, datetime] | NotGiven = NOT_GIVEN,
-        start_timestamp: Union[str, datetime] | NotGiven = NOT_GIVEN,
-        version: str | NotGiven = NOT_GIVEN,
-        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
-        # The extra values given here take precedence over values defined on the client or passed to this method.
-        extra_headers: Headers | None = None,
-        extra_query: Query | None = None,
-        extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> MetricListResponse:
-        """
-        Fetch metrics for all evaluations of an application
-
-        Args:
-          extra_headers: Send extra headers
-
-          extra_query: Add additional query parameters to the request
-
-          extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
-        """
-        return await self._get(
-            "/v1/application/evaluations/metrics",
-            options=make_request_options(
-                extra_headers=extra_headers,
-                extra_query=extra_query,
-                extra_body=extra_body,
-                timeout=timeout,
-                query=await async_maybe_transform(
-                    {
-                        "application_name": application_name,
-                        "end_timestamp": end_timestamp,
-                        "start_timestamp": start_timestamp,
-                        "version": version,
-                    },
-                    metric_list_params.MetricListParams,
-                ),
-            ),
-            cast_to=MetricListResponse,
-        )
-
-    async def list_run_metrics(
+    async def get_evaluation_run_metrics(
         self,
         evaluation_run_id: str,
         *,
@@ -333,7 +335,7 @@ class AsyncMetricsResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> MetricListRunMetricsResponse:
+    ) -> MetricGetEvaluationRunMetricsResponse:
         """
         Fetch metrics for a specific run of a specific evaluation
 
@@ -372,10 +374,10 @@ class AsyncMetricsResource(AsyncAPIResource):
                         "start_timestamp": start_timestamp,
                         "version": version,
                     },
-                    metric_list_run_metrics_params.MetricListRunMetricsParams,
+                    metric_get_evaluation_run_metrics_params.MetricGetEvaluationRunMetricsParams,
                 ),
             ),
-            cast_to=MetricListRunMetricsResponse,
+            cast_to=MetricGetEvaluationRunMetricsResponse,
         )
 
 
@@ -386,11 +388,11 @@ class MetricsResourceWithRawResponse:
         self.retrieve = to_raw_response_wrapper(
             metrics.retrieve,
         )
-        self.list = to_raw_response_wrapper(
-            metrics.list,
+        self.get_evaluation_metrics = to_raw_response_wrapper(
+            metrics.get_evaluation_metrics,
         )
-        self.list_run_metrics = to_raw_response_wrapper(
-            metrics.list_run_metrics,
+        self.get_evaluation_run_metrics = to_raw_response_wrapper(
+            metrics.get_evaluation_run_metrics,
         )
 
 
@@ -401,11 +403,11 @@ class AsyncMetricsResourceWithRawResponse:
         self.retrieve = async_to_raw_response_wrapper(
             metrics.retrieve,
         )
-        self.list = async_to_raw_response_wrapper(
-            metrics.list,
+        self.get_evaluation_metrics = async_to_raw_response_wrapper(
+            metrics.get_evaluation_metrics,
         )
-        self.list_run_metrics = async_to_raw_response_wrapper(
-            metrics.list_run_metrics,
+        self.get_evaluation_run_metrics = async_to_raw_response_wrapper(
+            metrics.get_evaluation_run_metrics,
         )
 
 
@@ -416,11 +418,11 @@ class MetricsResourceWithStreamingResponse:
         self.retrieve = to_streamed_response_wrapper(
             metrics.retrieve,
         )
-        self.list = to_streamed_response_wrapper(
-            metrics.list,
+        self.get_evaluation_metrics = to_streamed_response_wrapper(
+            metrics.get_evaluation_metrics,
         )
-        self.list_run_metrics = to_streamed_response_wrapper(
-            metrics.list_run_metrics,
+        self.get_evaluation_run_metrics = to_streamed_response_wrapper(
+            metrics.get_evaluation_run_metrics,
         )
 
 
@@ -431,9 +433,9 @@ class AsyncMetricsResourceWithStreamingResponse:
         self.retrieve = async_to_streamed_response_wrapper(
             metrics.retrieve,
         )
-        self.list = async_to_streamed_response_wrapper(
-            metrics.list,
+        self.get_evaluation_metrics = async_to_streamed_response_wrapper(
+            metrics.get_evaluation_metrics,
         )
-        self.list_run_metrics = async_to_streamed_response_wrapper(
-            metrics.list_run_metrics,
+        self.get_evaluation_run_metrics = async_to_streamed_response_wrapper(
+            metrics.get_evaluation_run_metrics,
         )

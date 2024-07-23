@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Union, Iterable
+from typing import Union
 from datetime import datetime
 
 import httpx
@@ -15,7 +15,7 @@ from .run import (
     RunResourceWithStreamingResponse,
     AsyncRunResourceWithStreamingResponse,
 )
-from ...types import evaluation_create_params, evaluation_analyze_params, evaluation_retrieve_params
+from ...types import evaluation_create_params, evaluation_retrieve_params
 from ..._types import NOT_GIVEN, Body, Query, Headers, NotGiven
 from ..._utils import (
     maybe_transform,
@@ -31,7 +31,6 @@ from ..._response import (
 )
 from ..._base_client import make_request_options
 from ...types.evaluation_create_response import EvaluationCreateResponse
-from ...types.evaluation_analyze_response import EvaluationAnalyzeResponse
 from ...types.evaluation_retrieve_response import EvaluationRetrieveResponse
 
 __all__ = ["EvaluationsResource", "AsyncEvaluationsResource"]
@@ -136,38 +135,6 @@ class EvaluationsResource(SyncAPIResource):
             cast_to=EvaluationRetrieveResponse,
         )
 
-    def analyze(
-        self,
-        *,
-        body: Iterable[evaluation_analyze_params.Body],
-        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
-        # The extra values given here take precedence over values defined on the client or passed to this method.
-        extra_headers: Headers | None = None,
-        extra_query: Query | None = None,
-        extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> EvaluationAnalyzeResponse:
-        """
-        Save and compute metrics
-
-        Args:
-          extra_headers: Send extra headers
-
-          extra_query: Add additional query parameters to the request
-
-          extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
-        """
-        return self._post(
-            "/v1/save-compute-metrics",
-            body=maybe_transform(body, evaluation_analyze_params.EvaluationAnalyzeParams),
-            options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
-            ),
-            cast_to=EvaluationAnalyzeResponse,
-        )
-
 
 class AsyncEvaluationsResource(AsyncAPIResource):
     @cached_property
@@ -268,38 +235,6 @@ class AsyncEvaluationsResource(AsyncAPIResource):
             cast_to=EvaluationRetrieveResponse,
         )
 
-    async def analyze(
-        self,
-        *,
-        body: Iterable[evaluation_analyze_params.Body],
-        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
-        # The extra values given here take precedence over values defined on the client or passed to this method.
-        extra_headers: Headers | None = None,
-        extra_query: Query | None = None,
-        extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> EvaluationAnalyzeResponse:
-        """
-        Save and compute metrics
-
-        Args:
-          extra_headers: Send extra headers
-
-          extra_query: Add additional query parameters to the request
-
-          extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
-        """
-        return await self._post(
-            "/v1/save-compute-metrics",
-            body=await async_maybe_transform(body, evaluation_analyze_params.EvaluationAnalyzeParams),
-            options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
-            ),
-            cast_to=EvaluationAnalyzeResponse,
-        )
-
 
 class EvaluationsResourceWithRawResponse:
     def __init__(self, evaluations: EvaluationsResource) -> None:
@@ -310,9 +245,6 @@ class EvaluationsResourceWithRawResponse:
         )
         self.retrieve = to_raw_response_wrapper(
             evaluations.retrieve,
-        )
-        self.analyze = to_raw_response_wrapper(
-            evaluations.analyze,
         )
 
     @cached_property
@@ -330,9 +262,6 @@ class AsyncEvaluationsResourceWithRawResponse:
         self.retrieve = async_to_raw_response_wrapper(
             evaluations.retrieve,
         )
-        self.analyze = async_to_raw_response_wrapper(
-            evaluations.analyze,
-        )
 
     @cached_property
     def run(self) -> AsyncRunResourceWithRawResponse:
@@ -349,9 +278,6 @@ class EvaluationsResourceWithStreamingResponse:
         self.retrieve = to_streamed_response_wrapper(
             evaluations.retrieve,
         )
-        self.analyze = to_streamed_response_wrapper(
-            evaluations.analyze,
-        )
 
     @cached_property
     def run(self) -> RunResourceWithStreamingResponse:
@@ -367,9 +293,6 @@ class AsyncEvaluationsResourceWithStreamingResponse:
         )
         self.retrieve = async_to_streamed_response_wrapper(
             evaluations.retrieve,
-        )
-        self.analyze = async_to_streamed_response_wrapper(
-            evaluations.analyze,
         )
 
     @cached_property

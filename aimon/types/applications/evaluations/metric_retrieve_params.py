@@ -13,13 +13,9 @@ __all__ = ["MetricRetrieveParams"]
 
 class MetricRetrieveParams(TypedDict, total=False):
     application_name: Required[str]
-    """The name of the application for which metrics are being fetched"""
 
     end_timestamp: Annotated[Union[str, datetime], PropertyInfo(format="iso8601")]
-    """The end timestamp for filtering metrics data"""
 
     start_timestamp: Annotated[Union[str, datetime], PropertyInfo(format="iso8601")]
-    """The start timestamp for filtering metrics data"""
 
     version: str
-    """The version of the application"""

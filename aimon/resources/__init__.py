@@ -16,6 +16,14 @@ from .models import (
     ModelsResourceWithStreamingResponse,
     AsyncModelsResourceWithStreamingResponse,
 )
+from .analyze import (
+    AnalyzeResource,
+    AsyncAnalyzeResource,
+    AnalyzeResourceWithRawResponse,
+    AsyncAnalyzeResourceWithRawResponse,
+    AnalyzeResourceWithStreamingResponse,
+    AsyncAnalyzeResourceWithStreamingResponse,
+)
 from .datasets import (
     DatasetsResource,
     AsyncDatasetsResource,
@@ -80,6 +88,12 @@ __all__ = [
     "AsyncEvaluationsResourceWithRawResponse",
     "EvaluationsResourceWithStreamingResponse",
     "AsyncEvaluationsResourceWithStreamingResponse",
+    "AnalyzeResource",
+    "AsyncAnalyzeResource",
+    "AnalyzeResourceWithRawResponse",
+    "AsyncAnalyzeResourceWithRawResponse",
+    "AnalyzeResourceWithStreamingResponse",
+    "AsyncAnalyzeResourceWithStreamingResponse",
     "InferenceResource",
     "AsyncInferenceResource",
     "InferenceResourceWithRawResponse",

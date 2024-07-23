@@ -41,6 +41,7 @@ class Client(SyncAPIClient):
     applications: resources.ApplicationsResource
     datasets: resources.DatasetsResource
     evaluations: resources.EvaluationsResource
+    analyze: resources.AnalyzeResource
     inference: resources.InferenceResource
     with_raw_response: ClientWithRawResponse
     with_streaming_response: ClientWithStreamedResponse
@@ -95,6 +96,7 @@ class Client(SyncAPIClient):
         self.applications = resources.ApplicationsResource(self)
         self.datasets = resources.DatasetsResource(self)
         self.evaluations = resources.EvaluationsResource(self)
+        self.analyze = resources.AnalyzeResource(self)
         self.inference = resources.InferenceResource(self)
         self.with_raw_response = ClientWithRawResponse(self)
         self.with_streaming_response = ClientWithStreamedResponse(self)
@@ -210,6 +212,7 @@ class AsyncClient(AsyncAPIClient):
     applications: resources.AsyncApplicationsResource
     datasets: resources.AsyncDatasetsResource
     evaluations: resources.AsyncEvaluationsResource
+    analyze: resources.AsyncAnalyzeResource
     inference: resources.AsyncInferenceResource
     with_raw_response: AsyncClientWithRawResponse
     with_streaming_response: AsyncClientWithStreamedResponse
@@ -264,6 +267,7 @@ class AsyncClient(AsyncAPIClient):
         self.applications = resources.AsyncApplicationsResource(self)
         self.datasets = resources.AsyncDatasetsResource(self)
         self.evaluations = resources.AsyncEvaluationsResource(self)
+        self.analyze = resources.AsyncAnalyzeResource(self)
         self.inference = resources.AsyncInferenceResource(self)
         self.with_raw_response = AsyncClientWithRawResponse(self)
         self.with_streaming_response = AsyncClientWithStreamedResponse(self)
@@ -380,6 +384,7 @@ class ClientWithRawResponse:
         self.applications = resources.ApplicationsResourceWithRawResponse(client.applications)
         self.datasets = resources.DatasetsResourceWithRawResponse(client.datasets)
         self.evaluations = resources.EvaluationsResourceWithRawResponse(client.evaluations)
+        self.analyze = resources.AnalyzeResourceWithRawResponse(client.analyze)
         self.inference = resources.InferenceResourceWithRawResponse(client.inference)
 
 
@@ -390,6 +395,7 @@ class AsyncClientWithRawResponse:
         self.applications = resources.AsyncApplicationsResourceWithRawResponse(client.applications)
         self.datasets = resources.AsyncDatasetsResourceWithRawResponse(client.datasets)
         self.evaluations = resources.AsyncEvaluationsResourceWithRawResponse(client.evaluations)
+        self.analyze = resources.AsyncAnalyzeResourceWithRawResponse(client.analyze)
         self.inference = resources.AsyncInferenceResourceWithRawResponse(client.inference)
 
 
@@ -400,6 +406,7 @@ class ClientWithStreamedResponse:
         self.applications = resources.ApplicationsResourceWithStreamingResponse(client.applications)
         self.datasets = resources.DatasetsResourceWithStreamingResponse(client.datasets)
         self.evaluations = resources.EvaluationsResourceWithStreamingResponse(client.evaluations)
+        self.analyze = resources.AnalyzeResourceWithStreamingResponse(client.analyze)
         self.inference = resources.InferenceResourceWithStreamingResponse(client.inference)
 
 
@@ -410,6 +417,7 @@ class AsyncClientWithStreamedResponse:
         self.applications = resources.AsyncApplicationsResourceWithStreamingResponse(client.applications)
         self.datasets = resources.AsyncDatasetsResourceWithStreamingResponse(client.datasets)
         self.evaluations = resources.AsyncEvaluationsResourceWithStreamingResponse(client.evaluations)
+        self.analyze = resources.AsyncAnalyzeResourceWithStreamingResponse(client.analyze)
         self.inference = resources.AsyncInferenceResourceWithStreamingResponse(client.inference)
 
 

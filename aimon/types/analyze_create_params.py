@@ -5,10 +5,10 @@ from __future__ import annotations
 from typing import List, Iterable, Optional
 from typing_extensions import Required, TypedDict
 
-__all__ = ["EvaluationAnalyzeParams", "Body"]
+__all__ = ["AnalyzeCreateParams", "Body"]
 
 
-class EvaluationAnalyzeParams(TypedDict, total=False):
+class AnalyzeCreateParams(TypedDict, total=False):
     body: Required[Iterable[Body]]
 
 

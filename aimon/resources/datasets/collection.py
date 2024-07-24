@@ -21,8 +21,9 @@ from ..._response import (
     async_to_streamed_response_wrapper,
 )
 from ..._base_client import make_request_options
-from ...types.datasets import collection_create_params
+from ...types.datasets import collection_create_params, collection_retrieve_params
 from ...types.datasets.collection_create_response import CollectionCreateResponse
+from ...types.datasets.collection_retrieve_response import CollectionRetrieveResponse
 
 __all__ = ["CollectionResource", "AsyncCollectionResource"]
 
@@ -89,6 +90,41 @@ class CollectionResource(SyncAPIResource):
             cast_to=CollectionCreateResponse,
         )
 
+    def retrieve(
+        self,
+        *,
+        name: str,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+    ) -> CollectionRetrieveResponse:
+        """
+        Retrieve a dataset collection by name
+
+        Args:
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        return self._get(
+            "/v1/dataset-collection",
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                query=maybe_transform({"name": name}, collection_retrieve_params.CollectionRetrieveParams),
+            ),
+            cast_to=CollectionRetrieveResponse,
+        )
+
 
 class AsyncCollectionResource(AsyncAPIResource):
     @cached_property
@@ -152,6 +188,41 @@ class AsyncCollectionResource(AsyncAPIResource):
             cast_to=CollectionCreateResponse,
         )
 
+    async def retrieve(
+        self,
+        *,
+        name: str,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+    ) -> CollectionRetrieveResponse:
+        """
+        Retrieve a dataset collection by name
+
+        Args:
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        return await self._get(
+            "/v1/dataset-collection",
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                query=await async_maybe_transform({"name": name}, collection_retrieve_params.CollectionRetrieveParams),
+            ),
+            cast_to=CollectionRetrieveResponse,
+        )
+
 
 class CollectionResourceWithRawResponse:
     def __init__(self, collection: CollectionResource) -> None:
@@ -159,6 +230,9 @@ class CollectionResourceWithRawResponse:
 
         self.create = to_raw_response_wrapper(
             collection.create,
+        )
+        self.retrieve = to_raw_response_wrapper(
+            collection.retrieve,
         )
 
 
@@ -169,6 +243,9 @@ class AsyncCollectionResourceWithRawResponse:
         self.create = async_to_raw_response_wrapper(
             collection.create,
         )
+        self.retrieve = async_to_raw_response_wrapper(
+            collection.retrieve,
+        )
 
 
 class CollectionResourceWithStreamingResponse:
@@ -178,6 +255,9 @@ class CollectionResourceWithStreamingResponse:
         self.create = to_streamed_response_wrapper(
             collection.create,
         )
+        self.retrieve = to_streamed_response_wrapper(
+            collection.retrieve,
+        )
 
 
 class AsyncCollectionResourceWithStreamingResponse:
@@ -186,4 +266,7 @@ class AsyncCollectionResourceWithStreamingResponse:
 
         self.create = async_to_streamed_response_wrapper(
             collection.create,
+        )
+        self.retrieve = async_to_streamed_response_wrapper(
+            collection.retrieve,
         )

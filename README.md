@@ -13,17 +13,16 @@ AIMon Rely helps developers build, ship, and monitor LLM Apps more confidently a
 The following is a list of quality metrics that are currently available and on our roadmap. Please reach out to express your interest in any of these.
 
 | Metric                                           | Status                                                       |
-|--------------------------------------------------|--------------------------------------------------------------|
-| Model Hallucination (Passage and Sentence Level) | <span style="font-size: 24px; color: green;">&#10003;</span> | 
-| Completeness                                     | <span style="font-size: 24px; color: green;">&#10003;</span>                     |
-| Conciseness                                      | <span style="font-size: 24px; color: green;">&#10003;</span>                    |
-| Toxicity                                         | <span style="font-size: 24px; color: green;">&#10003;</span>                      |
-| Instruction Adherence                            | <span style="font-size: 24px; color: green;">&#10003;</span>                      |
-| Semantic Similarity                              | <span style="font-size: 24px;">⌛</span>                      |
-| Sentiment                                        | <span style="font-size: 24px;">⌛</span>                      |
-| Coherence                                        | <span style="font-size: 24px;">⌛</span>                      |
-| Sensitive Data (PII/PHI/PCI)                     | <span style="font-size: 24px;">⌛</span>                      |
-
+| ------------------------------------------------ | ------------------------------------------------------------ |
+| Model Hallucination (Passage and Sentence Level) | <span style="font-size: 24px; color: green;">&#10003;</span> |
+| Completeness                                     | <span style="font-size: 24px; color: green;">&#10003;</span> |
+| Conciseness                                      | <span style="font-size: 24px; color: green;">&#10003;</span> |
+| Toxicity                                         | <span style="font-size: 24px; color: green;">&#10003;</span> |
+| Instruction Adherence                            | <span style="font-size: 24px; color: green;">&#10003;</span> |
+| Semantic Similarity                              | <span style="font-size: 24px;">⌛</span>                     |
+| Sentiment                                        | <span style="font-size: 24px;">⌛</span>                     |
+| Coherence                                        | <span style="font-size: 24px;">⌛</span>                     |
+| Sensitive Data (PII/PHI/PCI)                     | <span style="font-size: 24px;">⌛</span>                     |
 
 ## Getting Started
 
@@ -35,10 +34,25 @@ AIMon supports asynchronous instrumentation or synchronous detections for the me
 to get started with using the AIMon SDK and the product.
 
 - Step 1: Get access to the beta product by joining the waitlist on our [website](https://aimon.ai/) or by requesting
-          it on [Slack](https://join.slack.com/t/generativeair/shared_invite/zt-2jab62lsj-xM9a_s~Qweu8lf3YS2cANg) or sending an email to info@aimon.ai
+  it on [Slack](https://join.slack.com/t/generativeair/shared_invite/zt-2jab62lsj-xM9a_s~Qweu8lf3YS2cANg) or sending an email to info@aimon.ai
 - Step 2: Install the AIMon SDK by running `pip install aimon` in your terminal.
-- Step 3: For an example of how to instrument an LLM application **asynchronously** using the SDK, please refer to the [sample notebook](examples/notebooks/aimon_sdk_langchain_summarization.ipynb) 
-- Step 4: For an example of synchronous detections using the SDK, please refer to the sample [streamlit application](examples/langchain_summarization_app.py) 
+- Step 3: For an axample of quick start usage
+
+```python
+from aimon import Client
+
+API_KEY = "YOUR_API_KEY"
+client = Client(auth_header=f"Bearer {API_KEY}")
+data_to_send = [{
+    "context": "This is the context",
+    "generated_text": "This is the context",
+    "config": {'hallucination': {'detector_name': 'default'}}
+}]
+response = client.inference.detect(body=data_to_send)[0]
+```
+
+- Step 4: For an example of how to instrument an LLM application **asynchronously** using the SDK, please refer to the [sample notebook](examples/notebooks/aimon_sdk_langchain_summarization_0_5_0.ipynb)
+- Step 5: For an example of synchronous detections using the SDK, please refer to the sample [streamlit application](examples/langchain_summarization_app.py)
 
 <div align="center">
     <img src="images/product_apps_page.png" alt="AIMon Product">
@@ -59,6 +73,7 @@ You can try our [Sandbox](https://aimon.ai/tryproduct) that is available on our 
 ## Benchmarks
 
 ### Hallucination Detection
+
 To demonstrate the effectiveness of our system, we benchmarked it against popular industry benchmarks for the
 hallucination detection task. The table below shows our results.
 

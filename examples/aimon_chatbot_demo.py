@@ -5,7 +5,7 @@ from llama_index.core import VectorStoreIndex, Settings
 from llama_index.core.memory import ChatMemoryBuffer
 from llama_index.core import StorageContext, load_index_from_storage
 from llama_index.readers.web import SimpleWebPageReader
-from aimon import Client
+from aimon import detect
 import json
 import logging
 import os
@@ -76,11 +76,11 @@ def split_into_paragraphs(text):
     return paragraphs
 
 
+@detect
 def chat(ctx_extraction_func, usr_prompt):
     response = st.session_state.chat_engine.chat(usr_prompt)
-    contexts, relevance_scores = ctx_extraction_func(response)
     message = {"role": "assistant", "content": response.response}
-    return message, response
+    return message
 
 def execute():
     openai_api_key = st.secrets.openai_key
@@ -100,7 +100,6 @@ def execute():
 
     index = load_data()
     memory = ChatMemoryBuffer.from_defaults(token_limit=1200)
-    aimon_client = Client(aimon_api_key)
 
     if "chat_engine" not in st.session_state.keys():  # Initialize the chat engine
         st.session_state.chat_engine = index.as_chat_engine(
@@ -141,30 +140,14 @@ def execute():
         with st.chat_message("assistant"):
             logging.info("Adding a message")
             if usr_prompt:
-                message, response = chat(get_source_docs, usr_prompt)
+                response, am_res = chat(get_source_docs, usr_prompt)
 
-                contexts, relevance_scores = get_source_docs(response)
-                combined_context = "\n".join(contexts) if contexts else ""
-                # Call AIMon
-                data_to_send = [{
-                    "context": combined_context,
-                    "generated_text": response.response,
-                    "instructions": "\n".join(instructions if instructions else []).strip()
-                }]
-
-                config = Config({
-                    'hallucination': 'default'
-                })
-                if instructions:
-                    config.detectors['instruction_adherence'] = {'detector_name': 'default'}
-
-                am_res = aimon_client.detect(data_to_send, config=config)[0]
                 st.write(response.response)
                 if am_res and len(am_res) > 0:
                     st.json(am_res)
-                    st.json({"context": combined_context}, expanded=False)
+                    st.json({"context": am_res.context}, expanded=False)
                     message['aimon_response'] = am_res
-                    message['context'] = {"text": combined_context}
+                    message['context'] = {"text": am_res.context}
                 # Add response to message history
                 st.session_state.messages.append(message)
 

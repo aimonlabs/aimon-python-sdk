@@ -1,0 +1,4 @@
+llama-index
+llama-index-readers-web
+streamlit
+

@@ -79,3 +79,6 @@ for __name in __all__:
         except (TypeError, AttributeError):
             # Some of our exported symbols are builtins which we can't set attributes for.
             pass
+
+from .decorators.analyze import analyze
+from .decorators.detect import detect

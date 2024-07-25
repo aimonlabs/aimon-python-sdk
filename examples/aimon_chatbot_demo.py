@@ -5,8 +5,8 @@ from llama_index.core import VectorStoreIndex, Settings
 from llama_index.core.memory import ChatMemoryBuffer
 from llama_index.core import StorageContext, load_index_from_storage
 from llama_index.readers.web import SimpleWebPageReader
-from aimon import detect
-import json
+from aimon import DetectWithQueryInstructionsFuncReturningContext
+from aimon import AuthenticationError
 import logging
 import os
 
@@ -14,11 +14,15 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 st.set_page_config(page_title="AIMon Chatbot Demo", page_icon="🦙", layout="centered", initial_sidebar_state="auto",
                    menu_items=None)
 
+aimon_config = {'hallucination': {'detector_name': 'default'}, 'instruction_adherence': {'detector_name': 'default'}}
+detect = DetectWithQueryInstructionsFuncReturningContext(st.secrets.aimon_api_key, aimon_config)
+
 
 @st.cache_resource(show_spinner=False)
 def load_data():
     index_file_dir = "./data/PG"
     index_file_persisted = index_file_dir + "/persisted"
+    logging.info("Creating OpenAI LLM...")
     Settings.llm = OpenAI(
         model="gpt-4o-mini",
         temperature=0.2,
@@ -27,6 +31,7 @@ def load_data():
                         job is to answer questions related to this domain. Your answers should be based on 
                         facts – do not hallucinate features.""",
     )
+    logging.info("Finished creating OpenAI LLM...")
     Settings.chunk_size = 256
     Settings.chunk_overlap = 50
     if os.path.exists(index_file_persisted):
@@ -77,17 +82,18 @@ def split_into_paragraphs(text):
 
 
 @detect
-def chat(ctx_extraction_func, usr_prompt):
+def am_chat(usr_prompt, instructions):
     response = st.session_state.chat_engine.chat(usr_prompt)
-    message = {"role": "assistant", "content": response.response}
-    return message
+    context = get_source_docs(response)
+    return response.response, context
+
 
 def execute():
     openai_api_key = st.secrets.openai_key
-    aimon_api_key = st.secrets.aimon_api_key
-    email = st.secrets.aimon_email
 
     openai.api_key = openai_api_key
+    instructions = st.text_input(
+        "Instructions for the chatbot. Ex: Answer the user's question in a professional tone.")
     st.title("Ask questions on Paul Graham's Work Experience")
 
     if "messages" not in st.session_state.keys():  # Initialize the chat messages history
@@ -109,24 +115,15 @@ def execute():
                 "You are a chatbot, able to answer questions on an essay about Paul Graham's Work experience."
                 "Here are the relevant documents for the context:\n"
                 "{context_str}"
-                "\nInstruction: Use the previous chat history, or the context above, to interact and help the user."
+                "\nInstruction: Use the previous chat history, or the context above, to interact and help the user. " +
+                "{}".format(instructions if instructions else "")
             ),
             verbose=False,
             similarity_top_k=4,
         )
 
-    cprompt = st.chat_input(
-        "Example: Where did Paul Graham Work? || Do not answer any questions outside of the provided context documents.")
-    if cprompt:  # Prompt for user input and save to chat history
-        logging.info("Prompt: %s", cprompt)
-        split_text = cprompt.split("||")
-        logging.info("text: %s", split_text)
-        usr_prompt, instructions = split_text[0], split_text[1] if len(split_text) > 1 else None
-        logging.info("Prompt: %s, Ins: %s", usr_prompt, instructions)
-        st.session_state.messages.append({"role": "user", "content": usr_prompt, "instructions": instructions})
-    else:
-        usr_prompt = None
-        instructions = None
+    if cprompt := st.chat_input("Example: Where did Paul Graham Work?"):
+        st.session_state.messages.append({"role": "user", "content": cprompt})
 
     for message in st.session_state.messages:  # Write message history to UI
         with st.chat_message(message["role"]):
@@ -138,18 +135,20 @@ def execute():
     # If last message is not from assistant, generate a new response
     if st.session_state.messages[-1]["role"] != "assistant":
         with st.chat_message("assistant"):
-            logging.info("Adding a message")
-            if usr_prompt:
-                response, am_res = chat(get_source_docs, usr_prompt)
-
-                st.write(response.response)
-                if am_res and len(am_res) > 0:
-                    st.json(am_res)
-                    st.json({"context": am_res.context}, expanded=False)
-                    message['aimon_response'] = am_res
-                    message['context'] = {"text": am_res.context}
+            if cprompt:
+                response, context, am_res = am_chat(cprompt, instructions)
+                message = {"role": "assistant", "content": response}
+                am_res_json = am_res.to_json()
+                st.write(response)
+                if am_res_json and len(am_res_json) > 0:
+                    st.json(am_res_json)
+                    st.json({"context": context}, expanded=False)
+                    message.update({'aimon_response': am_res_json, 'context': {"text": context}})
                 # Add response to message history
                 st.session_state.messages.append(message)
 
 
-execute()
+try:
+    execute()
+except AuthenticationError as e:
+    st.error("Authentication error. Please check your AIMon API key.")

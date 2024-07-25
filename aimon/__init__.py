@@ -62,7 +62,7 @@ __all__ = [
     "DEFAULT_MAX_RETRIES",
     "DEFAULT_CONNECTION_LIMITS",
     "DefaultHttpxClient",
-    "DefaultAsyncHttpxClient",
+    "DefaultAsyncHttpxClient"
 ]
 
 _setup_logging()
@@ -80,5 +80,5 @@ for __name in __all__:
             # Some of our exported symbols are builtins which we can't set attributes for.
             pass
 
-from .decorators.analyze import analyze
-from .decorators.detect import detect
+from .decorators.detect import DetectWithContextQuery, DetectWithContextQueryInstructions, DetectWithQueryFuncReturningContext, DetectWithQueryInstructionsFuncReturningContext
+from .decorators.analyze import Analyze, Application, Model

@@ -104,12 +104,12 @@ class Analyze(object):
             "context_docs": context or [],
             "output": result
         }
-        aimon_response = self.client.analyze.create(body=[payload])[0]
+        aimon_response = self.client.analyze.create(body=[payload])
         return aimon_response, result
 
     def __call__(self, func):
         @wraps(func)
-        def wrapper(context, sys_prompt, user_query, *args, **kwargs):
+        def wrapper(context=None, sys_prompt=None, user_query=None, *args, **kwargs):
 
             if self.evaluation_name is not None:
                 return self._run_eval(func, args, kwargs)

@@ -23,4 +23,8 @@ lib64
 # Installer logs
 pip-log.txt
 
-.streamlit/*
+.streamlit
+.streamlit/
+.metaflow
+.metaflow/
+.ipynb_checkpoints

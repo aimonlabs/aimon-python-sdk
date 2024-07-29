@@ -5,17 +5,17 @@ from llama_index.core import VectorStoreIndex, Settings
 from llama_index.core.memory import ChatMemoryBuffer
 from llama_index.core import StorageContext, load_index_from_storage
 from llama_index.readers.web import SimpleWebPageReader
-from aimon import DetectWithQueryInstructionsFuncReturningContext
+from aimon import Detect
 from aimon import AuthenticationError
 import logging
 import os
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
-st.set_page_config(page_title="AIMon Chatbot Demo", page_icon="🦙", layout="centered", initial_sidebar_state="auto",
+st.set_page_config(page_title="AIMon Chatbot Demo", layout="centered", initial_sidebar_state="auto",
                    menu_items=None)
 
 aimon_config = {'hallucination': {'detector_name': 'default'}, 'instruction_adherence': {'detector_name': 'default'}}
-detect = DetectWithQueryInstructionsFuncReturningContext(st.secrets.aimon_api_key, aimon_config)
+detect = Detect(values_returned=['context', 'user_query', 'instructions', 'generated_text'], api_key=st.secrets.aimon_api_key, config=aimon_config)
 
 
 @st.cache_resource(show_spinner=False)
@@ -85,7 +85,7 @@ def split_into_paragraphs(text):
 def am_chat(usr_prompt, instructions):
     response = st.session_state.chat_engine.chat(usr_prompt)
     context = get_source_docs(response)
-    return response.response, context
+    return context, usr_prompt, instructions, response.response
 
 
 def execute():

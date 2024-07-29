@@ -21,8 +21,8 @@ pip install -r requirements.txt
 You will need to specify AIMon and OpenAI API keys as part of their respective environment variables. 
 
 ```bash
-export OPENAI_KEY=YOUR_OPENAI_API
-export AIMON_API_KEY=YOUR_AIMON_API
+export OPENAI_KEY=YOUR_OPENAI_API_KEY
+export AIMON_API_KEY=YOUR_AIMON_API_KEY
 ```
 
 ### Running the flow

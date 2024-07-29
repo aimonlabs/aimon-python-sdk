@@ -6,6 +6,8 @@ The summarizer is built using Langchain.
 
 ## Setup
 
+Make sure you have the AIMon API key which can be obtained by signing up on the AIMon website.
+
 ### Installation
 
 Install the required packages from the `requirements.txt` file specified in this directory.

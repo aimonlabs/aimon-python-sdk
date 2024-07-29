@@ -6,6 +6,8 @@ The summarizer is built using Langchain.
 
 ## Setup
 
+Make sure you have the AIMon API key which can be obtained by signing up on the AIMon website.
+
 ### Installation
 
 Install the required packages from the `requirements.txt` file specified in this directory.
@@ -19,8 +21,8 @@ pip install -r requirements.txt
 You will need to specify AIMon and OpenAI API keys as part of their respective environment variables. 
 
 ```bash
-export OPENAI_KEY=YOUR_OPENAI_API
-export AIMON_API_KEY=YOUR_AIMON_API
+export OPENAI_KEY=YOUR_OPENAI_API_KEY
+export AIMON_API_KEY=YOUR_AIMON_API_KEY
 ```
 
 ### Running the flow

@@ -38,6 +38,7 @@ class Detect:
                 aimon_payload['user_query'] = result_dict['user_query']
             if 'instructions' in result_dict:
                 aimon_payload['instructions'] = result_dict['instructions']
+            aimon_payload['config'] = self.config
 
             data_to_send = [aimon_payload]
 

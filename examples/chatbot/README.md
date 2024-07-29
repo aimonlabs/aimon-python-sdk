@@ -7,6 +7,8 @@ related to the webpage, in which case it is likely to answer out of its own lear
 
 ## Setup
 
+Make sure you have the AIMon API key which can be obtained by signing up on the AIMon website.
+
 ### Installation
 
 Install the required packages from the `requirements.txt` file specified in this directory.

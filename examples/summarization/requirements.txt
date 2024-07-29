@@ -1,9 +1,6 @@
 openai
 langchain
 langchain-community
-tiktoken
-requests
-pytest
 streamlit
-pandas
-boto3
+tiktoken
+aimon>=0.5.0

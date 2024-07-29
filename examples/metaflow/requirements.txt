@@ -1,6 +1,6 @@
 langchain
 langchain-community
 metaflow
-aimon
+aimon>=0.5.0
 openai
 

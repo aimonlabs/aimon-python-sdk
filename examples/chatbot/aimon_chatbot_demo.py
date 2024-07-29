@@ -136,7 +136,7 @@ def execute():
     if st.session_state.messages[-1]["role"] != "assistant":
         with st.chat_message("assistant"):
             if cprompt:
-                response, context, am_res = am_chat(cprompt, instructions)
+                context, usr_prompt, instructions, response, am_res = am_chat(cprompt, instructions)
                 message = {"role": "assistant", "content": response}
                 am_res_json = am_res.to_json()
                 st.write(response)

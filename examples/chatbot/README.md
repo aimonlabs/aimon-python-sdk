@@ -1,7 +1,9 @@
 # AIMon Chatbot Demo
 
 This is a simple chatbot demo that uses AIMon to check responses to user queries. 
-The chatbot is built using LLamaIndex. 
+The chatbot is built using LLamaIndex. This chatbot application intentionally crawls a [single webpage](http://paulgraham.com/worked.html).
+This way we can demonstrate how AIMon's hallucination detector works when the chatbot is asked questions that are not 
+related to the webpage, in which case it is likely to answer out of its own learned knowledge.
 
 ## Setup
 

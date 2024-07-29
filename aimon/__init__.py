@@ -80,5 +80,5 @@ for __name in __all__:
             # Some of our exported symbols are builtins which we can't set attributes for.
             pass
 
-from .decorators.detect import DetectWithContextQuery, DetectWithContextQueryInstructions, DetectWithQueryFuncReturningContext, DetectWithQueryInstructionsFuncReturningContext
+from .decorators.detect import Detect
 from .decorators.analyze import Analyze, Application, Model

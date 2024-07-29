@@ -3,105 +3,45 @@ from functools import wraps
 from .common import AimonClientSingleton
 
 
-class DetectWithQueryFuncReturningContext(object):
+class Detect:
     DEFAULT_CONFIG = {'hallucination': {'detector_name': 'default'}}
 
-    def __init__(self, api_key=None, config=None):
+    def __init__(self, values_returned, api_key=None, config=None):
+        """
+        :param values_returned: A list of values in the order returned by the decorated function
+                                Acceptable values are 'generated_text', 'context', 'user_query', 'instructions'
+        """
         self.client = AimonClientSingleton.get_instance(api_key)
         self.config = config if config else self.DEFAULT_CONFIG
+        self.values_returned = values_returned
+        if self.values_returned is None or len(self.values_returned) == 0:
+            raise ValueError("Values returned by the decorated function must be specified")
 
     def __call__(self, func):
         @wraps(func)
-        def wrapper(user_query, *args, **kwargs):
-            result, context = func(user_query, *args, **kwargs)
+        def wrapper(*args, **kwargs):
+            result = func(*args, **kwargs)
 
-            if result is None or context is None:
-                raise ValueError("Result and context must be returned by the decorated function")
+            # Handle the case where the result is a single value
+            if not isinstance(result, tuple):
+                result = (result,)
 
-            data_to_send = [{
-                "user_query": user_query,
-                "context": context,
-                "generated_text": result,
-                "config": self.config
-            }]
+            # Create a dictionary mapping output names to results
+            result_dict = {name: value for name, value in zip(self.values_returned, result)}
 
-            aimon_response = self.client.inference.detect(body=data_to_send)[0]
-            return result, context, aimon_response
+            aimon_payload = {}
+            if 'generated_text' in result_dict:
+                aimon_payload['generated_text'] = result_dict['generated_text']
+            if 'context' in result_dict:
+                aimon_payload['context'] = result_dict['context']
+            if 'user_query' in result_dict:
+                aimon_payload['user_query'] = result_dict['user_query']
+            if 'instructions' in result_dict:
+                aimon_payload['instructions'] = result_dict['instructions']
 
-        return wrapper
-
-
-class DetectWithQueryInstructionsFuncReturningContext(DetectWithQueryFuncReturningContext):
-    def __call__(self, func):
-        @wraps(func)
-        def wrapper(user_query, instructions, *args, **kwargs):
-            result, context = func(user_query, instructions, *args, **kwargs)
-
-            if result is None or context is None:
-                raise ValueError("Result and context must be returned by the decorated function")
-
-            data_to_send = [{
-                "user_query": user_query,
-                "context": context,
-                "generated_text": result,
-                "instructions": instructions,
-                "config": self.config
-            }]
+            data_to_send = [aimon_payload]
 
             aimon_response = self.client.inference.detect(body=data_to_send)[0]
-            return result, context, aimon_response
+            return result + (aimon_response,)
 
         return wrapper
-
-
-# Another class but does not include instructions in the wrapper call
-class DetectWithContextQuery(object):
-    DEFAULT_CONFIG = {'hallucination': {'detector_name': 'default'}}
-
-    def __init__(self, api_key=None, config=None):
-        self.client = AimonClientSingleton.get_instance(api_key)
-        self.config = config if config else self.DEFAULT_CONFIG
-
-    def __call__(self, func):
-        @wraps(func)
-        def wrapper(context, user_query, *args, **kwargs):
-            result = func(context, user_query, *args, **kwargs)
-
-            if result is None:
-                raise ValueError("Result must be returned by the decorated function")
-
-            data_to_send = [{
-                "context": context,
-                "user_query": user_query,
-                "generated_text": result,
-                "config": self.config
-            }]
-
-            aimon_response = self.client.inference.detect(body=data_to_send)[0]
-            return result, aimon_response
-
-        return wrapper
-
-
-class DetectWithContextQueryInstructions(DetectWithContextQuery):
-    def __call__(self, func):
-        @wraps(func)
-        def wrapper(context, user_query, instructions, *args, **kwargs):
-            result = func(context, user_query, instructions, *args, **kwargs)
-
-            if result is None:
-                raise ValueError("Result must be returned by the decorated function")
-
-            data_to_send = [{
-                "context": context,
-                "user_query": user_query,
-                "generated_text": result,
-                "instructions": instructions,
-                "config": self.config
-            }]
-
-            aimon_response = self.client.inference.detect(body=data_to_send)[0]
-            return result, aimon_response
-
-        return wrapper
-

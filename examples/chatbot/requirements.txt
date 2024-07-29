@@ -1,4 +1,6 @@
 llama-index
 llama-index-readers-web
 streamlit
+openai
+aimon
 

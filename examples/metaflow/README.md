@@ -1,7 +1,7 @@
 # AIMon Metaflow Demo
 
-This is a simple Metaflow flow that generates a summary of an input document.
-It uses AIMon to check the quality of the generated summary.
+This repo contains two simple Metaflow flows that generates a summary of an input document.
+It uses AIMon's `analyze` and `detect` decorators to check the quality of the generated summary.
 The summarizer is built using Langchain. 
 
 ## Setup

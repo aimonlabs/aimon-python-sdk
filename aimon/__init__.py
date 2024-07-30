@@ -81,4 +81,4 @@ for __name in __all__:
             pass
 
 from .decorators.detect import Detect
-from .decorators.analyze import Analyze, Application, Model
+from .decorators.analyze import AnalyzeEval, AnalyzeProd, Application, Model

@@ -16,6 +16,10 @@ class Detect:
         self.values_returned = values_returned
         if self.values_returned is None or len(self.values_returned) == 0:
             raise ValueError("Values returned by the decorated function must be specified")
+        if "generated_text" not in self.values_returned:
+            raise ValueError("values_returned must contain 'generated_text'")
+        if "context" not in self.values_returned:
+            raise ValueError("values_returned must contain 'context'")
 
     def __call__(self, func):
         @wraps(func)
@@ -32,8 +36,12 @@ class Detect:
             aimon_payload = {}
             if 'generated_text' in result_dict:
                 aimon_payload['generated_text'] = result_dict['generated_text']
+            else:
+                raise ValueError("Result of the wrapped function must contain 'generated_text'")
             if 'context' in result_dict:
                 aimon_payload['context'] = result_dict['context']
+            else:
+                raise ValueError("Result of the wrapped function must contain 'context'")
             if 'user_query' in result_dict:
                 aimon_payload['user_query'] = result_dict['user_query']
             if 'instructions' in result_dict:

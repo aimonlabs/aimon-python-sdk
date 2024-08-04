@@ -111,14 +111,14 @@ class AnalyzeEval(AnalyzeBase):
         results = []
         for record in dataset_collection_records:
             result = func(record["context_docs"], record["user_query"], record["prompt"], *args, **kwargs)
-
+            _context = record['context_docs'] if isinstance(record['context_docs'], list) else [record['context_docs']]
             # TODO: Add instructions and config to the payload once supported
             payload = {
                 "application_id": self._am_app.id,
                 "version": self._am_app.version,
                 "prompt": record['prompt'] or "",
                 "user_query": record['user_query'] or "",
-                "context_docs": [d for d in record['context_docs']],
+                "context_docs": [d for d in _context],
                 "output": result,
                 "evaluation_id": self._eval.id,
                 "evaluation_run_id": eval_run.id,

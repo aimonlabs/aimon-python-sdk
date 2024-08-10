@@ -7,25 +7,59 @@ from typing_extensions import Literal, Required, Annotated, TypedDict
 
 from .._utils import PropertyInfo
 
-__all__ = ["InferenceDetectParams", "Body", "BodyConfig"]
+__all__ = [
+    "InferenceDetectParams",
+    "Body",
+    "BodyConfig",
+    "BodyConfigCompleteness",
+    "BodyConfigConciseness",
+    "BodyConfigHallucination",
+    "BodyConfigHallucinationV0_2",
+    "BodyConfigInstructionAdherence",
+    "BodyConfigToxicity",
+]
 
 
 class InferenceDetectParams(TypedDict, total=False):
     body: Required[Iterable[Body]]
 
 
+class BodyConfigCompleteness(TypedDict, total=False):
+    detector_name: Literal["default"]
+
+
+class BodyConfigConciseness(TypedDict, total=False):
+    detector_name: Literal["default"]
+
+
+class BodyConfigHallucination(TypedDict, total=False):
+    detector_name: Literal["default", "hall_v2"]
+
+
+class BodyConfigHallucinationV0_2(TypedDict, total=False):
+    detector_name: Literal["default"]
+
+
+class BodyConfigInstructionAdherence(TypedDict, total=False):
+    detector_name: Literal["default"]
+
+
+class BodyConfigToxicity(TypedDict, total=False):
+    detector_name: Literal["default"]
+
+
 class BodyConfig(TypedDict, total=False):
-    completeness: Literal["default"]
+    completeness: BodyConfigCompleteness
 
-    conciseness: Literal["default"]
+    conciseness: BodyConfigConciseness
 
-    hallucination: Literal["default", "hall_v2"]
+    hallucination: BodyConfigHallucination
 
-    hallucination_v0_2: Annotated[Literal["default"], PropertyInfo(alias="hallucination_v0.2")]
+    hallucination_v0_2: Annotated[BodyConfigHallucinationV0_2, PropertyInfo(alias="hallucination_v0.2")]
 
-    instruction_adherence: Literal["default"]
+    instruction_adherence: BodyConfigInstructionAdherence
 
-    toxicity: Literal["default"]
+    toxicity: BodyConfigToxicity
 
 
 class Body(TypedDict, total=False):

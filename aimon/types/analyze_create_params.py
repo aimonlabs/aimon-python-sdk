@@ -28,3 +28,5 @@ class Body(TypedDict, total=False):
     evaluation_id: Optional[str]
 
     evaluation_run_id: Optional[str]
+
+    instructions: str

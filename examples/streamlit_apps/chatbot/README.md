@@ -19,20 +19,21 @@ pip install -r requirements.txt
 
 ### API Keys
 
-You will need to specify AIMon and OpenAI API keys in a `secrets.toml` file inside the 
-`.streamlit` directory. 
+You will need to specify AIMon and OpenAI API keys as part of their respective environment variables. 
 
-```toml
-openai_key=YOUR_OPENAI_API
-aimon_api_key=YOUR_AIMON_API
-```
+```bash
+export OPENAI_API_KEY=YOUR_OPENAI_API_KEY
+export AIMON_API_KEY=YOUR_AIMON_API
+``` 
 
 ### Running the Chatbot
 
 The chatbot is a streamlit app. You can run it using this command:
 
 ```bash
-streamlit run chatbot.py
+python -m streamlit run aimon_chatbot_demo.py
 ```
+
+Note that on
 
 

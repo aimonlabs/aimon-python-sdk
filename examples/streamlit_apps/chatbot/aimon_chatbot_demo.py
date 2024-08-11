@@ -14,8 +14,14 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 st.set_page_config(page_title="AIMon Chatbot Demo", layout="centered", initial_sidebar_state="auto",
                    menu_items=None)
 
-aimon_config = {'hallucination': {'detector_name': 'default'}, 'instruction_adherence': {'detector_name': 'default'}}
-detect = Detect(values_returned=['context', 'user_query', 'instructions', 'generated_text'], api_key=st.secrets.aimon_api_key, config=aimon_config)
+aimon_config = {
+    'hallucination': {'detector_name': 'default'},
+    'instruction_adherence': {'detector_name': 'default'},
+    'conciseness': {'detector_name': 'default'},
+    'completeness': {'detector_name': 'default'},
+    'toxicity': {'detector_name': 'default'},
+}
+detect = Detect(values_returned=['context', 'user_query', 'instructions', 'generated_text'], api_key=os.getenv("AIMON_API_KEY"), config=aimon_config)
 
 
 @st.cache_resource(show_spinner=False)
@@ -41,6 +47,7 @@ def load_data():
         # Load index
         rindex = load_index_from_storage(storage_context)
         return rindex
+
     logging.info("Creating index from documents...")
     docs = SimpleWebPageReader(html_to_text=True).load_data(["http://paulgraham.com/worked.html"])
 
@@ -89,11 +96,13 @@ def am_chat(usr_prompt, instructions):
 
 
 def execute():
-    openai_api_key = st.secrets.openai_key
+    openai_api_key = os.getenv("OPENAI_API_KEY")
 
     openai.api_key = openai_api_key
     instructions = st.text_input(
-        "Instructions for the chatbot. Ex: Answer the user's question in a professional tone.")
+        "Instructions for the chatbot. Ex: Answer the user's question in a professional tone.",
+        value="Answer the user's question in a professional tone."
+    )
     st.title("Ask questions on Paul Graham's Work Experience")
 
     if "messages" not in st.session_state.keys():  # Initialize the chat messages history

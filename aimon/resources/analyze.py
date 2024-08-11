@@ -60,7 +60,7 @@ class AnalyzeResource(SyncAPIResource):
         """
         return self._post(
             "/v1/save-compute-metrics",
-            body=maybe_transform(body, analyze_create_params.AnalyzeCreateParams),
+            body=maybe_transform(body, Iterable[analyze_create_params.Body]),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -102,7 +102,7 @@ class AsyncAnalyzeResource(AsyncAPIResource):
         """
         return await self._post(
             "/v1/save-compute-metrics",
-            body=await async_maybe_transform(body, analyze_create_params.AnalyzeCreateParams),
+            body=await async_maybe_transform(body, Iterable[analyze_create_params.Body]),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),

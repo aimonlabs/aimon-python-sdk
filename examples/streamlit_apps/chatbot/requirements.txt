@@ -1,6 +1,5 @@
 llama-index
 llama-index-readers-web
 streamlit
-openai
 aimon>=0.5.0
 

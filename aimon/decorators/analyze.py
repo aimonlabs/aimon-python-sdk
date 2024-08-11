@@ -21,7 +21,7 @@ class AnalyzeBase:
 
     DEFAULT_CONFIG = {'hallucination': {'detector_name': 'default'}}
 
-    def __init__(self, application, model, api_key=None):
+    def __init__(self, application, model, api_key=None, config=None):
         """
         :param application: An Application object
         :param model: A Model object
@@ -30,6 +30,7 @@ class AnalyzeBase:
         self.client = AimonClientSingleton.get_instance(api_key)
         self.application = application
         self.model = model
+        self.config = config if config else self.DEFAULT_CONFIG
         self.initialize()
 
     def initialize(self):
@@ -64,6 +65,7 @@ class AnalyzeEval(AnalyzeBase):
         The first argument must be a context_docs which is of type List[str]
         The second argument must be a user_query which is of type str
         The third argument must be a prompt which is of type str
+        Return: The function must return an output which is of type str
 
         :param application: An Application object
         :param model: A Model object
@@ -75,11 +77,10 @@ class AnalyzeEval(AnalyzeBase):
 
 
         """
-        super().__init__(application, model, api_key)
+        super().__init__(application, model, api_key, config)
         self.evaluation_name = evaluation_name
         self.dataset_collection_name = dataset_collection_name
         self.eval_tags = eval_tags
-        self.config = config if config else self.DEFAULT_CONFIG
         self.eval_initialize()
 
     def eval_initialize(self):
@@ -110,9 +111,12 @@ class AnalyzeEval(AnalyzeBase):
             dataset_collection_records.extend(dataset_records)
         results = []
         for record in dataset_collection_records:
-            result = func(record["context_docs"], record["user_query"], record["prompt"], *args, **kwargs)
+            if "instructions" in record and "instruction_adherence" in self.config:
+                # Only pass instructions if instruction_adherence is specified in the config
+                result = func(record["context_docs"], record["user_query"], record["prompt"], record["instructions"], *args, **kwargs)
+            else:
+                result = func(record["context_docs"], record["user_query"], record["prompt"], *args, **kwargs)
             _context = record['context_docs'] if isinstance(record['context_docs'], list) else [record['context_docs']]
-            # TODO: Add instructions and config to the payload once supported
             payload = {
                 "application_id": self._am_app.id,
                 "version": self._am_app.version,
@@ -123,6 +127,10 @@ class AnalyzeEval(AnalyzeBase):
                 "evaluation_id": self._eval.id,
                 "evaluation_run_id": eval_run.id,
             }
+            if "instructions" in record and "instruction_adherence" in self.config:
+                # Only pass instructions if instruction_adherence is specified in the config
+                payload["instructions"] = record["instructions"] or ""
+            payload["config"] = self.config
             results.append((result, self.client.analyze.create(body=[payload])))
         return results
 
@@ -135,7 +143,7 @@ class AnalyzeEval(AnalyzeBase):
 
 class AnalyzeProd(AnalyzeBase):
 
-    def __init__(self, application, model, values_returned, api_key=None, instructions=None, config=None):
+    def __init__(self, application, model, values_returned, api_key=None, config=None):
         """
         The wrapped function should return a tuple of values in the order specified by values_returned. In addition,
         the wrapped function should accept a parameter named eval_obj which will be used when using this decorator
@@ -147,9 +155,8 @@ class AnalyzeProd(AnalyzeBase):
                                 Acceptable values are 'generated_text', 'context', 'user_query', 'instructions'
         """
 
-        super().__init__(application, model, api_key)
+        super().__init__(application, model, api_key, config)
         self.application.stage = "production"
-        self.instructions = instructions
         self.values_returned = values_returned
         if self.values_returned is None or len(self.values_returned) == 0:
             raise ValueError("Values returned by the decorated function must be specified")
@@ -157,6 +164,10 @@ class AnalyzeProd(AnalyzeBase):
             raise ValueError("values_returned must contain 'generated_text'")
         if "context" not in self.values_returned:
             raise ValueError("values_returned must contain 'context'")
+        if "instruction_adherence" in self.config and "instructions" not in self.values_returned:
+            raise ValueError("When instruction_adherence is specified in the config, 'instructions' must be returned by the decorated function")
+        if "instructions" in self.values_returned and "instruction_adherence" not in self.config:
+            raise ValueError("instruction_adherence must be specified in the config for returning 'instructions' by the decorated function")
         self.config = config if config else self.DEFAULT_CONFIG
 
     def _run_production_analysis(self, func, args, kwargs):
@@ -183,10 +194,9 @@ class AnalyzeProd(AnalyzeBase):
             "user_query": result_dict["user_query"] if 'user_query' in result_dict else "No User Query Specified",
             "prompt": result_dict['prompt'] if 'prompt' in result_dict else "No Prompt Specified"
         }
-        # TODO: Add instructions and config to the payload once supported
-        # if 'instructions' in result_dict:
-        #     aimon_payload['instructions'] = result_dict['instructions']
-        # aimon_payload['config'] = self.config
+        if 'instructions' in result_dict:
+            aimon_payload['instructions'] = result_dict['instructions']
+        aimon_payload['config'] = self.config
         aimon_response = self.client.analyze.create(body=[aimon_payload])
         return result + (aimon_response,)
 

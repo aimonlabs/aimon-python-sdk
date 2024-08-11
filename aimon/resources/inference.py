@@ -60,7 +60,7 @@ class InferenceResource(SyncAPIResource):
         """
         return self._post(
             "/v1/detect",
-            body=maybe_transform(body, inference_detect_params.InferenceDetectParams),
+            body=maybe_transform(body, Iterable[inference_detect_params.Body]),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -102,7 +102,7 @@ class AsyncInferenceResource(AsyncAPIResource):
         """
         return await self._post(
             "/v1/detect",
-            body=await async_maybe_transform(body, inference_detect_params.InferenceDetectParams),
+            body=await async_maybe_transform(body, Iterable[inference_detect_params.Body]),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),

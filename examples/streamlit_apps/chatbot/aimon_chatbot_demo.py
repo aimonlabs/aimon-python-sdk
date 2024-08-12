@@ -5,7 +5,7 @@ from llama_index.core import VectorStoreIndex, Settings
 from llama_index.core.memory import ChatMemoryBuffer
 from llama_index.core import StorageContext, load_index_from_storage
 from llama_index.readers.web import SimpleWebPageReader
-from aimon import Detect
+from aimon import Detect, AnalyzeProd, Application, Model
 from aimon import AuthenticationError
 import logging
 import os
@@ -21,8 +21,9 @@ aimon_config = {
     'completeness': {'detector_name': 'default'},
     'toxicity': {'detector_name': 'default'},
 }
-detect = Detect(values_returned=['context', 'user_query', 'instructions', 'generated_text'], api_key=os.getenv("AIMON_API_KEY"), config=aimon_config)
-
+values_returned = ['context', 'user_query', 'instructions', 'generated_text']
+detect = Detect(values_returned=values_returned, api_key=os.getenv("AIMON_API_KEY"), config=aimon_config)
+analyze_prod = AnalyzeProd(Application("paul_graham_chatbot_aug_2024"), Model("gpt_4o_model", "GPT-4o"), values_returned=values_returned, config=aimon_config)
 
 @st.cache_resource(show_spinner=False)
 def load_data():
@@ -88,10 +89,11 @@ def split_into_paragraphs(text):
     return paragraphs
 
 
+@analyze_prod
 @detect
 def am_chat(usr_prompt, instructions):
     response = st.session_state.chat_engine.chat(usr_prompt)
-    context = get_source_docs(response)
+    context, relevance_scores = get_source_docs(response)
     return context, usr_prompt, instructions, response.response
 
 
@@ -145,7 +147,7 @@ def execute():
     if st.session_state.messages[-1]["role"] != "assistant":
         with st.chat_message("assistant"):
             if cprompt:
-                context, usr_prompt, instructions, response, am_res = am_chat(cprompt, instructions)
+                context, usr_prompt, instructions, response, am_res, am_analyze_res = am_chat(cprompt, instructions)
                 message = {"role": "assistant", "content": response}
                 am_res_json = am_res.to_json()
                 st.write(response)

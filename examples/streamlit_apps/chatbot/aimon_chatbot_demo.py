@@ -101,10 +101,6 @@ def execute():
     openai_api_key = os.getenv("OPENAI_API_KEY")
 
     openai.api_key = openai_api_key
-    instructions = st.text_input(
-        "Instructions for the chatbot. Ex: Answer the user's question in a professional tone.",
-        value="Answer the user's question in a professional tone."
-    )
     st.title("Ask questions on Paul Graham's Work Experience")
 
     if "messages" not in st.session_state.keys():  # Initialize the chat messages history
@@ -127,7 +123,7 @@ def execute():
                 "Here are the relevant documents for the context:\n"
                 "{context_str}"
                 "\nInstruction: Use the previous chat history, or the context above, to interact and help the user. " +
-                "{}".format(instructions if instructions else "")
+                "{}".format(st.session_state.instructions if "instructions" in st.session_state else "Answer the user's question in a professional tone.")
             ),
             verbose=False,
             similarity_top_k=4,
@@ -136,18 +132,23 @@ def execute():
     if cprompt := st.chat_input("Example: Where did Paul Graham Work?"):
         st.session_state.messages.append({"role": "user", "content": cprompt})
 
+
     for message in st.session_state.messages:  # Write message history to UI
         with st.chat_message(message["role"]):
             st.write(message["content"])
             if "aimon_response" in message:
                 combined_json = {"AIMon Response": message["aimon_response"], "context": message["context"]}
                 st.json(combined_json, expanded=False)
+                
+    instructions = st.text_input("Instructions for the chatbot",
+                                 value=st.session_state.instructions if "instructions" in st.session_state else "Answer the user's question in a professional tone.")
+    st.session_state.instructions = instructions if instructions else "Answer the user's question in a professional tone."
 
     # If last message is not from assistant, generate a new response
     if st.session_state.messages[-1]["role"] != "assistant":
         with st.chat_message("assistant"):
             if cprompt:
-                context, usr_prompt, instructions, response, am_res, am_analyze_res = am_chat(cprompt, instructions)
+                context, usr_prompt, instructions, response, am_res, am_analyze_res = am_chat(cprompt, st.session_state.instructions if "instructions" in st.session_state else "Answer the user's question in a professional tone.")
                 message = {"role": "assistant", "content": response}
                 am_res_json = am_res.to_json()
                 st.write(response)
@@ -157,6 +158,11 @@ def execute():
                     message.update({'aimon_response': am_res_json, 'context': {"text": context}})
                 # Add response to message history
                 st.session_state.messages.append(message)
+        instructions = st.text_input(
+            "Instructions for the chatbot. Ex: Answer the user's question in a professional tone.",
+            value="Answer the user's question in a professional tone." if "instructions" not in st.session_state else st.session_state.instructions
+        )
+        st.session_state.instructions = instructions
 
 
 try:

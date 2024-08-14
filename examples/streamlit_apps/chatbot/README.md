@@ -23,7 +23,7 @@ You will need to specify AIMon and OpenAI API keys as part of their respective e
 
 ```bash
 export OPENAI_API_KEY=YOUR_OPENAI_API_KEY
-export AIMON_API_KEY=YOUR_AIMON_API
+export AIMON_API_KEY=YOUR_AIMON_API_KEY
 ``` 
 
 ### Running the Chatbot
@@ -34,6 +34,6 @@ The chatbot is a streamlit app. You can run it using this command:
 python -m streamlit run aimon_chatbot_demo.py
 ```
 
-Note that on
+Note that on startup, the chatbot will take several seconds to crawl the web page, generate embeddings etc.
 
 

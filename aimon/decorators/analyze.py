@@ -154,9 +154,8 @@ class AnalyzeProd(AnalyzeBase):
         :param values_returned: A list of values in the order returned by the decorated function
                                 Acceptable values are 'generated_text', 'context', 'user_query', 'instructions'
         """
-
+        application.stage = "production"
         super().__init__(application, model, api_key, config)
-        self.application.stage = "production"
         self.values_returned = values_returned
         if self.values_returned is None or len(self.values_returned) == 0:
             raise ValueError("Values returned by the decorated function must be specified")

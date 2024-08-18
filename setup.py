@@ -8,7 +8,7 @@ setup(
     name='aimon',
     python_requires='>3.8.0',
     packages=find_packages(),
-    version="0.7.0",
+    version="0.7.1",
     install_requires=[
         "httpx",
         "distro",

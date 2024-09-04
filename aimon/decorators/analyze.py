@@ -191,10 +191,13 @@ class AnalyzeProd(AnalyzeBase):
             "output": result_dict['generated_text'],
             "context_docs": _context,
             "user_query": result_dict["user_query"] if 'user_query' in result_dict else "No User Query Specified",
-            "prompt": result_dict['prompt'] if 'prompt' in result_dict else "No Prompt Specified"
+            "prompt": result_dict['prompt'] if 'prompt' in result_dict else "No Prompt Specified",
         }
         if 'instructions' in result_dict:
             aimon_payload['instructions'] = result_dict['instructions']
+        if 'actual_request_timestamp' in result_dict:
+            aimon_payload["actual_request_timestamp"] = result_dict['actual_request_timestamp']
+            
         aimon_payload['config'] = self.config
         aimon_response = self.client.analyze.create(body=[aimon_payload])
         return result + (aimon_response,)

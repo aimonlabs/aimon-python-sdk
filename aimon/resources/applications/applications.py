@@ -7,7 +7,7 @@ from datetime import datetime
 
 import httpx
 
-from ...types import application_create_params, application_retrieve_params
+from ...types import application_create_params, application_delete_params, application_retrieve_params
 from ..._types import NOT_GIVEN, Body, Query, Headers, NotGiven
 from ..._utils import (
     maybe_transform,
@@ -41,6 +41,7 @@ from ..._base_client import make_request_options
 from .production.production import ProductionResource, AsyncProductionResource
 from .evaluations.evaluations import EvaluationsResource, AsyncEvaluationsResource
 from ...types.application_create_response import ApplicationCreateResponse
+from ...types.application_delete_response import ApplicationDeleteResponse
 from ...types.application_retrieve_response import ApplicationRetrieveResponse
 
 __all__ = ["ApplicationsResource", "AsyncApplicationsResource"]
@@ -166,6 +167,56 @@ class ApplicationsResource(SyncAPIResource):
             cast_to=ApplicationRetrieveResponse,
         )
 
+    def delete(
+        self,
+        *,
+        name: str,
+        stage: str,
+        version: str,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+    ) -> ApplicationDeleteResponse:
+        """
+        Delete an application by name, stage, and version
+
+        Args:
+          name: The name of the application to delete
+
+          stage: The stage of the application (e.g., production, evaluation)
+
+          version: The version of the application to delete
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        return self._delete(
+            "/v1/application",
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                query=maybe_transform(
+                    {
+                        "name": name,
+                        "stage": stage,
+                        "version": version,
+                    },
+                    application_delete_params.ApplicationDeleteParams,
+                ),
+            ),
+            cast_to=ApplicationDeleteResponse,
+        )
+
 
 class AsyncApplicationsResource(AsyncAPIResource):
     @cached_property
@@ -287,6 +338,56 @@ class AsyncApplicationsResource(AsyncAPIResource):
             cast_to=ApplicationRetrieveResponse,
         )
 
+    async def delete(
+        self,
+        *,
+        name: str,
+        stage: str,
+        version: str,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+    ) -> ApplicationDeleteResponse:
+        """
+        Delete an application by name, stage, and version
+
+        Args:
+          name: The name of the application to delete
+
+          stage: The stage of the application (e.g., production, evaluation)
+
+          version: The version of the application to delete
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        return await self._delete(
+            "/v1/application",
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                query=await async_maybe_transform(
+                    {
+                        "name": name,
+                        "stage": stage,
+                        "version": version,
+                    },
+                    application_delete_params.ApplicationDeleteParams,
+                ),
+            ),
+            cast_to=ApplicationDeleteResponse,
+        )
+
 
 class ApplicationsResourceWithRawResponse:
     def __init__(self, applications: ApplicationsResource) -> None:
@@ -297,6 +398,9 @@ class ApplicationsResourceWithRawResponse:
         )
         self.retrieve = to_raw_response_wrapper(
             applications.retrieve,
+        )
+        self.delete = to_raw_response_wrapper(
+            applications.delete,
         )
 
     @cached_property
@@ -318,6 +422,9 @@ class AsyncApplicationsResourceWithRawResponse:
         self.retrieve = async_to_raw_response_wrapper(
             applications.retrieve,
         )
+        self.delete = async_to_raw_response_wrapper(
+            applications.delete,
+        )
 
     @cached_property
     def evaluations(self) -> AsyncEvaluationsResourceWithRawResponse:
@@ -338,6 +445,9 @@ class ApplicationsResourceWithStreamingResponse:
         self.retrieve = to_streamed_response_wrapper(
             applications.retrieve,
         )
+        self.delete = to_streamed_response_wrapper(
+            applications.delete,
+        )
 
     @cached_property
     def evaluations(self) -> EvaluationsResourceWithStreamingResponse:
@@ -357,6 +467,9 @@ class AsyncApplicationsResourceWithStreamingResponse:
         )
         self.retrieve = async_to_streamed_response_wrapper(
             applications.retrieve,
+        )
+        self.delete = async_to_streamed_response_wrapper(
+            applications.delete,
         )
 
     @cached_property

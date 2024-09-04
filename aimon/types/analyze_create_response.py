@@ -9,3 +9,5 @@ __all__ = ["AnalyzeCreateResponse"]
 
 class AnalyzeCreateResponse(BaseModel):
     message: Optional[str] = None
+
+    status: Optional[str] = None

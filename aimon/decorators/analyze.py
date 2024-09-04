@@ -191,7 +191,7 @@ class AnalyzeProd(AnalyzeBase):
             "output": result_dict['generated_text'],
             "context_docs": _context,
             "user_query": result_dict["user_query"] if 'user_query' in result_dict else "No User Query Specified",
-            "prompt": result_dict['prompt'] if 'prompt' in result_dict else "No Prompt Specified"
+            "prompt": result_dict['prompt'] if 'prompt' in result_dict else "No Prompt Specified",
             "actual_request_timestamp": result_dict['actual_request_timestamp'] if 'actual_request_timestamp' in result_dict else ""
         }
         if 'instructions' in result_dict:

@@ -53,17 +53,17 @@ if st.button("Summarize"):
             # You could perform any action based on the AIMon response (aimon_res) here
             # ....
 
-            # Display the Aimon Rely response
-            st.header('Aimon Rely - Hallucination Detector Response')
+            # Display the AIMon response
+            st.header('AIMon - Hallucination Detector Response')
             st.json(aimon_res.hallucination)
 
-            st.header('Aimon Rely - Conciseness Detector Response')
+            st.header('AIMon - Conciseness Detector Response')
             st.json(aimon_res.conciseness)
 
-            st.header('Aimon Rely - Completeness Detector Response')
+            st.header('AIMon - Completeness Detector Response')
             st.json(aimon_res.completeness)
 
-            st.header('Aimon Rely - Toxicity Detector Response')
+            st.header('AIMon - Toxicity Detector Response')
             st.json(aimon_res.toxicity)
 
         except Exception as e:

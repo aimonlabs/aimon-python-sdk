@@ -1,6 +1,6 @@
 from functools import wraps
 from .common import AimonClientSingleton
-
+import inspect
 
 class Application:
     def __init__(self, name, stage="evaluation", type="text", metadata={}):
@@ -18,7 +18,6 @@ class Model:
 
 
 class AnalyzeBase:
-
     DEFAULT_CONFIG = {'hallucination': {'detector_name': 'default'}}
 
     def __init__(self, application, model, api_key=None, config=None):
@@ -54,23 +53,27 @@ class AnalyzeBase:
 
 class AnalyzeEval(AnalyzeBase):
 
-    def __init__(self, application, model, evaluation_name, dataset_collection_name,
+    def __init__(self, application, model, evaluation_name, dataset_collection_name, headers,
                  api_key=None, eval_tags=None, config=None):
         """
         The wrapped function should have a signature as follows:
-
-            def func(context_docs, user_query, prompt, *args, **kwargs):
+            def func(context_docs, user_query, prompt, instructions *args, **kwargs):
                 # Your code here
                 return output
-        The first argument must be a context_docs which is of type List[str]
-        The second argument must be a user_query which is of type str
-        The third argument must be a prompt which is of type str
+        [Required] The first argument must be a 'context_docs' which is of type List[str].
+        [Required] The second argument must be a 'user_query' which is of type str.
+        [Optional] The third argument must be a 'prompt' which is of type str
+        [Optional] If an 'instructions' column is present in the dataset, then the fourth argument
+        must be 'instructions' which is of type str
+        [Optional] If an 'output' column is present in the dataset, then the fifth argument
+        must be 'output' which is of type str
         Return: The function must return an output which is of type str
 
         :param application: An Application object
         :param model: A Model object
         :param evaluation_name: The name of the evaluation
         :param dataset_collection_name: The name of the dataset collection
+        :param headers: A list containing the headers to be used for the evaluation
         :param api_key: The API key to use for the AIMon client
         :param eval_tags: A list of tags to associate with the evaluation
         :param config: A dictionary containing the AIMon configuration for the evaluation
@@ -78,6 +81,7 @@ class AnalyzeEval(AnalyzeBase):
 
         """
         super().__init__(application, model, api_key, config)
+        self.headers = headers
         self.evaluation_name = evaluation_name
         self.dataset_collection_name = dataset_collection_name
         self.eval_tags = eval_tags
@@ -111,11 +115,27 @@ class AnalyzeEval(AnalyzeBase):
             dataset_collection_records.extend(dataset_records)
         results = []
         for record in dataset_collection_records:
-            if "instructions" in record and "instruction_adherence" in self.config:
-                # Only pass instructions if instruction_adherence is specified in the config
-                result = func(record["context_docs"], record["user_query"], record["prompt"], record["instructions"], *args, **kwargs)
-            else:
-                result = func(record["context_docs"], record["user_query"], record["prompt"], *args, **kwargs)
+            # The record must contain the context_docs and user_query fields.
+            # The prompt, output and instructions fields are optional.
+            # Inspect the record and call the function with the appropriate arguments
+            arguments = []
+            for ag in self.headers:
+                if ag not in record:
+                    raise ValueError("Record must contain the column '{}' as specified in the 'headers'"
+                                     " argument in the decorator".format(ag))
+                arguments.append(record[ag])
+            # Inspect the function signature to ensure that it accepts the correct arguments
+            sig = inspect.signature(func)
+            params = sig.parameters
+            if len(params) < len(arguments):
+                raise ValueError("Function must accept at least {} arguments".format(len(arguments)))
+            # Ensure that the first len(arguments) parameters are named correctly
+            param_names = list(params.keys())
+            if param_names[:len(arguments)] != self.headers:
+                raise ValueError("Function arguments must be named as specified by the 'headers' argument: {}".format(
+                    self.headers))
+
+            result = func(*arguments, *args, **kwargs)
             _context = record['context_docs'] if isinstance(record['context_docs'], list) else [record['context_docs']]
             payload = {
                 "application_id": self._am_app.id,
@@ -127,6 +147,9 @@ class AnalyzeEval(AnalyzeBase):
                 "evaluation_id": self._eval.id,
                 "evaluation_run_id": eval_run.id,
             }
+            if "instruction_adherence" in self.config and "instructions" not in record:
+                raise ValueError("When instruction_adherence is specified in the config, "
+                                 "'instructions' must be present in the dataset")
             if "instructions" in record and "instruction_adherence" in self.config:
                 # Only pass instructions if instruction_adherence is specified in the config
                 payload["instructions"] = record["instructions"] or ""
@@ -138,6 +161,7 @@ class AnalyzeEval(AnalyzeBase):
         @wraps(func)
         def wrapper(*args, **kwargs):
             return self._run_eval(func, args, kwargs)
+
         return wrapper
 
 
@@ -164,9 +188,11 @@ class AnalyzeProd(AnalyzeBase):
         if "context" not in self.values_returned:
             raise ValueError("values_returned must contain 'context'")
         if "instruction_adherence" in self.config and "instructions" not in self.values_returned:
-            raise ValueError("When instruction_adherence is specified in the config, 'instructions' must be returned by the decorated function")
+            raise ValueError(
+                "When instruction_adherence is specified in the config, 'instructions' must be returned by the decorated function")
         if "instructions" in self.values_returned and "instruction_adherence" not in self.config:
-            raise ValueError("instruction_adherence must be specified in the config for returning 'instructions' by the decorated function")
+            raise ValueError(
+                "instruction_adherence must be specified in the config for returning 'instructions' by the decorated function")
         self.config = config if config else self.DEFAULT_CONFIG
 
     def _run_production_analysis(self, func, args, kwargs):
@@ -197,7 +223,7 @@ class AnalyzeProd(AnalyzeBase):
             aimon_payload['instructions'] = result_dict['instructions']
         if 'actual_request_timestamp' in result_dict:
             aimon_payload["actual_request_timestamp"] = result_dict['actual_request_timestamp']
-            
+
         aimon_payload['config'] = self.config
         aimon_response = self.client.analyze.create(body=[aimon_payload])
         return result + (aimon_response,)

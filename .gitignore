@@ -1,6 +1,9 @@
 # Pytest
 *.pytest_cache
 
+*.DS_Store
+.DS_Store
+
 # pycache
 *__pycache__*
 

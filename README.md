@@ -5,7 +5,7 @@ AIMon helps developers build, ship, and monitor LLM Apps more confidently and re
 ✨ **Join our community on [Slack](https://join.slack.com/t/generativeair/shared_invite/zt-2jab62lsj-xM9a_s~Qweu8lf3YS2cANg)**
 
 <div align="center">
-    <img src="images/aimon-rely-image.png" alt="AIMon" width="650" height="350">
+    <img src="images/aimon-rely-image.png" alt="AIMon" width="325" height="175">
 </div>
 
 ## Metrics Supported

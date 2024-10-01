@@ -81,9 +81,18 @@ A few key takeaways:
 Overall, AIMon is 10 times cheaper, 4 times faster, and close to or even **better than GPT-4** on the benchmarks
 making it a suitable choice for both offline and online detection of hallucinations.
 
-<div align="center">
-    <img src="images/hallucination-benchmarks.png" alt="Hallucination Benchmarks">
-</div>
+| Metric                                                         | Aimon Rely v1          | GPT-4 Turbo (LLM-as-a-judge)     |
+|---------------------------------------------------------------|------------------------|----------------------------------|
+| Context Length                                                | 32,000                 | **128,000**                      |
+| TRUE Dataset Precision/Recall                             | 0.808 / 0.922          | **0.810 / 0.926**                |
+| SummaC (test) Balanced Accuracy                           | **0.778**             | 0.756                           |
+| SummaC (test) AUC                                         | **0.809**              | 0.780                            |
+| AnyScale Ranking Test for Hallucinations Accuracy         | 0.665                  | **0.741**                        |
+| AnyScale Ranking Test for Hallucinations Rel. Accuracy    | 0.804                  | **0.855**                        |
+| Avg. Latency                                                  | **417ms**              | 1800ms                           |
+| Cost (15M tokens across all benchmark datasets) excluding free tier | **$15**             | $158                             |
+| Fully Hosted                                                  | :white_check_mark:     | :white_check_mark:               |
+| Explainability                                                | **Automatic sentence-level Scores** | Detailed reasoning with additional prompt engineering |
 
 ### Benchmarks on other Detectors
 

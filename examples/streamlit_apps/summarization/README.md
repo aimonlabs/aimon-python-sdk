@@ -20,8 +20,8 @@ You will need to specify AIMon and OpenAI API keys in a `secrets.toml` file insi
 `.streamlit` directory. 
 
 ```toml
-openai_key=YOUR_OPENAI_API_KEY
-aimon_api_key=YOUR_AIMON_API_KEY
+openai_key="YOUR_OPENAI_API_KEY"
+aimon_api_key="YOUR_AIMON_API_KEY"
 ```
 
 ### Running the Summarization App

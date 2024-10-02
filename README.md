@@ -53,14 +53,6 @@ def my_llm_app(context, query):
     <img src="images/product_apps_page.png" alt="AIMon Product">
 </div>
 
-### 2. API
-
-AIMon detections can be accessed via REST APIs. Here are the steps to access the API:
-
-- Step 1: Get your API key by requesting it on our [Slack](https://join.slack.com/t/generativeair/shared_invite/zt-2jab62lsj-xM9a_s~Qweu8lf3YS2cANg) or sending an email
-  to info@aimon.ai
-- Step 2: Download the [Postman Collection](examples/postman_collections) specified below to access the API
-
 ## Benchmarks
 
 ### Hallucination Detection

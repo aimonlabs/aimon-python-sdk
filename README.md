@@ -22,10 +22,6 @@ The following is a list of quality metrics that are currently available and on o
 
 ## Getting Started
 
-You can use AIMon either through an SDK or through an API. Below you will find instructions on 1. how to use the SDK along with AIMon's UI and 2. how you could use it directly through our REST APIs.
-
-### 1. SDK and UI
-
 AIMon supports asynchronous instrumentation or synchronous detections for the metrics mentioned above. Use these steps
 to get started with using the AIMon SDK and the product.
 

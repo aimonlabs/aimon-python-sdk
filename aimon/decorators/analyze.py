@@ -1,6 +1,8 @@
 from functools import wraps
+
 from .common import AimonClientSingleton
 import inspect
+import warnings
 
 class Application:
     def __init__(self, name, stage="evaluation", type="text", metadata={}):
@@ -16,6 +18,107 @@ class Model:
         self.model_type = model_type
         self.metadata = metadata
 
+def run_eval(
+        application_name,
+        model_name,
+        dataset_collection_name, 
+        evaluation_name, 
+        headers, 
+        api_key=None, 
+        eval_tags=None, 
+        config=None
+):
+    """
+    Run an evaluation on a dataset collection. Usually, this column
+    is populated by an LLM that previously processed the other input fields in
+    this dataset.
+
+    :param application_name: The name of the application to run the evaluation on
+    :param model_name: The name of the model to run the evaluation on
+    :param dataset_collection_name: The name of the dataset collection to run the evaluation on
+    :param evaluation_name: The name of the evaluation to be created
+    :param headers: A dictionary mapping column names in the dataset to their corresponding types
+    :param api_key: Optional. The API key to use for the Aimon client
+    :param eval_tags: Optional. A list of tags to be associated with the evaluation
+    :param config: Optional. A dictionary of configuration options for the evaluation
+    :return: The response from the Aimon API after running the evaluation
+    """
+    client = AimonClientSingleton.get_instance(api_key)
+    application = Application(name=application_name, stage="evaluation")
+    model = Model(name=model_name, model_type="text")
+
+    # Create application and models
+    am_app = client.applications.create(
+        name=application.name,
+        model_name=model.name,
+        stage=application.stage,
+        type=application.type,
+        metadata=application.metadata
+    )
+
+    am_model = client.models.create(
+        name=model.name,
+        type=model.model_type,
+        description="This model is named {} and is of type {}".format(model.name, model.model_type),
+        metadata=model.metadata
+    )
+
+    # Create or retrieve the dataset collection
+    am_dataset_collection = client.datasets.collection.retrieve(name=dataset_collection_name)
+
+    # Create or retrieve the evaluation
+    am_eval = client.evaluations.create(
+        name=evaluation_name,
+        application_id=am_app.id,
+        model_id=am_model.id,
+        dataset_collection_id=am_dataset_collection.id
+    )
+
+    # Create an evaluation run
+    eval_run = client.evaluations.run.create(
+        evaluation_id=am_eval.id,
+        metrics_config=config
+    )
+
+    # Get all records from the datasets
+    dataset_collection_records = []
+    for dataset_id in am_dataset_collection.dataset_ids:
+        dataset_records = client.datasets.records.list(sha=dataset_id)
+        dataset_collection_records.extend(dataset_records)
+
+    results = []
+    for record in dataset_collection_records:
+        # The record must contain the context_docs and user_query fields.
+        # The prompt, output and instructions fields are optional.
+        # Inspect the record and call the function with the appropriate arguments
+        for ag in headers:
+            if ag not in record:
+                raise ValueError("Record must contain the column '{}' as specified in the 'headers'"
+                                    " argument in the decorator".format(ag))
+        
+
+        _context = record['context_docs'] if isinstance(record['context_docs'], list) else [record['context_docs']]
+        # Construct the payload for the analysis
+        payload = {
+            "application_id": am_app.id,
+            "version": am_app.version,
+            "prompt": record['prompt'] or "",
+            "user_query": record['user_query'] or "",
+            "context_docs": [d for d in _context],
+            "output": record['output'],
+            "evaluation_id": am_eval.id,
+            "evaluation_run_id": eval_run.id,
+        }
+        if "instruction_adherence" in config and "instructions" not in record:
+            raise ValueError("When instruction_adherence is specified in the config, "
+                             "'instructions' must be present in the dataset")
+        if "instructions" in record and "instruction_adherence" in config:
+            # Only pass instructions if instruction_adherence is specified in the config
+            payload["instructions"] = record["instructions"] or ""
+        payload["config"] = config
+        results.append((record['output'], client.analyze.create(body=[payload])))
+
+    return results
 
 class AnalyzeBase:
     DEFAULT_CONFIG = {'hallucination': {'detector_name': 'default'}}
@@ -81,6 +184,11 @@ class AnalyzeEval(AnalyzeBase):
 
         """
         super().__init__(application, model, api_key, config)
+        warnings.warn(
+            f"{self.__class__.__name__} is deprecated and will be removed in a later release. Please use the run_eval method instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         self.headers = headers
         self.evaluation_name = evaluation_name
         self.dataset_collection_name = dataset_collection_name
@@ -163,7 +271,7 @@ class AnalyzeEval(AnalyzeBase):
             return self._run_eval(func, args, kwargs)
 
         return wrapper
-
+    
 
 class AnalyzeProd(AnalyzeBase):
 
@@ -180,6 +288,11 @@ class AnalyzeProd(AnalyzeBase):
         """
         application.stage = "production"
         super().__init__(application, model, api_key, config)
+        warnings.warn(
+            f"{self.__class__.__name__} is deprecated and will be removed in a later release. Please use Detect with async=True instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         self.values_returned = values_returned
         if self.values_returned is None or len(self.values_returned) == 0:
             raise ValueError("Values returned by the decorated function must be specified")

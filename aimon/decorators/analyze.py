@@ -18,13 +18,26 @@ class Model:
         self.model_type = model_type
         self.metadata = metadata
 
+class EvalResponse:
+    def __init__(self, output, response):
+        self.output = output
+        self.response = response
+
+    def __repr__(self):
+        return f"EvalResponse(output={self.output}, response={self.response})"
+
+    def __str__(self):
+        return f"EvalResponse(output={self.output}, response={self.response})"
+
+
 def run_eval(
         application_name,
         model_name,
         dataset_collection_name, 
         evaluation_name, 
         headers, 
-        api_key=None, 
+        api_key=None,
+        aimon_client=None,
         eval_tags=None, 
         config=None
 ):
@@ -40,12 +53,20 @@ def run_eval(
     :param headers: A dictionary mapping column names in the dataset to their corresponding types
     :param api_key: Optional. The API key to use for the Aimon client
     :param eval_tags: Optional. A list of tags to be associated with the evaluation
+    :param aimon_client: Optional. An instance of the Aimon client to use for the evaluation. If this is None, an
+                                  instance of the Aimon client will be created using the api_key.
     :param config: Optional. A dictionary of configuration options for the evaluation
     :return: The response from the Aimon API after running the evaluation
     """
-    client = AimonClientSingleton.get_instance(api_key)
+    client = aimon_client if aimon_client else AimonClientSingleton.get_instance(api_key)
     application = Application(name=application_name, stage="evaluation")
     model = Model(name=model_name, model_type="text")
+
+    # Validata headers to be non-empty and contain atleast the context_docs column
+    if not headers:
+        raise ValueError("Headers must be a non-empty list")
+    if "context_docs" not in headers:
+        raise ValueError("Headers must contain the column 'context_docs'")
 
     # Create application and models
     am_app = client.applications.create(
@@ -93,22 +114,27 @@ def run_eval(
         # Inspect the record and call the function with the appropriate arguments
         for ag in headers:
             if ag not in record:
-                raise ValueError("Record must contain the column '{}' as specified in the 'headers'"
+                raise ValueError("Dataset record must contain the column '{}' as specified in the 'headers'"
                                     " argument in the decorator".format(ag))
         
+        if "context_docs" not in record:
+            raise ValueError("Dataset record must contain the column 'context_docs'")
 
         _context = record['context_docs'] if isinstance(record['context_docs'], list) else [record['context_docs']]
         # Construct the payload for the analysis
         payload = {
             "application_id": am_app.id,
             "version": am_app.version,
-            "prompt": record['prompt'] or "",
-            "user_query": record['user_query'] or "",
             "context_docs": [d for d in _context],
-            "output": record['output'],
             "evaluation_id": am_eval.id,
             "evaluation_run_id": eval_run.id,
         }
+        if "prompt" in record and record["prompt"]:
+            payload["prompt"] = record["prompt"]
+        if "user_query" in record and record["user_query"]:
+            payload["user_query"] = record["user_query"]
+        if "output" in record and record["output"]:
+            payload["output"] = record["output"]
         if "instruction_adherence" in config and "instructions" not in record:
             raise ValueError("When instruction_adherence is specified in the config, "
                              "'instructions' must be present in the dataset")
@@ -116,7 +142,7 @@ def run_eval(
             # Only pass instructions if instruction_adherence is specified in the config
             payload["instructions"] = record["instructions"] or ""
         payload["config"] = config
-        results.append((record['output'], client.analyze.create(body=[payload])))
+        results.append(EvalResponse(record['output'], client.analyze.create(body=[payload])))
 
     return results
 

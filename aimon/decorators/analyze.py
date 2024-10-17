@@ -23,11 +23,11 @@ class EvalResponse:
         self.output = output
         self.response = response
 
-    def __repr__(self):
-        return f"EvalResponse(output={self.output}, response={self.response})"
-
     def __str__(self):
         return f"EvalResponse(output={self.output}, response={self.response})"
+
+    def __repr__(self):
+        return str(self)
 
 
 def run_eval(

@@ -18,24 +18,31 @@ class Model:
         self.metadata = metadata
 
 class DetectResult:
-    def __init__(self, status, publish_response, detect_response=[]):
+    def __init__(self, status, detect_response, publish=None):
         self.status = status
         self.detect_response = detect_response
-        self.publish_response = publish_response
+        self.publish_response = publish if publish is not None else []
+
+    def __str__(self):
+        return f"DetectResult(status={self.status}, detect_response={self.detect_response}, publish_response={self.publish_response})"
+
+    def __repr__(self):
+        return str(self)
 
 class Detect:
     DEFAULT_CONFIG = {'hallucination': {'detector_name': 'default'}}
 
-    def __init__(self, values_returned, api_key=None, config=None, async_mode=False, application_name=None, model_name=None):
+    def __init__(self, values_returned, api_key=None, config=None, async_mode=False, publish=False, application_name=None, model_name=None):
         """
         :param values_returned: A list of values in the order returned by the decorated function
                                 Acceptable values are 'generated_text', 'context', 'user_query', 'instructions'
-        :param api_key: The API key to use for the Aimon client
+        :param api_key: The API key to use for the AIMon client
         :param config: A dictionary of configuration options for the detector
         :param async_mode: Boolean, if True, the detect() function will return immediately with a DetectResult object. Default is False.
-                           When True, an application and model must be provided.
-        :param application_name: The name of the application to use for async_mode
-        :param model_name: The name of the model to use for async_mode
+                           The payload will also be published to AIMon and can be viewed on the AIMon UI.
+        :param publish: Boolean, if True, the payload will be published to AIMon and can be viewed on the AIMon UI. Default is False.
+        :param application_name: The name of the application to use when publish is True
+        :param model_name: The name of the model to use when publish is True
         """
         self.client = AimonClientSingleton.get_instance(api_key)
         self.config = config if config else self.DEFAULT_CONFIG
@@ -45,12 +52,15 @@ class Detect:
         if "context" not in self.values_returned:
             raise ValueError("values_returned must contain 'context'")
         self.async_mode = async_mode
+        self.publish = publish
         if self.async_mode:
+            self.publish = True
+        if self.publish:
             if application_name is None:
                 raise ValueError("Application name must be provided if publish is True")
             if model_name is None:
                 raise ValueError("Model name must be provided if publish is True")
-            self.application = Application(application_name)
+            self.application = Application(application_name, stage="production")
             self.model = Model(model_name, "text")
             self._initialize_application_model()
         
@@ -129,8 +139,10 @@ class Detect:
                 analyze_res = self._call_analyze(result_dict)
                 return result + (DetectResult(analyze_res.status, analyze_res),)
             else:
-                aimon_response = self.client.inference.detect(body=data_to_send)[0]
-                analyze_res = self._call_analyze(result_dict)
-                return result + (DetectResult(max(aimon_response.status, analyze_res.status), analyze_res, aimon_response),)
+                detect_response = self.client.inference.detect(body=data_to_send)[0]
+                if self.publish:
+                    analyze_res = self._call_analyze(result_dict)
+                    return result + (DetectResult(max(200 if detect_response is not None else 500, analyze_res.status), detect_response, analyze_res),)
+                return result + (DetectResult(200 if detect_response is not None else 500, detect_response),)
 
         return wrapper

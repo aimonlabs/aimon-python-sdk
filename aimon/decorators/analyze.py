@@ -18,7 +18,7 @@ class Model:
         self.model_type = model_type
         self.metadata = metadata
 
-class EvalResponse:
+class EvaluateResponse:
     def __init__(self, output, response):
         self.output = output
         self.response = response
@@ -30,7 +30,7 @@ class EvalResponse:
         return str(self)
 
 
-def run_eval(
+def evaluate(
         application_name,
         model_name,
         dataset_collection_name, 
@@ -142,7 +142,7 @@ def run_eval(
             # Only pass instructions if instruction_adherence is specified in the config
             payload["instructions"] = record["instructions"] or ""
         payload["config"] = config
-        results.append(EvalResponse(record['output'], client.analyze.create(body=[payload])))
+        results.append(EvaluateResponse(record['output'], client.analyze.create(body=[payload])))
 
     return results
 

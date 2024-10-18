@@ -2,23 +2,33 @@ from functools import wraps
 import os
 
 from aimon import Client
-
-
-class Application:
-    def __init__(self, name, stage="evaluation", type="text", metadata={}):
-        self.name = name
-        self.stage = stage
-        self.type = type
-        self.metadata = metadata
-
-
-class Model:
-    def __init__(self, name, model_type, metadata={}):
-        self.name = name
-        self.model_type = model_type
-        self.metadata = metadata
+from .evaluate import Application, Model
 
 class DetectResult:
+    """
+    A class to represent the result of an AIMon detection operation.
+
+    This class encapsulates the status of the detection operation, the response from the detection service,
+    and optionally, the response from publishing the result to the AIMon UI.
+
+    Attributes:
+    -----------
+    status : int
+        The HTTP status code of the detection operation.
+    detect_response : object
+        The response object from the AIMon synchronous detection.
+    publish_response : list, optional
+        The response from publishing the result to the AIMon UI, if applicable. This is also
+        populated when the detect operation is run in async mode.
+
+    Methods:
+    --------
+    __str__()
+        Returns a string representation of the DetectResult object.
+    __repr__()
+        Returns a string representation of the DetectResult object (same as __str__).
+    """
+
     def __init__(self, status, detect_response, publish=None):
         self.status = status
         self.detect_response = detect_response

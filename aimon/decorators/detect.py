@@ -1,6 +1,7 @@
 from functools import wraps
+import os
 
-from .common import AimonClientSingleton
+from aimon import Client
 
 
 class Application:
@@ -30,6 +31,70 @@ class DetectResult:
         return str(self)
 
 class Detect:
+    """
+    A decorator class for detecting various qualities in LLM-generated text using AIMon's detection services.
+
+    This decorator wraps a function that generates text using an LLM and sends the generated text
+    along with context to AIMon for analysis. It can be used in both synchronous and asynchronous modes,
+    and optionally publishes results to the AIMon UI.
+
+    Parameters:
+    -----------
+    values_returned : list
+        A list of values in the order returned by the decorated function.
+        Acceptable values are 'generated_text', 'context', 'user_query', 'instructions'.
+    api_key : str, optional
+        The API key to use for the AIMon client. If not provided, it will attempt to use the AIMON_API_KEY environment variable.
+    config : dict, optional
+        A dictionary of configuration options for the detector. Defaults to {'hallucination': {'detector_name': 'default'}}.
+    async_mode : bool, optional
+        If True, the detect() function will return immediately with a DetectResult object. Default is False.
+    publish : bool, optional
+        If True, the payload will be published to AIMon and can be viewed on the AIMon UI. Default is False.
+    application_name : str, optional
+        The name of the application to use when publish is True.
+    model_name : str, optional
+        The name of the model to use when publish is True.
+
+    Example:
+    --------
+    >>> from aimon.decorators import Detect
+    >>> import os
+    >>> 
+    >>> # Configure the detector
+    >>> detect = Detect(
+    ...     values_returned=['context', 'generated_text', 'user_query'],
+    ...     api_key=os.getenv('AIMON_API_KEY'),
+    ...     config={
+    ...         'hallucination': {'detector_name': 'default'},
+    ...         'toxicity': {'detector_name': 'default'}
+    ...     },
+    ...     publish=True,
+    ...     application_name='my_summarization_app',
+    ...     model_name='gpt-3.5-turbo'
+    ... )
+    >>> 
+    >>> # Define a simple lambda function to simulate an LLM
+    >>> your_llm_function = lambda context, query: f"Summary of '{context}' based on query: {query}"
+    >>> 
+    >>> # Use the decorator on your LLM function
+    >>> @detect
+    ... def generate_summary(context, query):
+    ...     summary = your_llm_function(context, query)
+    ...     return context, summary, query
+    >>> 
+    >>> # Use the decorated function
+    >>> context = "The quick brown fox jumps over the lazy dog."
+    >>> query = "Summarize the given text."
+    >>> context, summary, query, aimon_result = generate_summary(context, query)
+    >>> 
+    >>> # Print the generated summary
+    >>> print(f"Generated summary: {summary}")
+    >>> 
+    >>> # Check the AIMon detection results
+    >>> print(f"Hallucination score: {aimon_result.detect_response.hallucination['score']}")
+    >>> print(f"Toxicity score: {aimon_result.detect_response.toxicity['score']}")
+    """
     DEFAULT_CONFIG = {'hallucination': {'detector_name': 'default'}}
 
     def __init__(self, values_returned, api_key=None, config=None, async_mode=False, publish=False, application_name=None, model_name=None):
@@ -44,7 +109,10 @@ class Detect:
         :param application_name: The name of the application to use when publish is True
         :param model_name: The name of the model to use when publish is True
         """
-        self.client = AimonClientSingleton.get_instance(api_key)
+        api_key = os.getenv('AIMON_API_KEY') if not api_key else api_key
+        if api_key is None:
+            raise ValueError("API key is None")
+        self.client = Client(auth_header="Bearer {}".format(api_key))
         self.config = config if config else self.DEFAULT_CONFIG
         self.values_returned = values_returned
         if self.values_returned is None or len(self.values_returned) == 0:

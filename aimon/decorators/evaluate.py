@@ -1,11 +1,49 @@
 from functools import wraps
 
-from .common import AimonClientSingleton
+from aimon import Client
 import inspect
 import warnings
 
 class Application:
+    """
+    Represents an application in the Aimon system.
+
+    This class encapsulates the properties of an application, including its name,
+    stage, type, and associated metadata.
+
+    Attributes:
+    -----------
+    name : str
+        The name of the application.
+    stage : str, optional
+        The stage of the application (default is "evaluation").
+    type : str, optional
+        The type of the application (default is "text").
+    metadata : dict, optional
+        Additional metadata associated with the application (default is an empty dict).
+
+    Example:
+    --------
+    >>> app = Application("my_app", stage="production", type="text", metadata={"version": "1.0"})
+    >>> print(app.name)
+    my_app
+    """
+
     def __init__(self, name, stage="evaluation", type="text", metadata={}):
+        """
+        Initialize a new Application instance.
+
+        Parameters:
+        -----------
+        name : str
+            The name of the application.
+        stage : str, optional
+            The stage of the application (default is "evaluation").
+        type : str, optional
+            The type of the application (default is "text").
+        metadata : dict, optional
+            Additional metadata associated with the application (default is an empty dict).
+        """
         self.name = name
         self.stage = stage
         self.type = type
@@ -13,18 +51,90 @@ class Application:
 
 
 class Model:
+    """
+    This is a model.
+
+    Attributes:
+    -----------
+    name : str
+        The name of the model.
+    model_type : str
+        The type of the model.
+    metadata : dict, optional
+        Additional metadata associated with the model (default is an empty dict).
+
+    Example:
+    --------
+    >>> model = Model("gpt-4", "text", metadata={"version": "1.0"})
+    >>> print(model.name)
+    gpt-4
+    >>> print(model.model_type)
+    text
+    """
+
     def __init__(self, name, model_type, metadata={}):
+        """
+        Initialize a new Model instance.
+
+        Parameters:
+        -----------
+        name : str
+            The name of the model.
+        model_type : str
+            The type of the model.
+        metadata : dict, optional
+            Additional metadata associated with the model (default is an empty dict).
+        """
         self.name = name
         self.model_type = model_type
         self.metadata = metadata
 
 class EvaluateResponse:
+    """
+    Represents the response from an evaluation.
+
+    This class encapsulates the output of the evaluated function and the response
+    from the Aimon API analysis.
+
+    Attributes:
+    -----------
+    output : Any
+        The output of the evaluated function.
+    response : Any
+        The response from the Aimon API analysis.
+
+    Methods:
+    --------
+    __str__() : str
+        Returns a string representation of the EvaluateResponse.
+    __repr__() : str
+        Returns a string representation of the EvaluateResponse (same as __str__).
+
+    Example:
+    --------
+    >>> output = "Generated text"
+    >>> response = {"analysis": "Some analysis data"}
+    >>> eval_response = EvaluateResponse(output, response)
+    >>> print(eval_response)
+    EvaluateResponse(output=Generated text, response={'analysis': 'Some analysis data'})
+    """
+
     def __init__(self, output, response):
+        """
+        Initialize a new EvaluateResponse instance.
+
+        Parameters:
+        -----------
+        output : Any
+            The output of the evaluated function.
+        response : Any
+            The response from the Aimon API analysis.
+        """
         self.output = output
         self.response = response
 
     def __str__(self):
-        return f"EvalResponse(output={self.output}, response={self.response})"
+        return f"EvaluateResponse(output={self.output}, response={self.response})"
 
     def __repr__(self):
         return str(self)
@@ -38,27 +148,77 @@ def evaluate(
         headers, 
         api_key=None,
         aimon_client=None,
-        eval_tags=None, 
         config=None
 ):
     """
-    Run an evaluation on a dataset collection. Usually, this column
-    is populated by an LLM that previously processed the other input fields in
-    this dataset.
+    Run an evaluation on a dataset collection using the Aimon API.
 
-    :param application_name: The name of the application to run the evaluation on
-    :param model_name: The name of the model to run the evaluation on
-    :param dataset_collection_name: The name of the dataset collection to run the evaluation on
-    :param evaluation_name: The name of the evaluation to be created
-    :param headers: A dictionary mapping column names in the dataset to their corresponding types
-    :param api_key: Optional. The API key to use for the Aimon client
-    :param eval_tags: Optional. A list of tags to be associated with the evaluation
-    :param aimon_client: Optional. An instance of the Aimon client to use for the evaluation. If this is None, an
-                                  instance of the Aimon client will be created using the api_key.
-    :param config: Optional. A dictionary of configuration options for the evaluation
-    :return: The response from the Aimon API after running the evaluation
+    This function creates or retrieves an application, model, and dataset collection,
+    then runs an evaluation on the specified dataset collection. It processes each record
+    in the dataset and sends it to the Aimon API for analysis.
+
+    Parameters:
+    -----------
+    application_name : str
+        The name of the application to run the evaluation on.
+    model_name : str
+        The name of the model to run the evaluation on.
+    dataset_collection_name : str
+        The name of the dataset collection to run the evaluation on.
+    evaluation_name : str
+        The name of the evaluation to be created.
+    headers : list
+        A list of column names in the dataset to be used for the evaluation.
+        Must include 'context_docs'.
+    api_key : str, optional
+        The API key to use for the Aimon client. Required if aimon_client is not provided.
+    aimon_client : Client, optional
+        An instance of the Aimon client to use for the evaluation. If not provided,
+        a new client will be created using the api_key.
+    config : dict, optional
+        A dictionary of configuration options for the evaluation.
+
+    Returns:
+    --------
+    list of EvaluateResponse
+        A list of EvaluateResponse objects containing the output and response for each
+        record in the dataset collection.
+
+    Raises:
+    -------
+    ValueError
+        If headers is empty or doesn't contain 'context_docs', or if required fields
+        are missing from the dataset records.
+
+    Notes:
+    ------
+    The dataset records must contain 'context_docs' and all fields specified in the
+    'headers' argument. The 'prompt', 'output', and 'instructions' fields are optional.
+
+    Example:
+    --------
+    >>> from aimon import Client
+    >>> import os
+    >>> headers = ["context_docs", "user_query", "output"]
+    >>> config = {
+    ...     "hallucination": {"detector_name": "default"},
+    ...     "instruction_adherence": {"detector_name": "default"}
+    ... }
+    >>> results = evaluate(
+    ...     application_name="my_app",
+    ...     model_name="gpt-4o",
+    ...     dataset_collection_name="my_dataset_collection",
+    ...     evaluation_name="my_evaluation",
+    ...     headers=headers,
+    ...     api_key=os.getenv("AIMON_API_KEY"),
+    ...     config=config
+    ... )
+    >>> for result in results:
+    ...     print(f"Output: {result.output}")
+    ...     print(f"Response: {result.response}")
+    ...     print("---")
     """
-    client = aimon_client if aimon_client else AimonClientSingleton.get_instance(api_key)
+    client = aimon_client if aimon_client else Client(auth_header="Bearer {}".format(api_key))
     application = Application(name=application_name, stage="evaluation")
     model = Model(name=model_name, model_type="text")
 
@@ -155,7 +315,7 @@ class AnalyzeBase:
         :param model: A Model object
         :param api_key: The API key to use for the Aimon client
         """
-        self.client = AimonClientSingleton.get_instance(api_key)
+        self.client = Client(auth_header="Bearer {}".format(api_key))
         self.application = application
         self.model = model
         self.config = config if config else self.DEFAULT_CONFIG
@@ -374,3 +534,6 @@ class AnalyzeProd(AnalyzeBase):
             return self._run_production_analysis(func, args, kwargs)
 
         return wrapper
+
+
+

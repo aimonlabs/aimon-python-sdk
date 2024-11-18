@@ -371,7 +371,7 @@ class AnalyzeEval(AnalyzeBase):
         """
         super().__init__(application, model, api_key, config)
         warnings.warn(
-            f"{self.__class__.__name__} is deprecated and will be removed in a later release. Please use the run_eval method instead.",
+            f"{self.__class__.__name__} is deprecated and will be removed in a later release. Please use the evaluate method instead.",
             DeprecationWarning,
             stacklevel=2
         )

@@ -137,52 +137,7 @@ class Detect:
             if application_name is None:
                 raise ValueError("Application name must be provided if publish is True")
             if model_name is None:
-                raise ValueError("Model name must be provided if publish is True")
-            self.application = Application(application_name, stage="production")
-            self.model = Model(model_name, "text")
-            self._initialize_application_model()
-        
-    def _initialize_application_model(self):
-        # Create or retrieve the model
-        self._am_model = self.client.models.create(
-            name=self.model.name,
-            type=self.model.model_type,
-            description="This model is named {} and is of type {}".format(self.model.name, self.model.model_type),
-            metadata=self.model.metadata
-        )
-
-        # Create or retrieve the application
-        self._am_app = self.client.applications.create(
-            name=self.application.name,
-            model_name=self._am_model.name,
-            stage=self.application.stage,
-            type=self.application.type,
-            metadata=self.application.metadata
-        )
-
-    def _call_analyze(self, result_dict):
-        if "generated_text" not in result_dict:
-            raise ValueError("Result of the wrapped function must contain 'generated_text'")
-        if "context" not in result_dict:
-            raise ValueError("Result of the wrapped function must contain 'context'")
-        _context = result_dict['context'] if isinstance(result_dict['context'], list) else [result_dict['context']]
-        aimon_payload = {
-            "application_id": self._am_app.id,
-            "version": self._am_app.version,
-            "output": result_dict['generated_text'],
-            "context_docs": _context,
-            "user_query": result_dict["user_query"] if 'user_query' in result_dict else "No User Query Specified",
-            "prompt": result_dict['prompt'] if 'prompt' in result_dict else "No Prompt Specified",
-        }
-        if 'instructions' in result_dict:
-            aimon_payload['instructions'] = result_dict['instructions']
-        if 'actual_request_timestamp' in result_dict:
-            aimon_payload["actual_request_timestamp"] = result_dict['actual_request_timestamp']
-
-        aimon_payload['config'] = self.config
-        analyze_response = self.client.analyze.create(body=[aimon_payload])
-        return analyze_response
-    
+                raise ValueError("Model name must be provided if publish is True")    
 
     def __call__(self, func):
         @wraps(func)
@@ -210,17 +165,12 @@ class Detect:
             if 'instructions' in result_dict:
                 aimon_payload['instructions'] = result_dict['instructions']
             aimon_payload['config'] = self.config
+            aimon_payload['publish'] = self.publish
+            aimon_payload['async_mode'] = self.async_mode
 
             data_to_send = [aimon_payload]
 
-            if self.async_mode:
-                analyze_res = self._call_analyze(result_dict)
-                return result + (DetectResult(analyze_res.status, analyze_res),)
-            else:
-                detect_response = self.client.inference.detect(body=data_to_send)[0]
-                if self.publish:
-                    analyze_res = self._call_analyze(result_dict)
-                    return result + (DetectResult(max(200 if detect_response is not None else 500, analyze_res.status), detect_response, analyze_res),)
-                return result + (DetectResult(200 if detect_response is not None else 500, detect_response),)
+            detect_response = self.client.inference.detect(body=data_to_send)[0]
+            return result + (DetectResult(200 if detect_response is not None else 500, detect_response),)
 
         return wrapper

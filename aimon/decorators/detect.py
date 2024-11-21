@@ -122,7 +122,7 @@ class Detect:
         api_key = os.getenv('AIMON_API_KEY') if not api_key else api_key
         if api_key is None:
             raise ValueError("API key is None")
-        self.client = Client(auth_header="Bearer {}".format(api_key))
+        self.client = Client(auth_header="Bearer {}".format(api_key), base_url='https://am-sdk-backend-staging-ser-6009-0c0ad782-m9xwngeb.onporter.run/')
         self.config = config if config else self.DEFAULT_CONFIG
         self.values_returned = values_returned
         if self.values_returned is None or len(self.values_returned) == 0:
@@ -137,7 +137,10 @@ class Detect:
             if application_name is None:
                 raise ValueError("Application name must be provided if publish is True")
             if model_name is None:
-                raise ValueError("Model name must be provided if publish is True")    
+                raise ValueError("Model name must be provided if publish is True")
+
+        self.application_name = application_name
+        self.model_name = model_name  
 
     def __call__(self, func):
         @wraps(func)
@@ -164,13 +167,34 @@ class Detect:
                 aimon_payload['user_query'] = result_dict['user_query']
             if 'instructions' in result_dict:
                 aimon_payload['instructions'] = result_dict['instructions']
+
             aimon_payload['config'] = self.config
             aimon_payload['publish'] = self.publish
             aimon_payload['async_mode'] = self.async_mode
 
+            # Include application_name and model_name if publishing
+            if self.publish:
+                aimon_payload['application_name'] = self.application_name
+                aimon_payload['model_name'] = self.model_name
+
             data_to_send = [aimon_payload]
 
-            detect_response = self.client.inference.detect(body=data_to_send)[0]
-            return result + (DetectResult(200 if detect_response is not None else 500, detect_response),)
+            try:
+                detect_response = self.client.inference.detect(body=data_to_send)
+                # Check if the response is a list
+                if isinstance(detect_response, list) and len(detect_response) > 0:
+                    detect_result = detect_response[0]
+                elif isinstance(detect_response, dict):
+                    detect_result = detect_response  # Single dict response
+                else:
+                    raise ValueError("Unexpected response format from detect API: {}".format(detect_response))
+            except Exception as e:
+                # Log the error and raise it
+                print(f"Error during detection: {e}")
+                raise
+
+            # Return the original result along with the DetectResult
+            return result + (DetectResult(200 if detect_result else 500, detect_result),)
+
 
         return wrapper

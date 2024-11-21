@@ -80,3 +80,9 @@ class Body(TypedDict, total=False):
 
     async_mode: bool
     """If True, the detect() function will return immediately with a DetectResult object. Default is False."""
+
+    application_name: str
+    """Application name"""
+
+    model_name: str
+    """Model name"""

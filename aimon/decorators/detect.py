@@ -122,7 +122,7 @@ class Detect:
         api_key = os.getenv('AIMON_API_KEY') if not api_key else api_key
         if api_key is None:
             raise ValueError("API key is None")
-        self.client = Client(auth_header="Bearer {}".format(api_key), base_url='https://am-sdk-backend-staging-ser-6009-0c0ad782-m9xwngeb.onporter.run/')
+        self.client = Client(auth_header="Bearer {}".format(api_key))
         self.config = config if config else self.DEFAULT_CONFIG
         self.values_returned = values_returned
         if self.values_returned is None or len(self.values_returned) == 0:
@@ -137,7 +137,7 @@ class Detect:
             if application_name is None:
                 raise ValueError("Application name must be provided if publish is True")
             if model_name is None:
-                raise ValueError("Model name must be provided if publish is True")
+                raise ValueError("Model name must be provided if publish is True")    
 
         self.application_name = application_name
         self.model_name = model_name  

@@ -1,8 +1,26 @@
 from functools import wraps
 import os
 
+import json, textwrap
+
 from aimon import Client
 from .evaluate import Application, Model
+
+def format_response_item(response_item, wrap_limit=100):
+  formatted_items = []
+        
+  for key, value in response_item.items():
+      # Convert value to a JSON string with indentation
+      json_str = json.dumps(value, indent=4)
+      
+      # Wrap the JSON string to the specified character limit
+      wrapped_str = "\n".join(
+          textwrap.fill(line, width=wrap_limit) for line in json_str.splitlines()
+      )
+      
+      formatted_items.append(f"{key}: {wrapped_str}")
+  
+  return "\n".join(formatted_items)
 
 class DetectResult:
     """
@@ -35,10 +53,34 @@ class DetectResult:
         self.publish_response = publish if publish is not None else []
 
     def __str__(self):
-        return f"DetectResult(status={self.status}, detect_response={self.detect_response}, publish_response={self.publish_response})"
+        # Use format_response_item to format detect_response
+        detect_response_str = self._format_response_item(self.detect_response.to_dict())
+        return (
+            f"DetectResult(\n"
+            f"  status={self.status},\n"
+            f"  detect_response={detect_response_str},\n"
+            f"  publish_response={self.publish_response}\n"
+            f")"
+        )
 
     def __repr__(self):
         return str(self)
+    
+    def _format_response_item(self, response_item, wrap_limit=100):
+        formatted_items = []
+                
+        for key, value in response_item.items():
+            # Convert value to a JSON string with indentation
+            json_str = json.dumps(value, indent=4)
+            
+            # Wrap the JSON string to the specified character limit
+            wrapped_str = "\n".join(
+                textwrap.fill(line, width=wrap_limit) for line in json_str.splitlines()
+            )
+            
+            formatted_items.append(f"{key}: {wrapped_str}")
+        
+        return "\n".join(formatted_items)
 
 class Detect:
     """
@@ -122,7 +164,7 @@ class Detect:
         api_key = os.getenv('AIMON_API_KEY') if not api_key else api_key
         if api_key is None:
             raise ValueError("API key is None")
-        self.client = Client(auth_header="Bearer {}".format(api_key))
+        self.client = Client(auth_header="Bearer {}".format(api_key), base_url='https://am-sdk-backend-staging-ser-6009-0c0ad782-m9xwngeb.onporter.run/')
         self.config = config if config else self.DEFAULT_CONFIG
         self.values_returned = values_returned
         if self.values_returned is None or len(self.values_returned) == 0:

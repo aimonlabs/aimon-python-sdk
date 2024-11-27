@@ -6,22 +6,6 @@ import json, textwrap
 from aimon import Client
 from .evaluate import Application, Model
 
-def format_response_item(response_item, wrap_limit=100):
-  formatted_items = []
-        
-  for key, value in response_item.items():
-      # Convert value to a JSON string with indentation
-      json_str = json.dumps(value, indent=4)
-      
-      # Wrap the JSON string to the specified character limit
-      wrapped_str = "\n".join(
-          textwrap.fill(line, width=wrap_limit) for line in json_str.splitlines()
-      )
-      
-      formatted_items.append(f"{key}: {wrapped_str}")
-  
-  return "\n".join(formatted_items)
-
 class DetectResult:
     """
     A class to represent the result of an AIMon detection operation.

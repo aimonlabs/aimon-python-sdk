@@ -59,7 +59,7 @@ class InferenceResource(SyncAPIResource):
           timeout: Override the client-level default timeout for this request, in seconds
         """
         return self._post(
-            "/v1/detect",
+            "/v2/detect",
             body=maybe_transform(body, Iterable[inference_detect_params.Body]),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
@@ -101,7 +101,7 @@ class AsyncInferenceResource(AsyncAPIResource):
           timeout: Override the client-level default timeout for this request, in seconds
         """
         return await self._post(
-            "/v1/detect",
+            "/v2/detect",
             body=await async_maybe_transform(body, Iterable[inference_detect_params.Body]),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout

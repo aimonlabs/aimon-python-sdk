@@ -1,6 +1,8 @@
 from functools import wraps
 import os
 
+import json, textwrap
+
 from aimon import Client
 from .evaluate import Application, Model
 
@@ -35,10 +37,34 @@ class DetectResult:
         self.publish_response = publish if publish is not None else []
 
     def __str__(self):
-        return f"DetectResult(status={self.status}, detect_response={self.detect_response}, publish_response={self.publish_response})"
+        # Use format_response_item to format detect_response
+        detect_response_str = self._format_response_item(self.detect_response.to_dict())
+        return (
+            f"DetectResult(\n"
+            f"  status={self.status},\n"
+            f"  detect_response={detect_response_str},\n"
+            f"  publish_response={self.publish_response}\n"
+            f")"
+        )
 
     def __repr__(self):
         return str(self)
+    
+    def _format_response_item(self, response_item, wrap_limit=100):
+        formatted_items = []
+                
+        for key, value in response_item.items():
+            # Convert value to a JSON string with indentation
+            json_str = json.dumps(value, indent=4)
+            
+            # Wrap the JSON string to the specified character limit
+            wrapped_str = "\n".join(
+                textwrap.fill(line, width=wrap_limit) for line in json_str.splitlines()
+            )
+            
+            formatted_items.append(f"{key}: {wrapped_str}")
+        
+        return "\n".join(formatted_items)
 
 class Detect:
     """
@@ -137,52 +163,10 @@ class Detect:
             if application_name is None:
                 raise ValueError("Application name must be provided if publish is True")
             if model_name is None:
-                raise ValueError("Model name must be provided if publish is True")
-            self.application = Application(application_name, stage="production")
-            self.model = Model(model_name, "text")
-            self._initialize_application_model()
-        
-    def _initialize_application_model(self):
-        # Create or retrieve the model
-        self._am_model = self.client.models.create(
-            name=self.model.name,
-            type=self.model.model_type,
-            description="This model is named {} and is of type {}".format(self.model.name, self.model.model_type),
-            metadata=self.model.metadata
-        )
+                raise ValueError("Model name must be provided if publish is True")    
 
-        # Create or retrieve the application
-        self._am_app = self.client.applications.create(
-            name=self.application.name,
-            model_name=self._am_model.name,
-            stage=self.application.stage,
-            type=self.application.type,
-            metadata=self.application.metadata
-        )
-
-    def _call_analyze(self, result_dict):
-        if "generated_text" not in result_dict:
-            raise ValueError("Result of the wrapped function must contain 'generated_text'")
-        if "context" not in result_dict:
-            raise ValueError("Result of the wrapped function must contain 'context'")
-        _context = result_dict['context'] if isinstance(result_dict['context'], list) else [result_dict['context']]
-        aimon_payload = {
-            "application_id": self._am_app.id,
-            "version": self._am_app.version,
-            "output": result_dict['generated_text'],
-            "context_docs": _context,
-            "user_query": result_dict["user_query"] if 'user_query' in result_dict else "No User Query Specified",
-            "prompt": result_dict['prompt'] if 'prompt' in result_dict else "No Prompt Specified",
-        }
-        if 'instructions' in result_dict:
-            aimon_payload['instructions'] = result_dict['instructions']
-        if 'actual_request_timestamp' in result_dict:
-            aimon_payload["actual_request_timestamp"] = result_dict['actual_request_timestamp']
-
-        aimon_payload['config'] = self.config
-        analyze_response = self.client.analyze.create(body=[aimon_payload])
-        return analyze_response
-    
+        self.application_name = application_name
+        self.model_name = model_name  
 
     def __call__(self, func):
         @wraps(func)
@@ -209,18 +193,34 @@ class Detect:
                 aimon_payload['user_query'] = result_dict['user_query']
             if 'instructions' in result_dict:
                 aimon_payload['instructions'] = result_dict['instructions']
+
             aimon_payload['config'] = self.config
+            aimon_payload['publish'] = self.publish
+            aimon_payload['async_mode'] = self.async_mode
+
+            # Include application_name and model_name if publishing
+            if self.publish:
+                aimon_payload['application_name'] = self.application_name
+                aimon_payload['model_name'] = self.model_name
 
             data_to_send = [aimon_payload]
 
-            if self.async_mode:
-                analyze_res = self._call_analyze(result_dict)
-                return result + (DetectResult(analyze_res.status, analyze_res),)
-            else:
-                detect_response = self.client.inference.detect(body=data_to_send)[0]
-                if self.publish:
-                    analyze_res = self._call_analyze(result_dict)
-                    return result + (DetectResult(max(200 if detect_response is not None else 500, analyze_res.status), detect_response, analyze_res),)
-                return result + (DetectResult(200 if detect_response is not None else 500, detect_response),)
+            try:
+                detect_response = self.client.inference.detect(body=data_to_send)
+                # Check if the response is a list
+                if isinstance(detect_response, list) and len(detect_response) > 0:
+                    detect_result = detect_response[0]
+                elif isinstance(detect_response, dict):
+                    detect_result = detect_response  # Single dict response
+                else:
+                    raise ValueError("Unexpected response format from detect API: {}".format(detect_response))
+            except Exception as e:
+                # Log the error and raise it
+                print(f"Error during detection: {e}")
+                raise
+
+            # Return the original result along with the DetectResult
+            return result + (DetectResult(200 if detect_result else 500, detect_result),)
+
 
         return wrapper

@@ -74,3 +74,15 @@ class Body(TypedDict, total=False):
 
     user_query: str
     """The user's query"""
+
+    publish: bool
+    """If True, the payload will be published to AIMon and can be viewed on the AIMon UI. Default is False."""
+
+    async_mode: bool
+    """If True, the detect() function will return immediately with a DetectResult object. Default is False."""
+
+    application_name: str
+    """Application name"""
+
+    model_name: str
+    """Model name"""

@@ -22,6 +22,8 @@ class DetectResult:
     publish_response : list, optional
         The response from publishing the result to the AIMon UI, if applicable. This is also
         populated when the detect operation is run in async mode.
+    async_mode : bool, optional
+        Indicates whether the detection was performed in async mode.
 
     Methods:
     --------
@@ -31,18 +33,27 @@ class DetectResult:
         Returns a string representation of the DetectResult object (same as __str__).
     """
 
-    def __init__(self, status, detect_response, publish=None):
+    def __init__(self, status, detect_response, publish=None, async_mode=None):
         self.status = status
-        self.detect_response = detect_response
+        self.async_mode = async_mode
         self.publish_response = publish if publish is not None else []
 
+        # Format or convert detect_response during initialization
+        if self.async_mode:
+            # Convert detect_response dictionary to an object with dot notation
+            self.detect_response = type('Obj', (object,), detect_response)()
+        else:
+            # Format detect_response for string representation
+            detect_response_value = (
+                detect_response.to_dict() if hasattr(detect_response, 'to_dict') else detect_response
+            )
+            self.detect_response = self._format_response_item(detect_response_value)
+
     def __str__(self):
-        # Use format_response_item to format detect_response
-        detect_response_str = self._format_response_item(self.detect_response.to_dict())
         return (
             f"DetectResult(\n"
             f"  status={self.status},\n"
-            f"  detect_response={detect_response_str},\n"
+            f"  detect_response={self.detect_response},\n"
             f"  publish_response={self.publish_response}\n"
             f")"
         )
@@ -52,7 +63,7 @@ class DetectResult:
     
     def _format_response_item(self, response_item, wrap_limit=100):
         formatted_items = []
-                
+
         for key, value in response_item.items():
             # Convert value to a JSON string with indentation
             json_str = json.dumps(value, indent=4)
@@ -220,7 +231,7 @@ class Detect:
                 raise
 
             # Return the original result along with the DetectResult
-            return result + (DetectResult(200 if detect_result else 500, detect_result),)
+            return result + (DetectResult(200 if detect_result else 500, detect_result, async_mode=self.async_mode),)
 
 
         return wrapper

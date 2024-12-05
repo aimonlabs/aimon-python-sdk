@@ -148,7 +148,7 @@ class Detect:
         api_key = os.getenv('AIMON_API_KEY') if not api_key else api_key
         if api_key is None:
             raise ValueError("API key is None")
-        self.client = Client(auth_header="Bearer {}".format(api_key), base_url='http://127.0.0.1:5000')
+        self.client = Client(auth_header="Bearer {}".format(api_key))
         self.config = config if config else self.DEFAULT_CONFIG
         self.values_returned = values_returned
         if self.values_returned is None or len(self.values_returned) == 0:

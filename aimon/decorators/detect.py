@@ -33,21 +33,10 @@ class DetectResult:
         Returns a string representation of the DetectResult object (same as __str__).
     """
 
-    def __init__(self, status, detect_response, publish=None, async_mode=None):
+    def __init__(self, status, detect_response, publish=None):
         self.status = status
-        self.async_mode = async_mode
         self.publish_response = publish if publish is not None else []
-
-        # Format or convert detect_response during initialization
-        if self.async_mode:
-            # Convert detect_response dictionary to an object with dot notation
-            self.detect_response = type('Obj', (object,), detect_response)()
-        else:
-            # Format detect_response for string representation
-            detect_response_value = (
-                detect_response.to_dict() if hasattr(detect_response, 'to_dict') else detect_response
-            )
-            self.detect_response = self._format_response_item(detect_response_value)
+        self.detect_response = self._format_response_item(detect_response)
 
     def __str__(self):
         return (
@@ -218,10 +207,7 @@ class Detect:
 
             try:
                 detect_response = self.client.inference.detect(body=data_to_send)
-                # Check if the response is a list
-                if isinstance(detect_response, list) and len(detect_response) > 0:
-                    detect_result = detect_response[0]
-                elif isinstance(detect_response, dict):
+                if isinstance(detect_response, dict):
                     detect_result = detect_response  # Single dict response
                 else:
                     raise ValueError("Unexpected response format from detect API: {}".format(detect_response))
@@ -231,7 +217,7 @@ class Detect:
                 raise
 
             # Return the original result along with the DetectResult
-            return result + (DetectResult(200 if detect_result else 500, detect_result, async_mode=self.async_mode),)
+            return result + (DetectResult(200 if detect_result else 500, detect_result),)
 
 
         return wrapper

@@ -22,8 +22,6 @@ class DetectResult:
     publish_response : list, optional
         The response from publishing the result to the AIMon UI, if applicable. This is also
         populated when the detect operation is run in async mode.
-    async_mode : bool, optional
-        Indicates whether the detection was performed in async mode.
 
     Methods:
     --------

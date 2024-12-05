@@ -50,7 +50,9 @@ class DetectResult:
     
     def _format_response_item(self, response_item, wrap_limit=100):
         formatted_items = []
-
+        response_item = (
+            response_item.to_dict() if hasattr(response_item, 'to_dict') else response_item
+        )
         for key, value in response_item.items():
             # Convert value to a JSON string with indentation
             json_str = json.dumps(value, indent=4)
@@ -146,7 +148,7 @@ class Detect:
         api_key = os.getenv('AIMON_API_KEY') if not api_key else api_key
         if api_key is None:
             raise ValueError("API key is None")
-        self.client = Client(auth_header="Bearer {}".format(api_key))
+        self.client = Client(auth_header="Bearer {}".format(api_key), base_url='http://127.0.0.1:5000')
         self.config = config if config else self.DEFAULT_CONFIG
         self.values_returned = values_returned
         if self.values_returned is None or len(self.values_returned) == 0:
@@ -208,9 +210,6 @@ class Detect:
                 # Check if the response is a list
                 if isinstance(detect_response, list) and len(detect_response) > 0:
                     detect_result = detect_response[0]
-                    detect_result = (
-                        detect_result.to_dict() if hasattr(detect_result, 'to_dict') else detect_result
-                    )
                 elif isinstance(detect_response, dict):
                     detect_result = detect_response  # Single dict response
                 else:

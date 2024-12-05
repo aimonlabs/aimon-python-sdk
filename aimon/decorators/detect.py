@@ -33,14 +33,16 @@ class DetectResult:
 
     def __init__(self, status, detect_response, publish=None):
         self.status = status
+        self.detect_response = detect_response
         self.publish_response = publish if publish is not None else []
-        self.detect_response = self._format_response_item(detect_response)
 
     def __str__(self):
+        # Use format_response_item to format detect_response
+        detect_response_str = self._format_response_item(self.detect_response)
         return (
             f"DetectResult(\n"
             f"  status={self.status},\n"
-            f"  detect_response={self.detect_response},\n"
+            f"  detect_response={detect_response_str},\n"
             f"  publish_response={self.publish_response}\n"
             f")"
         )
@@ -212,7 +214,7 @@ class Detect:
                         detect_result.to_dict() if hasattr(detect_result, 'to_dict') else detect_result
                     )
                 elif isinstance(detect_response, dict):
-                    detect_result = detect_response
+                    detect_result = detect_response  # Single dict response
                 else:
                     raise ValueError("Unexpected response format from detect API: {}".format(detect_response))
             except Exception as e:

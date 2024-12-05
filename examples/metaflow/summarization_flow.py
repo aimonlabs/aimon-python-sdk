@@ -26,7 +26,7 @@ class SummarizeFlow(FlowSpec):
         
         # Print the AIMon result
         print("AIMon hallucination detection:")
-        print(aimon_res.detect_response.hallucination)
+        print(aimon_res.detect_response["hallucination"])
 
         self.next(self.end)
 

@@ -37,12 +37,10 @@ class DetectResult:
         self.publish_response = publish if publish is not None else []
 
     def __str__(self):
-        # Use format_response_item to format detect_response
-        detect_response_str = self._format_response_item(self.detect_response)
         return (
             f"DetectResult(\n"
             f"  status={self.status},\n"
-            f"  detect_response={detect_response_str},\n"
+            f"  detect_response={self._format_response_item(self.detect_response)},\n"
             f"  publish_response={self.publish_response}\n"
             f")"
         )
@@ -148,7 +146,7 @@ class Detect:
         api_key = os.getenv('AIMON_API_KEY') if not api_key else api_key
         if api_key is None:
             raise ValueError("API key is None")
-        self.client = Client(auth_header="Bearer {}".format(api_key), base_url='http://127.0.0.1:5000')
+        self.client = Client(auth_header="Bearer {}".format(api_key))
         self.config = config if config else self.DEFAULT_CONFIG
         self.values_returned = values_returned
         if self.values_returned is None or len(self.values_returned) == 0:

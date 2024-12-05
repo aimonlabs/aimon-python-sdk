@@ -55,16 +55,16 @@ if st.button("Summarize"):
 
             # Display the AIMon response
             st.header('AIMon - Hallucination Detector Response')
-            st.json(aimon_res.detect_response["hallucination"])
+            st.json(aimon_res.detect_response.hallucination)
 
             st.header('AIMon - Conciseness Detector Response')
-            st.json(aimon_res.detect_response["conciseness"])
+            st.json(aimon_res.detect_response.conciseness)
 
             st.header('AIMon - Completeness Detector Response')
-            st.json(aimon_res.detect_response["completeness"])
+            st.json(aimon_res.detect_response.completeness)
 
             st.header('AIMon - Toxicity Detector Response')
-            st.json(aimon_res.detect_response["toxicity"])
+            st.json(aimon_res.detect_response.toxicity)
 
         except Exception as e:
             st.write(f"An error occurred: {e}")

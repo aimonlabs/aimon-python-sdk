@@ -37,12 +37,10 @@ class DetectResult:
         self.publish_response = publish if publish is not None else []
 
     def __str__(self):
-        # Use format_response_item to format detect_response
-        detect_response_str = self._format_response_item(self.detect_response.to_dict())
         return (
             f"DetectResult(\n"
             f"  status={self.status},\n"
-            f"  detect_response={detect_response_str},\n"
+            f"  detect_response={self._format_response_item(self.detect_response)},\n"
             f"  publish_response={self.publish_response}\n"
             f")"
         )
@@ -52,7 +50,9 @@ class DetectResult:
     
     def _format_response_item(self, response_item, wrap_limit=100):
         formatted_items = []
-                
+        response_item = (
+            response_item.to_dict() if hasattr(response_item, 'to_dict') else response_item
+        )
         for key, value in response_item.items():
             # Convert value to a JSON string with indentation
             json_str = json.dumps(value, indent=4)

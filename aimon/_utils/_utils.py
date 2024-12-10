@@ -394,3 +394,22 @@ def lru_cache(*, maxsize: int | None = 128) -> Callable[[CallableT], CallableT]:
         maxsize=maxsize,
     )
     return cast(Any, wrapper)  # type: ignore[no-any-return]
+
+
+def llm_reprompting_function(user_query, user_instructions, retriever, llm_response, aimon_response, ask_and_validate, conservative_llm, reprompting_frequency=2, hallucination_threshold=0.75):
+
+    for _ in range(reprompting_frequency):
+
+        failed_instructions = []
+
+        for x in aimon_response.detect_response.instruction_adherence['results']:
+            if x['adherence'] == False:
+                failed_instructions.append(x['instruction'])
+
+        if hallucination_threshold > 0 and (aimon_response.detect_response.hallucination['score'] >= hallucination_threshold or len(failed_instructions)>0):
+            ## The logic assumes that the ask_and_validate function passed in as a parameter is decorated with the AIMon "detect" function. 
+            context, user_query, user_instructions, llm_response, aimon_response = ask_and_validate(user_query, user_instructions, retriever, llm=conservative_llm)
+        else:
+            break
+    
+    return llm_response, aimon_response

@@ -396,19 +396,62 @@ def lru_cache(*, maxsize: int | None = 128) -> Callable[[CallableT], CallableT]:
     return cast(Any, wrapper)  # type: ignore[no-any-return]
 
 
-def llm_reprompting_function(user_query, user_instructions, retriever, llm_response, aimon_response, ask_and_validate, conservative_llm, reprompting_frequency=2, hallucination_threshold=0.75):
+def extract_response_metadata(user_query, user_instructions, response):
+
+    import logging
+
+    def get_source_docs(chat_response):
+      contexts = []
+      relevance_scores = []
+      if hasattr(chat_response, 'source_nodes'):
+          for node in chat_response.source_nodes:
+              if hasattr(node, 'node') and hasattr(node.node, 'text') and hasattr(node,
+                                                                          'score') and node.score is not None:
+                  contexts.append(node.node.text)
+                  relevance_scores.append(node.score)
+              elif hasattr(node, 'text') and hasattr(node, 'score') and node.score is not None:
+                  contexts.append(node.text)
+                  relevance_scores.append(node.score)
+              else:
+                  logging.info("Node does not have required attributes.")
+      else:
+          logging.info("No source_nodes attribute found in the chat response.")
+      return contexts, relevance_scores
+
+    context, relevance_scores = get_source_docs(response)
+
+    return context, user_query, user_instructions, response.response
+
+
+def llm_reprompting_function(user_query, 
+                             user_instructions, 
+                             llm_response, 
+                             aimon_response, 
+                             detect,                            # detect object configured by the user using AIMon Detect
+                             extract_response_metadata,         # Function to retrieve context from the LLM response
+                             conservative_llm,                  # Custom LLM, specified by the user. To be employed for reprompting.
+                             get_response,                      # Function to get LLM response for a given query.
+                             reprompting_frequency=2,
+                             hallucination_threshold=0.75):
+
+    ## Decorating the `extract_response_metadata` function with `detect`
+    extract_response_metadata = detect(extract_response_metadata)
 
     for _ in range(reprompting_frequency):
 
         failed_instructions = []
 
+        ## Loop to check for failed instructions
         for x in aimon_response.detect_response.instruction_adherence['results']:
             if x['adherence'] == False:
                 failed_instructions.append(x['instruction'])
 
         if hallucination_threshold > 0 and (aimon_response.detect_response.hallucination['score'] >= hallucination_threshold or len(failed_instructions)>0):
-            ## The logic assumes that the ask_and_validate function passed in as a parameter is decorated with the AIMon "detect" function. 
-            context, user_query, user_instructions, llm_response, aimon_response = ask_and_validate(user_query, user_instructions, retriever, llm=conservative_llm)
+            
+            new_response = get_response(user_query, conservative_llm)
+            
+            context, user_query, user_instructions, llm_response, aimon_response = extract_response_metadata(user_query, user_instructions, new_response)
+
         else:
             break
     

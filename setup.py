@@ -15,6 +15,12 @@ setup(
         "pydantic==2.9.2",
         "pydantic-core==2.23.4",
     ],
+    ## Has to be installed as: pip install aimon[aimon_llamaindex]
+    extras_require={
+        "aimon_llamaindex":[
+        "llama-index",
+        ],
+    },
     author='AIMon',
     author_email='info@aimon.ai',
     description='The AIMon SDK that is used to interact with the AIMon API and the product.',

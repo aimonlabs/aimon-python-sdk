@@ -30,7 +30,6 @@ from ._utils import (
     get_required_header as get_required_header,
     maybe_coerce_boolean as maybe_coerce_boolean,
     maybe_coerce_integer as maybe_coerce_integer,
-    extract_response_metadata as extract_response_metadata,
     llm_reprompting_function as llm_reprompting_function,
 )
 from ._typing import (

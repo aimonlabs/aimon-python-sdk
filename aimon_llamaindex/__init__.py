@@ -1,1 +1,1 @@
-from .main import generate_embeddings_for_docs, build_index, build_retriever, get_response
+from .main import generate_embeddings_for_docs, build_index, build_retriever, get_response, extract_response_metadata

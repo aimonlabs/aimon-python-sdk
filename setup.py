@@ -7,7 +7,7 @@ with open("README_PyPi.md", "r", encoding="utf-8") as fh:
 setup(
     name='aimon',
     python_requires='>3.8.0',
-    packages=find_packages(),
+    packages=find_packages(exclude=['aimon_llamaindex', 'aimon_llamaindex.*']),
     version="0.8.0",
     install_requires=[
         "httpx",
@@ -15,9 +15,10 @@ setup(
         "pydantic==2.9.2",
         "pydantic-core==2.23.4",
     ],
-    ## Has to be installed as: pip install aimon[aimon_llamaindex]
+    ## Has to be installed as: pip install aimon[aimon-llamaindex]
+    ## This will include the aimon_llamaindex package (which was excluded during the default installation)
     extras_require={
-        "aimon_llamaindex":[
+        "aimon-llamaindex":[
         "llama-index",
         ],
     },

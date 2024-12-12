@@ -29,6 +29,7 @@ _MappingT = TypeVar("_MappingT", bound=Mapping[str, object])
 _SequenceT = TypeVar("_SequenceT", bound=Sequence[object])
 CallableT = TypeVar("CallableT", bound=Callable[..., Any])
 
+## Define static system prompt
 
 def flatten(t: Iterable[Iterable[_T]]) -> list[_T]:
     return [item for sublist in t for item in sublist]
@@ -396,33 +397,6 @@ def lru_cache(*, maxsize: int | None = 128) -> Callable[[CallableT], CallableT]:
     return cast(Any, wrapper)  # type: ignore[no-any-return]
 
 
-def extract_response_metadata(user_query, user_instructions, response):
-
-    import logging
-
-    def get_source_docs(chat_response):
-      contexts = []
-      relevance_scores = []
-      if hasattr(chat_response, 'source_nodes'):
-          for node in chat_response.source_nodes:
-              if hasattr(node, 'node') and hasattr(node.node, 'text') and hasattr(node,
-                                                                          'score') and node.score is not None:
-                  contexts.append(node.node.text)
-                  relevance_scores.append(node.score)
-              elif hasattr(node, 'text') and hasattr(node, 'score') and node.score is not None:
-                  contexts.append(node.text)
-                  relevance_scores.append(node.score)
-              else:
-                  logging.info("Node does not have required attributes.")
-      else:
-          logging.info("No source_nodes attribute found in the chat response.")
-      return contexts, relevance_scores
-
-    context, relevance_scores = get_source_docs(response)
-
-    return context, user_query, user_instructions, response.response
-
-
 def llm_reprompting_function(user_query, 
                              user_instructions, 
                              llm_response, 
@@ -456,3 +430,5 @@ def llm_reprompting_function(user_query,
             break
     
     return llm_response, aimon_response
+
+## Expose the reprompt-prompt as a static variable

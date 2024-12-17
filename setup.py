@@ -19,7 +19,7 @@ setup(
     extras_require={
         "aimon-llamaindex":[
         "llama-index",
-        "./aimon_llamaindex"
+        "file://./aimon_llamaindex"
         ],
     },
     author='AIMon',

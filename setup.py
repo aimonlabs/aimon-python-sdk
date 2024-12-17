@@ -24,6 +24,13 @@ setup(
         "sniffio==1.3.0",
         "typing-extensions==4.12.2"
     ],
+    ## Has to be installed as: pip install aimon[aimon-llamaindex]
+    extras_require={
+        "aimon-llamaindex":[
+        "llama-index",
+        "file://./aimon_llamaindex"
+        ],
+    },
     author='AIMon',
     author_email='info@aimon.ai',
     description='The AIMon SDK that is used to interact with the AIMon API and the product.',

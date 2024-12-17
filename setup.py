@@ -7,7 +7,7 @@ with open("README_PyPi.md", "r", encoding="utf-8") as fh:
 setup(
     name='aimon',
     python_requires='>3.8.0',
-    packages=find_packages(exclude=[]),         ## After testing, aimon_llamaindex if excluded is not installed with extras
+    packages=find_packages(),
     version="0.8.0",
     install_requires=[
         "httpx",
@@ -19,6 +19,7 @@ setup(
     extras_require={
         "aimon-llamaindex":[
         "llama-index",
+        "./aimon_llamaindex"
         ],
     },
     author='AIMon',

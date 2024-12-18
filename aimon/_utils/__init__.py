@@ -31,6 +31,7 @@ from ._utils import (
     maybe_coerce_boolean as maybe_coerce_boolean,
     maybe_coerce_integer as maybe_coerce_integer,
     llm_reprompting_function as llm_reprompting_function,
+    static_system_prompt as static_system_prompt
 )
 from ._typing import (
     is_list_type as is_list_type,

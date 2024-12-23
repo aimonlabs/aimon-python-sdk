@@ -34,13 +34,13 @@ def react(  llm_app,
     ## Decorating the context_extractor function with AIMon's "detect"
     context_extractor = detect(context_extractor)
     
-    _, _, _, query_result, aimon_response = context_extractor(llm_response, user_query, user_instructions)
+    _, _, _, query_result, aimon_response = context_extractor(user_query, user_instructions, llm_response)
 
     for _ in range(react_configuration.max_attempts):
 
         if aimon_response.detect_response.hallucination['score'] > react_configuration.hallucination_threshold: 
             llm_response = llm_app(user_query, reprompted_flag=True)
-            _, _, _, query_result, aimon_response = context_extractor(llm_response, user_query, user_instructions)
+            _, _, _, query_result, aimon_response = context_extractor(user_query, user_instructions, llm_response)
 
     return query_result
 

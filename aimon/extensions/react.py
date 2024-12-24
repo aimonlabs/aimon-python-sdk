@@ -54,19 +54,7 @@ def react(  llm_app,
 
             _, _, _, query_result, aimon_response = context_extractor(user_query, user_instructions, llm_response)
 
+    if hallucination_score > react_configuration.hallucination_threshold:
+        return f"The generated LLM response, even after {react_configuration.max_attempts} attempts of ReAct is still hallucinated. The response: {query_result}"
+
     return query_result
-
-
-
-
-## llm_app is a function that has both conservative and creative LLMs to its access
-## returns the LLM's response to the user's query
-
-## Template for llm_app function
-# def llm_app(user_query, user_instructions, reprompted_flag=False):
-#     from aimon_llamaindex import get_response
-#     if reprompted_flag==False:
-#         return get_response(user_query, retriever, llm_creative)
-#     else:
-#         llm_conservative.system_prompt += user_instructions
-#         return get_response(user_query, retriever, llm_conservative)

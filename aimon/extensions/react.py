@@ -44,11 +44,13 @@ def react(  llm_app,
             if x['adherence'] == False:
                 failed_instructions.append(x['instruction'])
 
+        hallucination_score = aimon_response.detect_response.hallucination['score'] 
+
         ## Check whether the hallucination score is greater than the required threshold OR if any of the supplied instructions are not complied with
         if  react_configuration.hallucination_threshold > 0 and \
-            (aimon_response.detect_response.hallucination['score'] > react_configuration.hallucination_threshold or len(failed_instructions)>0): 
+            (hallucination_score > react_configuration.hallucination_threshold or len(failed_instructions)>0): 
             
-            llm_response = llm_app(user_query, user_instructions, reprompted_flag=True)
+            llm_response = llm_app(user_query, user_instructions, reprompted_flag=True, hallucination_score=hallucination_score)
 
             _, _, _, query_result, aimon_response = context_extractor(user_query, user_instructions, llm_response)
 

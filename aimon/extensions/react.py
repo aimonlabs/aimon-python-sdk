@@ -29,7 +29,7 @@ def react(  llm_app,
                     model_name = react_configuration.model_name,
                 )
 
-    llm_response = llm_app(user_query, reprompted_flag=False)
+    llm_response = llm_app(user_query, user_instructions, reprompted_flag=False)
 
     ## Decorating the context_extractor function with AIMon's "detect"
     context_extractor = detect(context_extractor)
@@ -38,25 +38,33 @@ def react(  llm_app,
 
     for _ in range(react_configuration.max_attempts):
 
-        if aimon_response.detect_response.hallucination['score'] > react_configuration.hallucination_threshold: 
-            llm_response = llm_app(user_query, reprompted_flag=True)
+        failed_instructions = []
+        ## Loop to check for failed instructions
+        for x in aimon_response.detect_response.instruction_adherence['results']:
+            if x['adherence'] == False:
+                failed_instructions.append(x['instruction'])
+
+        ## Check whether the hallucination score is greater than the required threshold OR if any of the supplied instructions are not complied with
+        if  react_configuration.hallucination_threshold > 0 and \
+            (aimon_response.detect_response.hallucination['score'] > react_configuration.hallucination_threshold or len(failed_instructions)>0): 
+            
+            llm_response = llm_app(user_query, user_instructions, reprompted_flag=True)
+
             _, _, _, query_result, aimon_response = context_extractor(user_query, user_instructions, llm_response)
 
     return query_result
 
 
-## To do:
-## Add instruction adherence logic in the next iteration
 
 
 ## llm_app is a function that has both conservative and creative LLMs to its access
 ## returns the LLM's response to the user's query
 
 ## Template for llm_app function
-# def llm_app(user_query, reprompted_flag=False):
-#     creative_llm: function
-#     conservative_llm: function
+# def llm_app(user_query, user_instructions, reprompted_flag=False):
+#     from aimon_llamaindex import get_response
 #     if reprompted_flag==False:
-#         return creative_llm.query(user_query)
+#         return get_response(user_query, retriever, llm_creative)
 #     else:
-#         return conservative_llm.query(user_query)
+#         llm_conservative.system_prompt += user_instructions
+#         return get_response(user_query, retriever, llm_conservative)

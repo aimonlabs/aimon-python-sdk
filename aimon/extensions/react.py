@@ -42,6 +42,23 @@ class React:
 
         return aimon_payload
 
+    def detect_aimon_response(self,aimon_payload):
+        
+        try:
+            detect_response = self.client.inference.detect(body=[aimon_payload])
+            # Check if the response is a list
+            if isinstance(detect_response, list) and len(detect_response) > 0:
+                detect_result = detect_response[0]
+            elif isinstance(detect_response, dict):
+                detect_result = detect_response  # Single dict response
+            else:
+                raise ValueError("Unexpected response format from detect API: {}".format(detect_response))
+        except Exception as e:
+                # Log the error and raise it
+                print(f"Error during detection: {e}")
+                raise
+        
+        return detect_result
 
     ## ReAct -> Reason and Act
     def react(self, user_query, user_instructions,):
@@ -58,7 +75,7 @@ class React:
     
         aimon_payload = self.create_payload(context, user_query, user_instructions, generated_text)
     
-        detect_response = self.client.inference.detect(body=[aimon_payload])
+        detect_response = self.detect_aimon_response(aimon_payload)
 
         for _ in range(self.react_configuration.max_attempts):
 
@@ -86,7 +103,8 @@ class React:
 
                 new_aimon_payload = self.create_payload(context, user_query, user_instructions, generated_text)
 
-                detect_response = self.client.inference.detect(body=[new_aimon_payload])
+                detect_response = self.detect_aimon_response(new_aimon_payload)
+
 
         if hallucination_score > self.react_configuration.hallucination_threshold:
             return f"The generated LLM response, even after {self.react_configuration.max_attempts} attempts of ReAct is still hallucinated. The response: {generated_text}"

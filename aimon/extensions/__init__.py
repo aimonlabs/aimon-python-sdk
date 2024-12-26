@@ -1,1 +1,1 @@
-from .react import ReactConfig, react
+from .react import ReactConfig, React

@@ -1,5 +1,5 @@
+from aimon import Client
 from typing import Optional
-from aimon import Client, Detect
 from dataclasses import dataclass
 
 @dataclass

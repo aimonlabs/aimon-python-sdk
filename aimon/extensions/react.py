@@ -1,16 +1,16 @@
+from typing import Optional
 from aimon import Client, Detect
 from dataclasses import dataclass
 
 @dataclass
 class ReactConfig:
     publish: bool
-    async_mode:bool
-    model_name: str
     max_attempts: int
     aimon_api_key: str
-    application_name: str
     hallucination_threshold: float
-    framework:str = None
+    framework: Optional[str] = None
+    model_name: Optional[str] = "aimon-react-model"
+    application_name: Optional[str] = "aimon-react-application"
 
 class React:
     
@@ -32,7 +32,6 @@ class React:
         }
 
         aimon_payload['publish'] = self.react_configuration.publish
-        aimon_payload['async_mode'] = self.react_configuration.async_mode
         aimon_payload['config'] = { 'hallucination': {'detector_name': 'default'},
                                     'instruction_adherence': {'detector_name': 'default'},}
 

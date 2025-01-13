@@ -93,8 +93,8 @@ class React:
         hallucination_score = detect_response.hallucination['score'] 
 
         # result.append([generated_text, hallucination_score])
-        result['response'].append(generated_text)
-        result['hscore'].append(hallucination_score)
+        result['responses'].append(generated_text)
+        result['hallucination_scores'].append(hallucination_score)
         
         for _ in range(self.react_configuration.max_attempts):
 
@@ -130,28 +130,28 @@ class React:
 
                 hallucination_score = detect_response.hallucination['score'] 
 
-                result['response'].append(generated_text)
-                result['hscore'].append(hallucination_score)
+                result['responses'].append(generated_text)
+                result['hallucination_scores'].append(hallucination_score)
             
             else:
                 break
         
     
         if hallucination_score > self.react_configuration.hallucination_threshold and result['adherence']==False:
-            result['response'].append(f"Even after {self.react_configuration.max_attempts} attempts of AIMon react, the LLM neither adheres to the user instructions, nor generates a response that is not hallucinated. Final LLM response: {generated_text}")
-            result['hscore'].append(hallucination_score)
+            result['responses'].append(f"Even after {self.react_configuration.max_attempts} attempts of AIMon react, the LLM neither adheres to the user instructions, nor generates a response that is not hallucinated. Final LLM response: {generated_text}")
+            result['hallucination_scores'].append(hallucination_score)
             result['react_score']=0
         elif hallucination_score > self.react_configuration.hallucination_threshold and result['adherence']==True:
-            result['response'].append(f"Although the LLM adheres to the user instructions, the generated response, even after {self.react_configuration.max_attempts} attempts of AIMon ReAct is still hallucinated. Final LLM response: {generated_text}")
-            result['hscore'].append(hallucination_score)
+            result['responses'].append(f"Although the LLM adheres to the user instructions, the generated response, even after {self.react_configuration.max_attempts} attempts of AIMon ReAct is still hallucinated. Final LLM response: {generated_text}")
+            result['hallucination_scores'].append(hallucination_score)
             result['react_score']=0.5
         elif hallucination_score <= self.react_configuration.hallucination_threshold and result['adherence']==False:
-            result['response'].append(f"Although the LLM generates a non-hallucinated response, it fails to adhere to the user instructions, even after {self.react_configuration.max_attempts} attempts of AIMon ReAct. Final LLM response: {generated_text}")
-            result['hscore'].append(hallucination_score)
+            result['responses'].append(f"Although the LLM generates a non-hallucinated response, it fails to adhere to the user instructions, even after {self.react_configuration.max_attempts} attempts of AIMon ReAct. Final LLM response: {generated_text}")
+            result['hallucination_scores'].append(hallucination_score)
             result['react_score']=0.5
         else:
-            result['response'].append(f"This response is below the hallucination threshold and adheres to the user instructions. Response {generated_text}")
-            result['hscore'].append(hallucination_score)
+            result['responses'].append(f"This response is below the hallucination threshold and adheres to the user instructions. Response {generated_text}")
+            result['hallucination_scores'].append(hallucination_score)
             result['react_score']=1
 
         return result

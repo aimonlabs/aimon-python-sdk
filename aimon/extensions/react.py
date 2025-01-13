@@ -62,7 +62,11 @@ class React:
     ## ReAct -> Reason and Act
     def react(self, user_query, user_instructions,):
 
-        result = []
+        result = {
+            'response': [],
+            'hscore':[],
+            'adherence':True            ## True by default
+        }
  
         llm_response = self.llm_app(user_query, user_instructions, reprompted_flag=False)
         
@@ -80,19 +84,27 @@ class React:
         
         hallucination_score = detect_response.hallucination['score'] 
 
-        result.append([generated_text, hallucination_score])
-
+        # result.append([generated_text, hallucination_score])
+        result['response'].append(generated_text)
+        result['hscore'].append(hallucination_score)
+        
         for _ in range(self.react_configuration.max_attempts):
 
             failed_instructions = []
+            failed_instruction_counter = 0
             ## Loop to check for failed instructions
             for x in detect_response.instruction_adherence['results']:
                 if x['adherence'] == False:
+                    failed_instruction_counter+=1
                     failed_instructions.append(x['instruction'])
+                    result['adherence']=False
+            
+            if failed_instruction_counter == 0:
+                result['adherence']=True
 
             ## Check whether the hallucination score is greater than the required threshold OR if any of the supplied instructions are not complied with
             if  self.react_configuration.hallucination_threshold > 0 and \
-                (hallucination_score > self.react_configuration.hallucination_threshold or len(failed_instructions)>0): 
+                (hallucination_score > self.react_configuration.hallucination_threshold or failed_instruction_counter>0): 
                 
                 llm_response = self.llm_app(user_query, user_instructions, reprompted_flag=True, hallucination_score=hallucination_score)
                 
@@ -110,12 +122,14 @@ class React:
 
                 hallucination_score = detect_response.hallucination['score'] 
 
-                result.append([generated_text, hallucination_score])
+                result['response'].append(generated_text)
+                result['hscore'].append(hallucination_score)
             
             else:
                 break
 
         if hallucination_score > self.react_configuration.hallucination_threshold:
-            result.append([f"The generated LLM response, even after {self.react_configuration.max_attempts} attempts of AIMon ReAct is still hallucinated. Final LLM response: {generated_text}", hallucination_score])
-
+            result['response'].append(f"The generated LLM response, even after {self.react_configuration.max_attempts} attempts of AIMon ReAct is still hallucinated. Final LLM response: {generated_text}")
+            result['hscore'].append(hallucination_score)
+        
         return result

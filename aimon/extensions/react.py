@@ -1,16 +1,25 @@
+import os
 from aimon import Client
 from typing import Optional
 from dataclasses import dataclass
+
+import random
+import string
+
+def generate_random_string(length):
+  """Generates a random string of letters and digits."""
+  characters = string.ascii_letters + string.digits
+  return ''.join(random.choice(characters) for i in range(length))
 
 @dataclass
 class ReactConfig:
     publish: bool
     max_attempts: int
-    aimon_api_key: str
     hallucination_threshold: float
     framework: Optional[str] = None
-    model_name: Optional[str] = "aimon-react-model"
-    application_name: Optional[str] = "aimon-react-application"
+    aimon_api_key: Optional[str] = os.getenv("AIMON_API_KEY")
+    model_name: Optional[str] = "aimon-react-model" + generate_random_string(5)
+    application_name: Optional[str] = "aimon-react-application" + generate_random_string(5)
 
 class React:
     
@@ -65,15 +74,15 @@ class React:
         AIMon-ReAct -> Reason and Act with AIMon
 
         where ReAct score: 
-            1    if after n attempts of ReAct, the LLM follows instructions and generates a non hallucinated response.
-            0.5  if after n attempts of ReAct, either the LLM response follows user_instructions or is under hallucination threshold [BUT NOT BOTH]. 
-            0    otherwise.
+                            1.0     if after n attempts of ReAct, the LLM follows instructions and generates a non hallucinated response.
+                            0.5     if after n attempts of ReAct, either the LLM response follows user_instructions or is under hallucination threshold [BUT NOT BOTH]. 
+                            0.0     otherwise.
         """
         result = {
             'responses':             [],
             'hallucination_scores':  [],
             'adherence':             [],                
-            'react_score':           0     ## 0 by assumption
+            'react_score':           0.0     ## 0.0 by assumption
         }
 
         llm_response = self.llm_app(user_query, user_instructions, reprompted_flag=False)
@@ -81,7 +90,7 @@ class React:
         context = self.context_extractor(user_query, user_instructions, llm_response)    
 
         ## Generated text for LLM Response, if the user employs the LlamaIndex framework
-        if llm_response.response or self.react_configuration.framework=="llamaindex":
+        if self.react_configuration.framework=="llamaindex" or llm_response.response:
             generated_text = llm_response.response
         else:
             generated_text = llm_response
@@ -118,7 +127,7 @@ class React:
                 context = self.context_extractor(user_query, user_instructions, llm_response)
                 
                 ## Generated text for LLM Response, if the user employs the LlamaIndex framework
-                if llm_response.response or self.react_configuration.framework=="llamaindex":
+                if self.react_configuration.framework=="llamaindex" or llm_response.response:
                     generated_text = llm_response.response
                 else:
                     generated_text = llm_response
@@ -151,7 +160,7 @@ class React:
         if hallucination_score > self.react_configuration.hallucination_threshold and adherence==False:
             # result['responses'].append(f"Even after {self.react_configuration.max_attempts} attempts of AIMon react, the LLM neither adheres to the user instructions, nor generates a response that is not hallucinated. Final LLM response: {generated_text}")
             # result['hallucination_scores'].append(hallucination_score)
-            result['react_score']=0
+            result['react_score']=0.0
         elif hallucination_score > self.react_configuration.hallucination_threshold and adherence==True:
             # result['responses'].append(f"Although the LLM adheres to the user instructions, the generated response, even after {self.react_configuration.max_attempts} attempts of AIMon ReAct is still hallucinated. Final LLM response: {generated_text}")
             # result['hallucination_scores'].append(hallucination_score)
@@ -163,6 +172,6 @@ class React:
         else:
             # result['responses'].append(f"This response is below the hallucination threshold and adheres to the user instructions. Response {generated_text}")
             # result['hallucination_scores'].append(hallucination_score)
-            result['react_score']=1
+            result['react_score']=1.0
 
         return result

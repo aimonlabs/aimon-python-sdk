@@ -102,15 +102,17 @@ class React:
         hallucination_score = detect_response.hallucination['score'] 
 
         failed_instruction_counter = 0
+        ia_feedback = ""
         ## Loop to check for failed instructions
         for x in detect_response.instruction_adherence['results']:
             if x['adherence'] == False:
                 failed_instruction_counter+=1
                 adherence = False
-                break
+                ia_feedback += f"For the instruction {x['instruction']}, the adherence detector evaluated that {x['detailed_explanation']}."
         if failed_instruction_counter == 0:
             adherence = True
-
+        if ia_feedback=="":
+            ia_feedback="All the instructions were complied with."
         ## Baseline
         result['adherence'].append(adherence)
         result['responses'].append(generated_text)
@@ -122,7 +124,12 @@ class React:
             if  self.react_configuration.hallucination_threshold > 0 and \
                 (hallucination_score > self.react_configuration.hallucination_threshold or failed_instruction_counter>0): 
                 
-                llm_response = self.llm_app(user_query, user_instructions, reprompted_flag=True, hallucination_score=hallucination_score)
+                llm_response = self.llm_app(user_query, 
+                                            user_instructions, 
+                                            reprompted_flag=True, 
+                                            last_llm_response = generated_text, 
+                                            hallucination_score=hallucination_score, 
+                                            ia_feedback = ia_feedback)
                 
                 context = self.context_extractor(user_query, user_instructions, llm_response)
                 
@@ -138,16 +145,18 @@ class React:
 
                 hallucination_score = detect_response.hallucination['score'] 
 
-                
+                ia_feedback = ""
                 failed_instruction_counter = 0
 
                 for x in detect_response.instruction_adherence['results']:
                     if x['adherence'] == False:
                         failed_instruction_counter+=1
                         adherence = False
-                        break
+                        ia_feedback += f"For the instruction {x['instruction']}, the adherence detector evaluated that {x['detailed_explanation']}."
                 if failed_instruction_counter == 0:
                     adherence = True
+                if ia_feedback=="":
+                    ia_feedback="All the instructions were complied with."
             
                 result['adherence'].append(adherence)
                 result['responses'].append(generated_text)

@@ -301,6 +301,14 @@ def evaluate(
         if "instructions" in record and "instruction_adherence" in config:
             # Only pass instructions if instruction_adherence is specified in the config
             payload["instructions"] = record["instructions"] or ""
+        
+        if "retrieval_relevance" in config and len(config)==1:
+            if "task_definition" not in record:
+                raise ValueError("When only retrieval_relevance is specified in the config, "
+                                "'task_definition' must be present in the dataset")
+        if "task_definition" in record:
+            payload["task_definition"] = record["task_definition"]
+
         payload["config"] = config
         results.append(EvaluateResponse(record['output'], client.analyze.create(body=[payload])))
 
@@ -447,6 +455,14 @@ class AnalyzeEval(AnalyzeBase):
             if "instructions" in record and "instruction_adherence" in self.config:
                 # Only pass instructions if instruction_adherence is specified in the config
                 payload["instructions"] = record["instructions"] or ""
+            
+            if "retrieval_relevance" in self.config and len(self.config)==1:
+                if "task_definition" not in record:
+                    raise ValueError("When only retrieval_relevance is specified in the config, "
+                                    "'task_definition' must be present in the dataset")
+            if "task_definition" in record:
+                payload["task_definition"] = record["task_definition"]
+
             payload["config"] = self.config
             results.append((result, self.client.analyze.create(body=[payload])))
         return results
@@ -522,6 +538,8 @@ class AnalyzeProd(AnalyzeBase):
             aimon_payload['instructions'] = result_dict['instructions']
         if 'actual_request_timestamp' in result_dict:
             aimon_payload["actual_request_timestamp"] = result_dict['actual_request_timestamp']
+        if 'task_definition' in result_dict:
+            aimon_payload['task_definition'] = result_dict['task_definition']
 
         aimon_payload['config'] = self.config
         aimon_response = self.client.analyze.create(body=[aimon_payload])

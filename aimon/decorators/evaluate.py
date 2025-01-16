@@ -302,12 +302,12 @@ def evaluate(
             # Only pass instructions if instruction_adherence is specified in the config
             payload["instructions"] = record["instructions"] or ""
         
-        if "retrieval_relevance" in config and len(config)==1:
-            if "task_definition" not in record:
-                raise ValueError("When only retrieval_relevance is specified in the config, "
-                                "'task_definition' must be present in the dataset")
-        if "task_definition" in record:
-            payload["task_definition"] = record["task_definition"]
+        if "retrieval_relevance" in config:
+            if "task_definition" in record:
+                payload["task_definition"] = record["task_definition"]
+            else:
+                raise ValueError(   "When retrieval_relevance is specified in the config, "
+                                    "'task_definition' must be present in the dataset")
 
         payload["config"] = config
         results.append(EvaluateResponse(record['output'], client.analyze.create(body=[payload])))
@@ -456,12 +456,12 @@ class AnalyzeEval(AnalyzeBase):
                 # Only pass instructions if instruction_adherence is specified in the config
                 payload["instructions"] = record["instructions"] or ""
             
-            if "retrieval_relevance" in self.config and len(self.config)==1:
-                if "task_definition" not in record:
-                    raise ValueError("When only retrieval_relevance is specified in the config, "
-                                    "'task_definition' must be present in the dataset")
-            if "task_definition" in record:
-                payload["task_definition"] = record["task_definition"]
+            if "retrieval_relevance" in self.config:
+                if "task_definition" in record:
+                    payload["task_definition"] = record["task_definition"]
+                else:
+                    raise ValueError(   "When retrieval_relevance is specified in the config, "
+                                        "'task_definition' must be present in the dataset")
 
             payload["config"] = self.config
             results.append((result, self.client.analyze.create(body=[payload])))
@@ -505,6 +505,11 @@ class AnalyzeProd(AnalyzeBase):
         if "instruction_adherence" in self.config and "instructions" not in self.values_returned:
             raise ValueError(
                 "When instruction_adherence is specified in the config, 'instructions' must be returned by the decorated function")
+        
+        if "retrieval_relevance" in self.config and "task_definition" not in self.values_returned:
+                raise ValueError(   "When retrieval_relevance is specified in the config, "
+                                    "'task_definition' must be returned by the decorated function")
+
         if "instructions" in self.values_returned and "instruction_adherence" not in self.config:
             raise ValueError(
                 "instruction_adherence must be specified in the config for returning 'instructions' by the decorated function")

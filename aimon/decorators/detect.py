@@ -194,12 +194,13 @@ class Detect:
             if 'instructions' in result_dict:
                 aimon_payload['instructions'] = result_dict['instructions']
 
-            if 'retrieval_relevance' in self.config and len(self.config)==1:
-                if 'task_definition' not in result_dict:
-                    raise ValueError(   "When only retrieval_relevance is specified in the config, "
+            if 'retrieval_relevance' in self.config:
+                if 'task_definition' in result_dict:
+                    aimon_payload['task_definition'] = result_dict['task_definition']
+                else:
+                    raise ValueError(   "When retrieval_relevance is specified in the config, "
                                         "'task_definition' must be present in the result of the wrapped function.")
-            if 'task_definition' in result_dict:
-                aimon_payload['task_definition'] = result_dict['task_definition']
+            
 
             aimon_payload['config'] = self.config
             aimon_payload['publish'] = self.publish

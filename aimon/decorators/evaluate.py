@@ -301,6 +301,14 @@ def evaluate(
         if "instructions" in record and "instruction_adherence" in config:
             # Only pass instructions if instruction_adherence is specified in the config
             payload["instructions"] = record["instructions"] or ""
+        
+        if "retrieval_relevance" in config:
+            if "task_definition" in record:
+                payload["task_definition"] = record["task_definition"]
+            else:
+                raise ValueError(   "When retrieval_relevance is specified in the config, "
+                                    "'task_definition' must be present in the dataset")
+
         payload["config"] = config
         results.append(EvaluateResponse(record['output'], client.analyze.create(body=[payload])))
 
@@ -447,6 +455,14 @@ class AnalyzeEval(AnalyzeBase):
             if "instructions" in record and "instruction_adherence" in self.config:
                 # Only pass instructions if instruction_adherence is specified in the config
                 payload["instructions"] = record["instructions"] or ""
+            
+            if "retrieval_relevance" in self.config:
+                if "task_definition" in record:
+                    payload["task_definition"] = record["task_definition"]
+                else:
+                    raise ValueError(   "When retrieval_relevance is specified in the config, "
+                                        "'task_definition' must be present in the dataset")
+
             payload["config"] = self.config
             results.append((result, self.client.analyze.create(body=[payload])))
         return results
@@ -489,6 +505,11 @@ class AnalyzeProd(AnalyzeBase):
         if "instruction_adherence" in self.config and "instructions" not in self.values_returned:
             raise ValueError(
                 "When instruction_adherence is specified in the config, 'instructions' must be returned by the decorated function")
+        
+        if "retrieval_relevance" in self.config and "task_definition" not in self.values_returned:
+                raise ValueError(   "When retrieval_relevance is specified in the config, "
+                                    "'task_definition' must be returned by the decorated function")
+
         if "instructions" in self.values_returned and "instruction_adherence" not in self.config:
             raise ValueError(
                 "instruction_adherence must be specified in the config for returning 'instructions' by the decorated function")
@@ -522,6 +543,8 @@ class AnalyzeProd(AnalyzeBase):
             aimon_payload['instructions'] = result_dict['instructions']
         if 'actual_request_timestamp' in result_dict:
             aimon_payload["actual_request_timestamp"] = result_dict['actual_request_timestamp']
+        if 'task_definition' in result_dict:
+            aimon_payload['task_definition'] = result_dict['task_definition']
 
         aimon_payload['config'] = self.config
         aimon_response = self.client.analyze.create(body=[aimon_payload])

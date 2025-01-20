@@ -8,7 +8,7 @@ setup(
     name='aimon',
     python_requires='>3.8.0',
     packages=find_packages(),
-    version="0.8.1",
+    version="0.9.0",
     install_requires=[
         "annotated-types==0.6.0",
         "anyio==4.4.0",
@@ -17,10 +17,10 @@ setup(
         "exceptiongroup==1.2.2",
         "h11==0.14.0",
         "httpcore==1.0.2",
-        "httpx==0.25.2",
+        "httpx==0.28.1",
         "idna==3.4",
-        "pydantic==2.9.2",
-        "pydantic-core==2.23.4",
+        "pydantic==2.10.3",
+        "pydantic-core==2.27.1",
         "sniffio==1.3.0",
         "typing-extensions==4.12.2"
     ],

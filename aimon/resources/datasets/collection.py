@@ -31,10 +31,21 @@ __all__ = ["CollectionResource", "AsyncCollectionResource"]
 class CollectionResource(SyncAPIResource):
     @cached_property
     def with_raw_response(self) -> CollectionResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return the
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/stainless-sdks/aimonlabs-python#accessing-raw-response-data-eg-headers
+        """
         return CollectionResourceWithRawResponse(self)
 
     @cached_property
     def with_streaming_response(self) -> CollectionResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/stainless-sdks/aimonlabs-python#with_streaming_response
+        """
         return CollectionResourceWithStreamingResponse(self)
 
     def create(
@@ -129,10 +140,21 @@ class CollectionResource(SyncAPIResource):
 class AsyncCollectionResource(AsyncAPIResource):
     @cached_property
     def with_raw_response(self) -> AsyncCollectionResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return the
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/stainless-sdks/aimonlabs-python#accessing-raw-response-data-eg-headers
+        """
         return AsyncCollectionResourceWithRawResponse(self)
 
     @cached_property
     def with_streaming_response(self) -> AsyncCollectionResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/stainless-sdks/aimonlabs-python#with_streaming_response
+        """
         return AsyncCollectionResourceWithStreamingResponse(self)
 
     async def create(

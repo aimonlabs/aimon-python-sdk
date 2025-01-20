@@ -29,10 +29,21 @@ __all__ = ["InferenceResource", "AsyncInferenceResource"]
 class InferenceResource(SyncAPIResource):
     @cached_property
     def with_raw_response(self) -> InferenceResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return the
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/stainless-sdks/aimonlabs-python#accessing-raw-response-data-eg-headers
+        """
         return InferenceResourceWithRawResponse(self)
 
     @cached_property
     def with_streaming_response(self) -> InferenceResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/stainless-sdks/aimonlabs-python#with_streaming_response
+        """
         return InferenceResourceWithStreamingResponse(self)
 
     def detect(
@@ -71,10 +82,21 @@ class InferenceResource(SyncAPIResource):
 class AsyncInferenceResource(AsyncAPIResource):
     @cached_property
     def with_raw_response(self) -> AsyncInferenceResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return the
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/stainless-sdks/aimonlabs-python#accessing-raw-response-data-eg-headers
+        """
         return AsyncInferenceResourceWithRawResponse(self)
 
     @cached_property
     def with_streaming_response(self) -> AsyncInferenceResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/stainless-sdks/aimonlabs-python#with_streaming_response
+        """
         return AsyncInferenceResourceWithStreamingResponse(self)
 
     async def detect(

@@ -8,7 +8,7 @@ from typing_extensions import Self, override
 
 import httpx
 
-from . import resources, _exceptions
+from . import _exceptions
 from ._qs import Querystring
 from ._types import (
     NOT_GIVEN,
@@ -24,6 +24,7 @@ from ._utils import (
     get_async_library,
 )
 from ._version import __version__
+from .resources import users, models, analyze, inference, retrieval
 from ._streaming import Stream as Stream, AsyncStream as AsyncStream
 from ._exceptions import APIStatusError
 from ._base_client import (
@@ -31,18 +32,22 @@ from ._base_client import (
     SyncAPIClient,
     AsyncAPIClient,
 )
+from .resources.datasets import datasets
+from .resources.evaluations import evaluations
+from .resources.applications import applications
 
-__all__ = ["Timeout", "Transport", "ProxiesTypes", "RequestOptions", "resources", "Client", "AsyncClient"]
+__all__ = ["Timeout", "Transport", "ProxiesTypes", "RequestOptions", "Client", "AsyncClient"]
 
 
 class Client(SyncAPIClient):
-    users: resources.UsersResource
-    models: resources.ModelsResource
-    applications: resources.ApplicationsResource
-    datasets: resources.DatasetsResource
-    evaluations: resources.EvaluationsResource
-    analyze: resources.AnalyzeResource
-    inference: resources.InferenceResource
+    users: users.UsersResource
+    models: models.ModelsResource
+    applications: applications.ApplicationsResource
+    datasets: datasets.DatasetsResource
+    evaluations: evaluations.EvaluationsResource
+    analyze: analyze.AnalyzeResource
+    inference: inference.InferenceResource
+    retrieval: retrieval.RetrievalResource
     with_raw_response: ClientWithRawResponse
     with_streaming_response: ClientWithStreamedResponse
 
@@ -91,13 +96,14 @@ class Client(SyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
-        self.users = resources.UsersResource(self)
-        self.models = resources.ModelsResource(self)
-        self.applications = resources.ApplicationsResource(self)
-        self.datasets = resources.DatasetsResource(self)
-        self.evaluations = resources.EvaluationsResource(self)
-        self.analyze = resources.AnalyzeResource(self)
-        self.inference = resources.InferenceResource(self)
+        self.users = users.UsersResource(self)
+        self.models = models.ModelsResource(self)
+        self.applications = applications.ApplicationsResource(self)
+        self.datasets = datasets.DatasetsResource(self)
+        self.evaluations = evaluations.EvaluationsResource(self)
+        self.analyze = analyze.AnalyzeResource(self)
+        self.inference = inference.InferenceResource(self)
+        self.retrieval = retrieval.RetrievalResource(self)
         self.with_raw_response = ClientWithRawResponse(self)
         self.with_streaming_response = ClientWithStreamedResponse(self)
 
@@ -207,13 +213,14 @@ class Client(SyncAPIClient):
 
 
 class AsyncClient(AsyncAPIClient):
-    users: resources.AsyncUsersResource
-    models: resources.AsyncModelsResource
-    applications: resources.AsyncApplicationsResource
-    datasets: resources.AsyncDatasetsResource
-    evaluations: resources.AsyncEvaluationsResource
-    analyze: resources.AsyncAnalyzeResource
-    inference: resources.AsyncInferenceResource
+    users: users.AsyncUsersResource
+    models: models.AsyncModelsResource
+    applications: applications.AsyncApplicationsResource
+    datasets: datasets.AsyncDatasetsResource
+    evaluations: evaluations.AsyncEvaluationsResource
+    analyze: analyze.AsyncAnalyzeResource
+    inference: inference.AsyncInferenceResource
+    retrieval: retrieval.AsyncRetrievalResource
     with_raw_response: AsyncClientWithRawResponse
     with_streaming_response: AsyncClientWithStreamedResponse
 
@@ -262,13 +269,14 @@ class AsyncClient(AsyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
-        self.users = resources.AsyncUsersResource(self)
-        self.models = resources.AsyncModelsResource(self)
-        self.applications = resources.AsyncApplicationsResource(self)
-        self.datasets = resources.AsyncDatasetsResource(self)
-        self.evaluations = resources.AsyncEvaluationsResource(self)
-        self.analyze = resources.AsyncAnalyzeResource(self)
-        self.inference = resources.AsyncInferenceResource(self)
+        self.users = users.AsyncUsersResource(self)
+        self.models = models.AsyncModelsResource(self)
+        self.applications = applications.AsyncApplicationsResource(self)
+        self.datasets = datasets.AsyncDatasetsResource(self)
+        self.evaluations = evaluations.AsyncEvaluationsResource(self)
+        self.analyze = analyze.AsyncAnalyzeResource(self)
+        self.inference = inference.AsyncInferenceResource(self)
+        self.retrieval = retrieval.AsyncRetrievalResource(self)
         self.with_raw_response = AsyncClientWithRawResponse(self)
         self.with_streaming_response = AsyncClientWithStreamedResponse(self)
 
@@ -379,46 +387,50 @@ class AsyncClient(AsyncAPIClient):
 
 class ClientWithRawResponse:
     def __init__(self, client: Client) -> None:
-        self.users = resources.UsersResourceWithRawResponse(client.users)
-        self.models = resources.ModelsResourceWithRawResponse(client.models)
-        self.applications = resources.ApplicationsResourceWithRawResponse(client.applications)
-        self.datasets = resources.DatasetsResourceWithRawResponse(client.datasets)
-        self.evaluations = resources.EvaluationsResourceWithRawResponse(client.evaluations)
-        self.analyze = resources.AnalyzeResourceWithRawResponse(client.analyze)
-        self.inference = resources.InferenceResourceWithRawResponse(client.inference)
+        self.users = users.UsersResourceWithRawResponse(client.users)
+        self.models = models.ModelsResourceWithRawResponse(client.models)
+        self.applications = applications.ApplicationsResourceWithRawResponse(client.applications)
+        self.datasets = datasets.DatasetsResourceWithRawResponse(client.datasets)
+        self.evaluations = evaluations.EvaluationsResourceWithRawResponse(client.evaluations)
+        self.analyze = analyze.AnalyzeResourceWithRawResponse(client.analyze)
+        self.inference = inference.InferenceResourceWithRawResponse(client.inference)
+        self.retrieval = retrieval.RetrievalResourceWithRawResponse(client.retrieval)
 
 
 class AsyncClientWithRawResponse:
     def __init__(self, client: AsyncClient) -> None:
-        self.users = resources.AsyncUsersResourceWithRawResponse(client.users)
-        self.models = resources.AsyncModelsResourceWithRawResponse(client.models)
-        self.applications = resources.AsyncApplicationsResourceWithRawResponse(client.applications)
-        self.datasets = resources.AsyncDatasetsResourceWithRawResponse(client.datasets)
-        self.evaluations = resources.AsyncEvaluationsResourceWithRawResponse(client.evaluations)
-        self.analyze = resources.AsyncAnalyzeResourceWithRawResponse(client.analyze)
-        self.inference = resources.AsyncInferenceResourceWithRawResponse(client.inference)
+        self.users = users.AsyncUsersResourceWithRawResponse(client.users)
+        self.models = models.AsyncModelsResourceWithRawResponse(client.models)
+        self.applications = applications.AsyncApplicationsResourceWithRawResponse(client.applications)
+        self.datasets = datasets.AsyncDatasetsResourceWithRawResponse(client.datasets)
+        self.evaluations = evaluations.AsyncEvaluationsResourceWithRawResponse(client.evaluations)
+        self.analyze = analyze.AsyncAnalyzeResourceWithRawResponse(client.analyze)
+        self.inference = inference.AsyncInferenceResourceWithRawResponse(client.inference)
+        self.retrieval = retrieval.AsyncRetrievalResourceWithRawResponse(client.retrieval)
 
 
 class ClientWithStreamedResponse:
     def __init__(self, client: Client) -> None:
-        self.users = resources.UsersResourceWithStreamingResponse(client.users)
-        self.models = resources.ModelsResourceWithStreamingResponse(client.models)
-        self.applications = resources.ApplicationsResourceWithStreamingResponse(client.applications)
-        self.datasets = resources.DatasetsResourceWithStreamingResponse(client.datasets)
-        self.evaluations = resources.EvaluationsResourceWithStreamingResponse(client.evaluations)
-        self.analyze = resources.AnalyzeResourceWithStreamingResponse(client.analyze)
-        self.inference = resources.InferenceResourceWithStreamingResponse(client.inference)
+        self.users = users.UsersResourceWithStreamingResponse(client.users)
+        self.models = models.ModelsResourceWithStreamingResponse(client.models)
+        self.applications = applications.ApplicationsResourceWithStreamingResponse(client.applications)
+        self.datasets = datasets.DatasetsResourceWithStreamingResponse(client.datasets)
+        self.evaluations = evaluations.EvaluationsResourceWithStreamingResponse(client.evaluations)
+        self.analyze = analyze.AnalyzeResourceWithStreamingResponse(client.analyze)
+        self.inference = inference.InferenceResourceWithStreamingResponse(client.inference)
+        self.retrieval = retrieval.RetrievalResourceWithStreamingResponse(client.retrieval)
 
 
 class AsyncClientWithStreamedResponse:
     def __init__(self, client: AsyncClient) -> None:
-        self.users = resources.AsyncUsersResourceWithStreamingResponse(client.users)
-        self.models = resources.AsyncModelsResourceWithStreamingResponse(client.models)
-        self.applications = resources.AsyncApplicationsResourceWithStreamingResponse(client.applications)
-        self.datasets = resources.AsyncDatasetsResourceWithStreamingResponse(client.datasets)
-        self.evaluations = resources.AsyncEvaluationsResourceWithStreamingResponse(client.evaluations)
-        self.analyze = resources.AsyncAnalyzeResourceWithStreamingResponse(client.analyze)
-        self.inference = resources.AsyncInferenceResourceWithStreamingResponse(client.inference)
+        self.users = users.AsyncUsersResourceWithStreamingResponse(client.users)
+        self.models = models.AsyncModelsResourceWithStreamingResponse(client.models)
+        self.applications = applications.AsyncApplicationsResourceWithStreamingResponse(client.applications)
+        self.datasets = datasets.AsyncDatasetsResourceWithStreamingResponse(client.datasets)
+        self.evaluations = evaluations.AsyncEvaluationsResourceWithStreamingResponse(client.evaluations)
+        self.analyze = analyze.AsyncAnalyzeResourceWithStreamingResponse(client.analyze)
+        self.inference = inference.AsyncInferenceResourceWithStreamingResponse(client.inference)
+        self.retrieval = retrieval.AsyncRetrievalResourceWithStreamingResponse(client.retrieval)
 
 
 Client = Client

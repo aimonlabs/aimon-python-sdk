@@ -40,6 +40,14 @@ from .inference import (
     InferenceResourceWithStreamingResponse,
     AsyncInferenceResourceWithStreamingResponse,
 )
+from .retrieval import (
+    RetrievalResource,
+    AsyncRetrievalResource,
+    RetrievalResourceWithRawResponse,
+    AsyncRetrievalResourceWithRawResponse,
+    RetrievalResourceWithStreamingResponse,
+    AsyncRetrievalResourceWithStreamingResponse,
+)
 from .evaluations import (
     EvaluationsResource,
     AsyncEvaluationsResource,
@@ -100,4 +108,10 @@ __all__ = [
     "AsyncInferenceResourceWithRawResponse",
     "InferenceResourceWithStreamingResponse",
     "AsyncInferenceResourceWithStreamingResponse",
+    "RetrievalResource",
+    "AsyncRetrievalResource",
+    "RetrievalResourceWithRawResponse",
+    "AsyncRetrievalResourceWithRawResponse",
+    "RetrievalResourceWithStreamingResponse",
+    "AsyncRetrievalResourceWithStreamingResponse",
 ]

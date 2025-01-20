@@ -69,20 +69,20 @@ class Body(TypedDict, total=False):
     generated_text: Required[str]
     """The generated text based on context and user query"""
 
+    application_name: str
+    """The application name for publishing metrics."""
+
+    async_mode: bool
+    """Indicates whether to run the application in async mode."""
+
     config: BodyConfig
     """Configuration for the detection"""
 
-    user_query: str
-    """The user's query"""
+    model_name: str
+    """The model name for publishing metrics for an application."""
 
     publish: bool
-    """If True, the payload will be published to AIMon and can be viewed on the AIMon UI. Default is False."""
+    """Indicates whether to publish metrics."""
 
-    async_mode: bool
-    """If True, the detect() function will return immediately with a DetectResult object. Default is False."""
-
-    application_name: str
-    """Application name"""
-
-    model_name: str
-    """Model name"""
+    user_query: str
+    """The user's query"""

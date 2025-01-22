@@ -10,4 +10,5 @@ __all__ = ["AnalyzeCreateResponse"]
 class AnalyzeCreateResponse(BaseModel):
     message: Optional[str] = None
 
-    status: int
+    status: Optional[int] = None
+    """Status code representing the outcome of the operation"""

@@ -194,6 +194,14 @@ class Detect:
             if 'instructions' in result_dict:
                 aimon_payload['instructions'] = result_dict['instructions']
 
+            if 'retrieval_relevance' in self.config:
+                if 'task_definition' in result_dict:
+                    aimon_payload['task_definition'] = result_dict['task_definition']
+                else:
+                    raise ValueError(   "When retrieval_relevance is specified in the config, "
+                                        "'task_definition' must be present in the result of the wrapped function.")
+            
+
             aimon_payload['config'] = self.config
             aimon_payload['publish'] = self.publish
             aimon_payload['async_mode'] = self.async_mode

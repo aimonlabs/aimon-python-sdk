@@ -69,7 +69,7 @@ class React:
         return detect_result
 
     ## ReAct -> Reason and Act
-    def react(self, user_query, user_instructions,):
+    def react(self, user_query, user_instructions, context = None, llm_response = None):
         """
         AIMon-ReAct -> Reason and Act with AIMon
 
@@ -85,12 +85,13 @@ class React:
             'react_score':           0.0     ## 0.0 by assumption
         }
 
-        llm_response = self.llm_app(user_query, user_instructions, reprompted_flag=False)
-        
-        context = self.context_extractor(user_query, user_instructions, llm_response)    
+        if llm_response == None:
+            llm_response = self.llm_app(user_query, user_instructions, reprompted_flag=False)
 
-        ## Generated text for LLM Response, if the user employs the LlamaIndex framework
-        if self.react_configuration.framework=="llamaindex" or llm_response.response:
+        if context == None:
+            context = self.context_extractor(user_query, user_instructions, llm_response)    
+
+        if llm_response.response:
             generated_text = llm_response.response
         else:
             generated_text = llm_response

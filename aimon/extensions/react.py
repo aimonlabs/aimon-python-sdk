@@ -91,7 +91,9 @@ class React:
         if context == None:
             context = self.context_extractor(user_query, user_instructions, llm_response)    
 
-        if llm_response.response:
+        if isinstance(llm_response, str):
+            generated_text = llm_response
+        elif self.react_configuration.framework=="llamaindex" or hasattr(llm_response, 'response'):
             generated_text = llm_response.response
         else:
             generated_text = llm_response

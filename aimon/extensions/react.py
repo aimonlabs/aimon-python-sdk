@@ -69,7 +69,7 @@ class React:
         return detect_result
 
     ## ReAct -> Reason and Act
-    def react(self, user_query, user_instructions, context = None, llm_response = None):
+    def react(self, user_query, user_instructions):
         """
         AIMon-ReAct -> Reason and Act with AIMon
 
@@ -85,11 +85,9 @@ class React:
             'react_score':           0.0     ## 0.0 by assumption
         }
 
-        if llm_response == None:
-            llm_response = self.llm_app(user_query, user_instructions, reprompted_flag=False)
+        llm_response = self.llm_app(user_query, user_instructions, reprompted_flag=False)
 
-        if context == None:
-            context = self.context_extractor(user_query, user_instructions, llm_response)    
+        context = self.context_extractor(user_query, user_instructions, llm_response)    
 
         if isinstance(llm_response, str):
             generated_text = llm_response

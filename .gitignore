@@ -31,3 +31,5 @@ pip-log.txt
 .metaflow
 .metaflow/
 .ipynb_checkpoints
+
+venv

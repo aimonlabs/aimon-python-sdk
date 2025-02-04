@@ -1,4 +1,5 @@
 import os
+from enum import Enum
 from aimon import Client
 from typing import Optional
 from dataclasses import dataclass
@@ -11,12 +12,34 @@ def generate_random_string(length):
   characters = string.ascii_letters + string.digits
   return ''.join(random.choice(characters) for i in range(length))
 
+
+class Framework(Enum):
+    LLAMAINDEX = "LlamaIndex"
+    LANGCHAIN = "LangChain"
+    HAYSTACK = "Haystack"
+    NONE = None
+
 @dataclass
 class ReactConfig:
+    """
+    Configuration class for the React configuration settings.
+
+    Attributes:
+        publish (bool): Flag indicating whether to publish the results to app.aimon.ai
+        max_attempts (int): Maximum number of ReAct attempts
+        hallucination_threshold (float): Threshold value to determine hallucination behavior. Defaults to 0.5.
+        framework (Optional[Framework]): Optional framework configuration. Defaults to None.
+        aimon_api_key (Optional[str]): API key for AIMon integration. If not provided, it attempts to retrieve from environment variable "AIMON_API_KEY".
+        model_name (Optional[str]): Name of the model to be used. Defaults to a string based on "aimon-react-model" concatenated with a random string.
+        application_name (Optional[str]): Name of the application. Defaults to a string based on "aimon-react-application" concatenated with a random string.
+
+    Methods:
+        None
+    """
     publish: bool
     max_attempts: int
-    hallucination_threshold: float
-    framework: Optional[str] = None
+    hallucination_threshold: float = 0.5
+    framework: Optional[Framework] = None
     aimon_api_key: Optional[str] = os.getenv("AIMON_API_KEY")
     model_name: Optional[str] = "aimon-react-model" + generate_random_string(5)
     application_name: Optional[str] = "aimon-react-application" + generate_random_string(5)
@@ -91,7 +114,7 @@ class React:
 
         if isinstance(llm_response, str):
             generated_text = llm_response
-        elif self.react_configuration.framework=="llamaindex" or hasattr(llm_response, 'response'):
+        elif self.react_configuration.framework.value=="LlamaIndex" or hasattr(llm_response, 'response'):
             generated_text = llm_response.response
         else:
             generated_text = llm_response
@@ -135,7 +158,7 @@ class React:
                 context = self.context_extractor(user_query, user_instructions, llm_response)
                 
                 ## Generated text for LLM Response, if the user employs the LlamaIndex framework
-                if self.react_configuration.framework=="llamaindex" or llm_response.response:
+                if self.react_configuration.framework.value=="LlamaIndex" or llm_response.response:
                     generated_text = llm_response.response
                 else:
                     generated_text = llm_response

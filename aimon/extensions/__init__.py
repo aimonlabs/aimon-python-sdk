@@ -1,1 +1,1 @@
-from .react import ReactConfig, React
+from .react import ReactConfig, React, Framework

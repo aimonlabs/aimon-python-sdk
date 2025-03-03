@@ -8,11 +8,11 @@ setup(
     name='aimon',
     python_requires='>3.8.0',
     packages=find_packages(),
-    version="0.9.0",
+    version="0.9.1",
     install_requires=[
         "annotated-types==0.6.0",
         "anyio==4.4.0",
-        "certifi==2023.7.22",
+        "certifi==2024.7.4",
         "distro==1.8.0",
         "exceptiongroup==1.2.2",
         "h11==0.14.0",

@@ -1,0 +1,1 @@
+python -m pytest test_detect.py -v --log-cli-level=INFO

@@ -1,8 +1,9 @@
 # Run python3 setup.py install --user
 import pytest
 from aimon import Client
+import os
 
-API_KEY = "YOUR_API_KEY"
+API_KEY = os.getenv("AIMON_API_KEY")
 
 class TestSimpleAimonRelyClient:
 
@@ -220,7 +221,7 @@ class TestSimpleAimonRelyClient:
             "context": "the abc have reported that those who receive centrelink payments made up half of radio rental's income last year. Centrelink payments themselves were up 20%.",
             "generated_text": "those who receive centrelink payments made up half of radio rental's income last year. The Centrelink payments were 20% up.",
             "instructions": "1. You are helpful chatbot. 2. You are friendly and polite. 3. The number of sentences in your response should not be more than two.",
-            "config": {'instruction_adherence': {'detector_name': 'default'}}
+            "config": {'instruction_adherence': {'detector_name': 'v1'}}
         }]
         response = client.inference.detect(body=data_to_send)[0]
         assert response.instruction_adherence is not None

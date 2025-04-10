@@ -225,8 +225,6 @@ def evaluate(
     # Validata headers to be non-empty and contain atleast the context_docs column
     if not headers:
         raise ValueError("Headers must be a non-empty list")
-    if "context_docs" not in headers:
-        raise ValueError("Headers must contain the column 'context_docs'")
 
     # Create application and models
     am_app = client.applications.create(
@@ -276,40 +274,19 @@ def evaluate(
             if ag not in record:
                 raise ValueError("Dataset record must contain the column '{}' as specified in the 'headers'"
                                     " argument in the decorator".format(ag))
-        
-        if "context_docs" not in record:
-            raise ValueError("Dataset record must contain the column 'context_docs'")
 
-        _context = record['context_docs'] if isinstance(record['context_docs'], list) else [record['context_docs']]
         # Construct the payload for the analysis
         payload = {
+            **record,
+            "config": config,
             "application_id": am_app.id,
             "version": am_app.version,
-            "context_docs": [d for d in _context],
             "evaluation_id": am_eval.id,
             "evaluation_run_id": eval_run.id,
         }
-        if "prompt" in record and record["prompt"]:
-            payload["prompt"] = record["prompt"]
-        if "user_query" in record and record["user_query"]:
-            payload["user_query"] = record["user_query"]
-        if "output" in record and record["output"]:
-            payload["output"] = record["output"]
-        if "instruction_adherence" in config and "instructions" not in record:
-            raise ValueError("When instruction_adherence is specified in the config, "
-                             "'instructions' must be present in the dataset")
-        if "instructions" in record and "instruction_adherence" in config:
-            # Only pass instructions if instruction_adherence is specified in the config
-            payload["instructions"] = record["instructions"] or ""
-        
-        if "retrieval_relevance" in config:
-            if "task_definition" in record:
-                payload["task_definition"] = record["task_definition"]
-            else:
-                raise ValueError(   "When retrieval_relevance is specified in the config, "
-                                    "'task_definition' must be present in the dataset")
+        if "instructions" in payload and not payload["instructions"]:
+            payload["instructions"] = ""
 
-        payload["config"] = config
         results.append(EvaluateResponse(record['output'], client.analyze.create(body=[payload])))
 
     return results
@@ -440,30 +417,24 @@ class AnalyzeEval(AnalyzeBase):
             result = func(*arguments, *args, **kwargs)
             _context = record['context_docs'] if isinstance(record['context_docs'], list) else [record['context_docs']]
             payload = {
+                **record,
+                "config": self.config,
                 "application_id": self._am_app.id,
                 "version": self._am_app.version,
-                "prompt": record['prompt'] or "",
-                "user_query": record['user_query'] or "",
                 "context_docs": [d for d in _context],
                 "output": result,
                 "evaluation_id": self._eval.id,
                 "evaluation_run_id": eval_run.id,
             }
-            if "instruction_adherence" in self.config and "instructions" not in record:
-                raise ValueError("When instruction_adherence is specified in the config, "
-                                 "'instructions' must be present in the dataset")
-            if "instructions" in record and "instruction_adherence" in self.config:
-                # Only pass instructions if instruction_adherence is specified in the config
-                payload["instructions"] = record["instructions"] or ""
+            if "context_docs" in payload and not isinstance(payload["context_docs"], list):
+                payload["context_docs"] = [payload["context_docs"]]
+            if "prompt" in payload and not payload['prompt']:
+                payload['prompt'] = ""
+            if "user_query" in payload and not payload['user_query']:
+                payload['user_query'] = ""
+            if "instructions" in payload and not payload['instructions']:
+                payload['instructions'] = ""
             
-            if "retrieval_relevance" in self.config:
-                if "task_definition" in record:
-                    payload["task_definition"] = record["task_definition"]
-                else:
-                    raise ValueError(   "When retrieval_relevance is specified in the config, "
-                                        "'task_definition' must be present in the dataset")
-
-            payload["config"] = self.config
             results.append((result, self.client.analyze.create(body=[payload])))
         return results
 
@@ -496,23 +467,9 @@ class AnalyzeProd(AnalyzeBase):
             stacklevel=2
         )
         self.values_returned = values_returned
-        if self.values_returned is None or len(self.values_returned) == 0:
-            raise ValueError("Values returned by the decorated function must be specified")
-        if "generated_text" not in self.values_returned:
-            raise ValueError("values_returned must contain 'generated_text'")
-        if "context" not in self.values_returned:
-            raise ValueError("values_returned must contain 'context'")
-        if "instruction_adherence" in self.config and "instructions" not in self.values_returned:
-            raise ValueError(
-                "When instruction_adherence is specified in the config, 'instructions' must be returned by the decorated function")
-        
-        if "retrieval_relevance" in self.config and "task_definition" not in self.values_returned:
-                raise ValueError(   "When retrieval_relevance is specified in the config, "
-                                    "'task_definition' must be returned by the decorated function")
+        if self.values_returned is None or not hasattr(self.values_returned, '__iter__'):
+            raise ValueError("values_returned must be specified and be an iterable")
 
-        if "instructions" in self.values_returned and "instruction_adherence" not in self.config:
-            raise ValueError(
-                "instruction_adherence must be specified in the config for returning 'instructions' by the decorated function")
         self.config = config if config else self.DEFAULT_CONFIG
 
     def _run_production_analysis(self, func, args, kwargs):
@@ -526,25 +483,24 @@ class AnalyzeProd(AnalyzeBase):
         # Create a dictionary mapping output names to results
         result_dict = {name: value for name, value in zip(self.values_returned, result)}
 
-        if "generated_text" not in result_dict:
-            raise ValueError("Result of the wrapped function must contain 'generated_text'")
-        if "context" not in result_dict:
-            raise ValueError("Result of the wrapped function must contain 'context'")
-        _context = result_dict['context'] if isinstance(result_dict['context'], list) else [result_dict['context']]
         aimon_payload = {
+            **result_dict,
             "application_id": self._am_app.id,
             "version": self._am_app.version,
-            "output": result_dict['generated_text'],
-            "context_docs": _context,
-            "user_query": result_dict["user_query"] if 'user_query' in result_dict else "No User Query Specified",
-            "prompt": result_dict['prompt'] if 'prompt' in result_dict else "No Prompt Specified",
         }
-        if 'instructions' in result_dict:
-            aimon_payload['instructions'] = result_dict['instructions']
-        if 'actual_request_timestamp' in result_dict:
-            aimon_payload["actual_request_timestamp"] = result_dict['actual_request_timestamp']
-        if 'task_definition' in result_dict:
-            aimon_payload['task_definition'] = result_dict['task_definition']
+        if "generated_text" in aimon_payload:
+            aimon_payload['output'] = aimon_payload['generated_text']
+            del aimon_payload['generated_text']
+        if "context" in aimon_payload:
+            if isinstance(aimon_payload['context'], list):
+                aimon_payload['context_docs'] = aimon_payload['context']
+            else:
+                aimon_payload['context_docs'] = [aimon_payload['context']]
+            del aimon_payload['context']
+        if "user_query" not in aimon_payload:
+            aimon_payload['user_query'] = "No User Query Specified"
+        if "prompt" not in aimon_payload:
+            aimon_payload['prompt'] = "No Prompt Specified"
 
         aimon_payload['config'] = self.config
         aimon_response = self.client.analyze.create(body=[aimon_payload])

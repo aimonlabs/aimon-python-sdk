@@ -151,7 +151,7 @@ class Detect:
         self.client = Client(auth_header="Bearer {}".format(api_key))
         self.config = config if config else self.DEFAULT_CONFIG
         self.values_returned = values_returned
-        if self.values_returned is None or not hasattr(self.values_returned, '__iter__'):
+        if self.values_returned is None or not hasattr(self.values_returned, '__iter__') or len(self.values_returned) == 0:
             raise ValueError("values_returned must be specified and be an iterable")
         self.async_mode = async_mode
         self.publish = publish

@@ -1,1 +1,0 @@
-python -m pytest . --ignore=client_test.py -v --log-cli-level=INFO

@@ -1,0 +1,1 @@
+python -m pytest . --ignore=obsolete/ -v --log-cli-level=INFO

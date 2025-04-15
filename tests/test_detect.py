@@ -255,6 +255,9 @@ class TestDetectDecoratorWithRemoteService:
             
             def __iter__(self):
                 return iter(self.items)
+            
+            def __len__(self):
+                return len(self.items)
         
         custom_values = ["generated_text", "context"]
         self.log_info("Testing with custom iterable", custom_values)

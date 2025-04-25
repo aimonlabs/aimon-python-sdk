@@ -82,4 +82,4 @@ for __name in __all__:
             pass
 
 from .decorators.detect import Detect
-from .decorators.evaluate import AnalyzeEval, AnalyzeProd, Application, Model, evaluate, EvaluateResponse
+from .decorators.evaluate import Application, Model, evaluate, EvaluateResponse

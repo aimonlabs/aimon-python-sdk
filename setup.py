@@ -8,7 +8,7 @@ setup(
     name='aimon',
     python_requires='>3.8.0',
     packages=find_packages(),
-    version="0.9.2",
+    version="0.10.0",
     install_requires=[
         "annotated-types==0.6.0",
         "anyio==4.4.0",

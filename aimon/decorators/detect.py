@@ -151,10 +151,8 @@ class Detect:
         self.client = Client(auth_header="Bearer {}".format(api_key))
         self.config = config if config else self.DEFAULT_CONFIG
         self.values_returned = values_returned
-        if self.values_returned is None or len(self.values_returned) == 0:
-            raise ValueError("values_returned by the decorated function must be specified")
-        if "context" not in self.values_returned:
-            raise ValueError("values_returned must contain 'context'")
+        if self.values_returned is None or not hasattr(self.values_returned, '__iter__') or len(self.values_returned) == 0:
+            raise ValueError("values_returned must be specified and be an iterable")
         self.async_mode = async_mode
         self.publish = publish
         if self.async_mode:
@@ -178,29 +176,7 @@ class Detect:
                 result = (result,)
 
             # Create a dictionary mapping output names to results
-            result_dict = {name: value for name, value in zip(self.values_returned, result)}
-
-            aimon_payload = {}
-            if 'generated_text' in result_dict:
-                aimon_payload['generated_text'] = result_dict['generated_text']
-            else:
-                raise ValueError("Result of the wrapped function must contain 'generated_text'")
-            if 'context' in result_dict:
-                aimon_payload['context'] = result_dict['context']
-            else:
-                raise ValueError("Result of the wrapped function must contain 'context'")
-            if 'user_query' in result_dict:
-                aimon_payload['user_query'] = result_dict['user_query']
-            if 'instructions' in result_dict:
-                aimon_payload['instructions'] = result_dict['instructions']
-
-            if 'retrieval_relevance' in self.config:
-                if 'task_definition' in result_dict:
-                    aimon_payload['task_definition'] = result_dict['task_definition']
-                else:
-                    raise ValueError(   "When retrieval_relevance is specified in the config, "
-                                        "'task_definition' must be present in the result of the wrapped function.")
-            
+            aimon_payload = {name: value for name, value in zip(self.values_returned, result)}
 
             aimon_payload['config'] = self.config
             aimon_payload['publish'] = self.publish

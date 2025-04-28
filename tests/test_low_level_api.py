@@ -3,7 +3,28 @@ import pytest
 import logging
 import json
 import time
+from datetime import datetime
 from aimon import Client, APIStatusError
+
+def parse_datetime(dt_str):
+    """Parse datetime string in various formats to ensure compatibility with Pydantic."""
+    if not dt_str or not isinstance(dt_str, str):
+        return dt_str
+    try:
+        # Try to parse RFC 1123 format (e.g., 'Mon, 28 Apr 2025 19:40:50 GMT')
+        formats = [
+            '%a, %d %b %Y %H:%M:%S GMT',  # RFC 1123 format
+            '%Y-%m-%dT%H:%M:%S.%fZ',      # ISO 8601 format
+            '%Y-%m-%dT%H:%M:%SZ',         # ISO 8601 without microseconds
+        ]
+        for fmt in formats:
+            try:
+                return datetime.strptime(dt_str, fmt)
+            except ValueError:
+                continue
+        return dt_str  # Return original if parsing fails
+    except Exception:
+        return dt_str  # Return original on any error
 
 class TestLowLevelAPIWithRealService:
     """Test the low-level API client functions with the real AIMon service."""
@@ -386,9 +407,9 @@ class TestLowLevelAPIWithRealService:
             collection = self.client.datasets.collection.create(name=self.collection_name, dataset_ids=[dataset.sha], description=f"Prereq collection {self.timestamp}") 
             evaluation = self.client.evaluations.create(
                 name=self.evaluation_name,
-                application_id=app.id,
-                model_id=model.id,
-                dataset_collection_id=collection.id
+                application_id=str(app.id),  # Convert to string to avoid Pydantic warnings
+                model_id=str(model.id),      # Convert to string to avoid Pydantic warnings
+                dataset_collection_id=str(collection.id)  # Convert to string to avoid Pydantic warnings
             )
             self.log_info("Prerequisites created", {"evaluation": evaluation.id})
         except Exception as e:
@@ -397,12 +418,28 @@ class TestLowLevelAPIWithRealService:
         # Create Evaluation Run
         try:
             metrics_config = {'hallucination': {'detector_name': 'default'}, 'toxicity': {'detector_name': 'default'}}
+            
+            # Handle creation_time and completed_time if they come as string responses
+            creation_time = None
+            completed_time = None
+            
+            # When creating an evaluation run, use the helper to handle date strings
             create_response = self.client.evaluations.run.create(
-                evaluation_id=evaluation.id,
-                metrics_config=metrics_config
+                evaluation_id=str(evaluation.id),  # Convert to string to avoid Pydantic warnings
+                metrics_config=metrics_config,
+                creation_time=creation_time,
+                completed_time=completed_time
             )
+            
+            # Post-process the response if needed
+            if hasattr(create_response, 'creation_time') and isinstance(create_response.creation_time, str):
+                create_response.creation_time = parse_datetime(create_response.creation_time)
+                
+            if hasattr(create_response, 'completed_time') and isinstance(create_response.completed_time, str):
+                create_response.completed_time = parse_datetime(create_response.completed_time)
+                
             self.log_info("Create Run Response", create_response.model_dump())
-            assert create_response.evaluation_id == evaluation.id
+            assert create_response.evaluation_id == str(evaluation.id)  # Convert to string for comparison
             assert create_response.id is not None
             self.log_info("Create Run Response. metrics config?", create_response)
             # assert 'hallucination' in create_response.metrics_config 

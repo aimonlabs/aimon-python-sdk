@@ -226,6 +226,13 @@ def evaluate(
     if not headers:
         raise ValueError("Headers must be a non-empty list")
 
+    am_model = client.models.create(
+        name=model.name,
+        type=model.model_type,
+        description="This model is named {} and is of type {}".format(model.name, model.model_type),
+        metadata=model.metadata
+    )
+
     # Create application and models
     am_app = client.applications.create(
         name=application.name,
@@ -233,13 +240,6 @@ def evaluate(
         stage=application.stage,
         type=application.type,
         metadata=application.metadata
-    )
-
-    am_model = client.models.create(
-        name=model.name,
-        type=model.model_type,
-        description="This model is named {} and is of type {}".format(model.name, model.model_type),
-        metadata=model.metadata
     )
 
     # Create or retrieve the dataset collection

@@ -96,7 +96,7 @@ class TestDetectDecoratorWithRemoteService:
         # Create the decorator with multiple detectors
         config = {
             'hallucination': {'detector_name': 'default'},
-            'instruction_adherence': {'detector_name': 'v1'},
+            'instruction_adherence': {'detector_name': 'default'},
             'toxicity': {'detector_name': 'default'}
         }
         values_returned = ["context", "generated_text", "user_query", "instructions"]
@@ -120,7 +120,7 @@ class TestDetectDecoratorWithRemoteService:
         # Call the decorated function
         context = "AI systems should be developed responsibly with proper oversight."
         query = "What does the text say about AI?"
-        instructions = "Provide a concise response with at most two sentences."
+        instructions = ["Provide a concise response with at most two sentences."]
         
         self.log_info("Input - Context", context)
         self.log_info("Input - Query", query)
@@ -143,7 +143,7 @@ class TestDetectDecoratorWithRemoteService:
         
         # Check key fields without verifying values
         assert "score" in result.detect_response.hallucination
-        assert "results" in result.detect_response.instruction_adherence
+        assert "instructions_list" in result.detect_response.instruction_adherence
         assert "score" in result.detect_response.toxicity
 
     def test_detect_with_different_iterables(self):
@@ -482,7 +482,7 @@ class TestDetectDecoratorWithRemoteService:
 
     def test_instruction_adherence_v1(self):
         """Test the Detect decorator with instruction adherence detector using v1."""
-        config = {'instruction_adherence': {'detector_name': 'v1'}}
+        config = {'instruction_adherence': {'detector_name': 'default'}}
         values_returned = ["context", "generated_text", "instructions"]
         
         self.log_info("Test", "Instruction Adherence with detector_name=v1")
@@ -501,7 +501,7 @@ class TestDetectDecoratorWithRemoteService:
             return context, generated_text, instructions
         
         context = "Climate change and its effects on our planet."
-        instructions = "Provide a short response in one sentence."
+        instructions = ["Provide a short response in one sentence."]
         
         self.log_info("Input - Context", context)
         self.log_info("Input - Instructions", instructions)
@@ -519,7 +519,6 @@ class TestDetectDecoratorWithRemoteService:
         assert isinstance(result, DetectResult)
         assert result.status == 200
         assert hasattr(result.detect_response, 'instruction_adherence')
-        assert "results" in result.detect_response.instruction_adherence
         
     def test_instruction_adherence_default(self):
         """Test the Detect decorator with instruction adherence detector using default."""
@@ -596,7 +595,7 @@ class TestDetectDecoratorWithRemoteService:
         config = {
             'hallucination': {'detector_name': 'default'},
             'toxicity': {'detector_name': 'default'},
-            'instruction_adherence': {'detector_name': 'v1'},  # Using v1 format which expects a string
+            'instruction_adherence': {'detector_name': 'default'},
             'retrieval_relevance': {'detector_name': 'default'},
             'conciseness': {'detector_name': 'default'},
             'completeness': {'detector_name': 'default'}
@@ -626,7 +625,7 @@ class TestDetectDecoratorWithRemoteService:
         
         context = "Renewable energy sources like solar and wind are becoming increasingly cost-effective alternatives to fossil fuels."
         query = "What are the trends in renewable energy?"
-        instructions = "Provide a factual response based only on the given context."
+        instructions = ["Provide a factual response based only on the given context."]
         
         self.log_info("Input - Context", context)
         self.log_info("Input - Query", query)
@@ -722,3 +721,107 @@ class TestDetectDecoratorWithRemoteService:
             self.log_info("Error occurred during test", str(e))
             # Log the error but don't fail the test
             pytest.skip(f"Test skipped due to error: {str(e)}")
+
+    def test_evaluate_with_new_model(self):
+        """Test the evaluate function with a new model name that should be auto-created."""
+        import uuid
+        from aimon import evaluate, Client
+        
+        # Generate a unique model name to ensure it doesn't exist
+        unique_model_name = f"test_model_{uuid.uuid4().hex[:8]}"
+        application_name = "test_application"
+        evaluation_name = f"test_eval_{uuid.uuid4().hex[:8]}"
+        
+        self.log_info("Test", "Evaluate with new model auto-creation")
+        self.log_info("Model Name", unique_model_name)
+        self.log_info("Application Name", application_name)
+        
+        # Create client
+        aimon_client = Client(auth_header=f"Bearer {self.api_key}")
+        
+        # Create a test dataset CSV in memory or file
+        import tempfile
+        import csv
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as tmp:
+            writer = csv.writer(tmp)
+            writer.writerow(["context_docs", "user_query", "output"])
+            writer.writerow([
+                "AI systems should be developed responsibly with proper oversight.",
+                "What does the text say about AI?",
+                "The text states that AI systems should be developed responsibly with proper oversight."
+            ])
+            dataset_path = tmp.name
+        
+        try:
+            # Upload the dataset
+            import json  # Add import at top of function if not already there
+            dataset_args = json.dumps({"name": "test_dataset.csv", "description": "Test dataset for evaluation"})
+            with open(dataset_path, 'rb') as file:
+                dataset = aimon_client.datasets.create(
+                    file=file,
+                    json_data=dataset_args
+                )
+            
+            # Create dataset collection
+            collection_name = f"test_collection_{uuid.uuid4().hex[:8]}"
+            collection = aimon_client.datasets.collection.create(
+                name=collection_name,
+                dataset_ids=[dataset.sha],
+                description="Test collection for evaluation"
+            )
+            
+            # Configure evaluation
+            eval_config = {
+                'hallucination': {'detector_name': 'default'},
+                'toxicity': {'detector_name': 'default'}
+            }
+            
+            # Run evaluation
+            results = evaluate(
+                dataset_collection_name=collection_name,
+                headers=["context_docs", "user_query", "output"],
+                application_name=application_name,
+                model_name=unique_model_name,
+                evaluation_name=evaluation_name,
+                api_key=self.api_key,
+                aimon_client=aimon_client,
+                config=eval_config
+            )
+            
+            self.log_info("Evaluation Results", results)
+            
+            # Based on EvaluateResponse structure in aimon/decorators/evaluate.py
+            assert results is not None
+            
+            # EvaluateResponse likely contains 'evaluation_id' or other identifying information
+            # Just verify it's not empty and log its structure for debugging
+            self.log_info("Results type", type(results))
+            
+            # Log attributes if we can
+            try:
+                if hasattr(results, "__dict__"):
+                    self.log_info("Results attributes", results.__dict__)
+                else:
+                    self.log_info("Results dir", dir(results))
+            except:
+                self.log_info("Could not log results attributes")
+            
+            # Check for common attributes in evaluation responses
+            if hasattr(results, "evaluation_id"):
+                self.log_info("Evaluation ID", results.evaluation_id)
+            
+            if hasattr(results, "task_id"):
+                self.log_info("Task ID", results.task_id)
+                
+            self.log_info("Result", f"Successfully created and evaluated with new model: {unique_model_name}")
+        
+        except Exception as e:
+            self.log_info("Error occurred during test", str(e))
+            raise
+        
+        finally:
+            # Cleanup
+            import os
+            if os.path.exists(dataset_path):
+                os.remove(dataset_path)

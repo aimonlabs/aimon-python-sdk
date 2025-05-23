@@ -284,8 +284,11 @@ def evaluate(
             "evaluation_id": am_eval.id,
             "evaluation_run_id": eval_run.id,
         }
-        if "instructions" in payload and not payload["instructions"]:
-            payload["instructions"] = ""
+        
+        if "task_definition" in payload:
+            td = payload["task_definition"]
+            if not isinstance(td, str) or not td.strip():
+                del payload["task_definition"]
 
         results.append(EvaluateResponse(record['output'], client.analyze.create(body=[payload])))
 

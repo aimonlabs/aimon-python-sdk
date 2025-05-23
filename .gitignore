@@ -31,3 +31,9 @@ pip-log.txt
 .metaflow
 .metaflow/
 .ipynb_checkpoints
+
+## Local testing
+venv
+tests/test_local_eval.py
+tests/fixed_test_eval.csv
+tests/test_evaluation_dataset_may_2025.csv

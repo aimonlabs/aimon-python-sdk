@@ -284,9 +284,7 @@ def evaluate(
             "evaluation_id": am_eval.id,
             "evaluation_run_id": eval_run.id,
         }
-        if "instructions" in payload and not payload["instructions"]:
-            payload["instructions"] = ""
-
+        
         results.append(EvaluateResponse(record['output'], client.analyze.create(body=[payload])))
 
     return results

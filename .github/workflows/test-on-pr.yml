@@ -24,6 +24,12 @@ jobs:
           pip install .
           pip install pytest
 
+      - name: Debug env var
+        env:
+          AIMON_API_KEY: ${{ secrets.AIMON_API_KEY }}
+        run: |
+          echo "API KEY LENGTH: ${#AIMON_API_KEY}"
+
       - name: Run tests
         env:
           AIMON_API_KEY: ${{ secrets.AIMON_API_KEY }}

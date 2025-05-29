@@ -28,5 +28,12 @@ jobs:
         env:
           AIMON_API_KEY: ${{ secrets.AIMON_API_KEY }}
         run: |
+
+          ## Run only two test files
           # pytest tests/test_detect.py tests/test_evaluate.py
-          pytest tests/ --ignore=tests/obsolete/ --ignore=tests/test_low_level_api.py -v
+
+          ## Ignore some files and run without descriptive logging
+          # pytest tests/ --ignore=tests/obsolete/ --ignore=tests/test_low_level_api.py -v
+
+          ## Ignore some files and run with descriptive logging
+          pytest tests/ --ignore=tests/obsolete/ --ignore=tests/test_low_level_api.py -v --log-cli-level=INFO

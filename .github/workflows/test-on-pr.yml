@@ -25,7 +25,7 @@ jobs:
           pip install pytest
 
       - name: Run tests
-        # env:
-        #   AIMON_API_KEY: ${{ secrets.AIMON_API_KEY }}
+        env:
+          AIMON_API_KEY: ${{ secrets.AIMON_API_KEY }}
         run: |
           pytest tests/

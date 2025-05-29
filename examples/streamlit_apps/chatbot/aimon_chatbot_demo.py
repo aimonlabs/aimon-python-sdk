@@ -43,7 +43,7 @@ def load_data():
         system_prompt="""You are an expert on 
                         answering questions on Essays and your 
                         job is to answer questions related to this domain. Your answers should be based on 
-                        facts – do not hallucinate features.""",
+                        facts - do not hallucinate features.""",
     )
     logging.info("Finished creating OpenAI LLM...")
     Settings.chunk_size = 256
@@ -107,10 +107,12 @@ def execute():
     openai_api_key = os.getenv("OPENAI_API_KEY")
 
     openai.api_key = openai_api_key
-    instructions = st.text_input(
-        "Instructions for the chatbot. Ex: Answer the user's question in a professional tone.",
-        value="Answer the user's question in a professional tone."
+    raw_instructions = st.text_input(
+        "Instructions for the chatbot (comma-separated). Ex: Answer professionally, Be concise",
+        value="Answer professionally, Be concise"
     )
+    instructions = [instr.strip() for instr in raw_instructions.split(',') if instr.strip()]
+
     st.title("Ask questions on Paul Graham's Work Experience")
 
     if "messages" not in st.session_state.keys():  # Initialize the chat messages history
@@ -125,16 +127,19 @@ def execute():
     memory = ChatMemoryBuffer.from_defaults(token_limit=1200)
 
     if "chat_engine" not in st.session_state.keys():  # Initialize the chat engine
+        formatted_instructions = "; ".join(instructions) if instructions else "Respond helpfully."
+
+        context_prompt = (
+            "You are a chatbot, able to answer questions on an essay about Paul Graham's Work experience. "
+            "Here are the relevant documents for the context:\n"
+            "{context_str}\n\n"
+            f"Instruction: Use the previous chat history, or the context above, to interact and help the user. {formatted_instructions}"
+        )
+
         st.session_state.chat_engine = index.as_chat_engine(
             chat_mode="condense_plus_context",
             memory=memory,
-            context_prompt=(
-                "You are a chatbot, able to answer questions on an essay about Paul Graham's Work experience."
-                "Here are the relevant documents for the context:\n"
-                "{context_str}"
-                "\nInstruction: Use the previous chat history, or the context above, to interact and help the user. " +
-                "{}".format(instructions if instructions else "")
-            ),
+            context_prompt=context_prompt,
             verbose=False,
             similarity_top_k=4,
         )

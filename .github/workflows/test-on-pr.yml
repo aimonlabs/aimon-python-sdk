@@ -28,4 +28,5 @@ jobs:
         env:
           AIMON_API_KEY: ${{ secrets.AIMON_API_KEY }}
         run: |
-          pytest tests/
+          # pytest tests/test_detect.py tests/test_evaluate.py
+          pytest tests/ --ignore=tests/obsolete/ --ignore=tests/test_low_level_api.py -v

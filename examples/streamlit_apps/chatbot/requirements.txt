@@ -1,5 +1,5 @@
 llama-index
 llama-index-readers-web
 streamlit
-aimon>=0.5.0
-
+aimon>=0.10.0
+httpx<0.28.1

@@ -13,5 +13,8 @@ class DatasetCreateParams(TypedDict, total=False):
     file: Required[FileTypes]
     """The CSV file containing the dataset"""
 
-    json_data: Required[str]
-    """JSON string containing dataset metadata"""
+    name: Required[str]
+    """Name of the dataset"""
+
+    description: str
+    """Optional description of the dataset"""

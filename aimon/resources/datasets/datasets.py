@@ -76,7 +76,8 @@ class DatasetsResource(SyncAPIResource):
         self,
         *,
         file: FileTypes,
-        json_data: str,
+        name: str,
+        description: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -90,7 +91,9 @@ class DatasetsResource(SyncAPIResource):
         Args:
           file: The CSV file containing the dataset
 
-          json_data: JSON string containing dataset metadata
+          name: Name of the dataset
+
+          description: Optional description of the dataset
 
           extra_headers: Send extra headers
 
@@ -103,7 +106,8 @@ class DatasetsResource(SyncAPIResource):
         body = deepcopy_minimal(
             {
                 "file": file,
-                "json_data": json_data,
+                "name": name,
+                "description": description,
             }
         )
         files = extract_files(cast(Mapping[str, object], body), paths=[["file"]])
@@ -189,7 +193,8 @@ class AsyncDatasetsResource(AsyncAPIResource):
         self,
         *,
         file: FileTypes,
-        json_data: str,
+        name: str,
+        description: str | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -203,7 +208,9 @@ class AsyncDatasetsResource(AsyncAPIResource):
         Args:
           file: The CSV file containing the dataset
 
-          json_data: JSON string containing dataset metadata
+          name: Name of the dataset
+
+          description: Optional description of the dataset
 
           extra_headers: Send extra headers
 
@@ -216,7 +223,8 @@ class AsyncDatasetsResource(AsyncAPIResource):
         body = deepcopy_minimal(
             {
                 "file": file,
-                "json_data": json_data,
+                "name": name,
+                "description": description,
             }
         )
         files = extract_files(cast(Mapping[str, object], body), paths=[["file"]])

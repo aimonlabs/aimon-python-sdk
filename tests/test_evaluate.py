@@ -19,8 +19,8 @@ class TestEvaluateWithRealService:
         
         self.logger = logging.getLogger("test_evaluate_real")
         
-        # Create a real client to prepare test data
-        self.client = Client(auth_header=f"Bearer {self.api_key}")
+        # Create a real client to prepare test data using staging base url
+        self.client = Client(auth_header=f"Bearer {self.api_key}", base_url="https://am-sdk-backend-staging-ser-6009-0c0ad782-m9xwngeb.onporter.run/")
         
         # Create unique names for resources to avoid conflicts
         self.timestamp = int(time.time())

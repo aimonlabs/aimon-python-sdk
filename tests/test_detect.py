@@ -755,12 +755,11 @@ class TestDetectDecoratorWithRemoteService:
         
         try:
             # Upload the dataset
-            import json  # Add import at top of function if not already there
-            dataset_args = json.dumps({"name": "test_dataset.csv", "description": "Test dataset for evaluation"})
             with open(dataset_path, 'rb') as file:
                 dataset = aimon_client.datasets.create(
                     file=file,
-                    json_data=dataset_args
+                    name="test_dataset.csv",
+                    description="Test dataset for evaluation"
                 )
             
             # Create dataset collection

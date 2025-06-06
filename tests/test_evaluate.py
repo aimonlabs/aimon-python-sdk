@@ -19,7 +19,7 @@ class TestEvaluateWithRealService:
         
         self.logger = logging.getLogger("test_evaluate_real")
         
-        # Create a real client to prepare test data
+        # Create a real client to prepare test data using staging base url
         self.client = Client(auth_header=f"Bearer {self.api_key}")
         
         # Create unique names for resources to avoid conflicts
@@ -77,13 +77,10 @@ class TestEvaluateWithRealService:
         
         # Create dataset in the platform
         with open(temp_file_path, 'rb') as f:
-            dataset_args = json.dumps({
-                "name": self.dataset_name,
-                "description": "Test dataset for evaluate function"
-            })
             dataset = self.client.datasets.create(
                 file=f,
-                json_data=dataset_args
+                name=self.dataset_name,
+                description="Test dataset for evaluate function"
             )
         
         # Create dataset collection
@@ -353,13 +350,10 @@ class TestEvaluateWithRealService:
             
             # Create dataset in the platform
             with open(temp_file_path, 'rb') as f:
-                dataset_args = json.dumps({
-                    "name": f"{self.dataset_name}_minimal",
-                    "description": "Test dataset with minimal headers"
-                })
                 dataset = self.client.datasets.create(
                     file=f,
-                    json_data=dataset_args
+                    name=f"{self.dataset_name}_minimal",
+                    description="Test dataset with minimal headers"
                 )
             
             # Create dataset collection

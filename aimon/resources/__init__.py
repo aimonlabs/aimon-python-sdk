@@ -24,6 +24,14 @@ from .analyze import (
     AnalyzeResourceWithStreamingResponse,
     AsyncAnalyzeResourceWithStreamingResponse,
 )
+from .metrics import (
+    MetricsResource,
+    AsyncMetricsResource,
+    MetricsResourceWithRawResponse,
+    AsyncMetricsResourceWithRawResponse,
+    MetricsResourceWithStreamingResponse,
+    AsyncMetricsResourceWithStreamingResponse,
+)
 from .datasets import (
     DatasetsResource,
     AsyncDatasetsResource,
@@ -114,4 +122,10 @@ __all__ = [
     "AsyncRetrievalResourceWithRawResponse",
     "RetrievalResourceWithStreamingResponse",
     "AsyncRetrievalResourceWithStreamingResponse",
+    "MetricsResource",
+    "AsyncMetricsResource",
+    "MetricsResourceWithRawResponse",
+    "AsyncMetricsResourceWithRawResponse",
+    "MetricsResourceWithStreamingResponse",
+    "AsyncMetricsResourceWithStreamingResponse",
 ]

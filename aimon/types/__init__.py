@@ -15,6 +15,7 @@ from .analyze_create_params import AnalyzeCreateParams as AnalyzeCreateParams
 from .dataset_create_params import DatasetCreateParams as DatasetCreateParams
 from .model_create_response import ModelCreateResponse as ModelCreateResponse
 from .model_retrieve_params import ModelRetrieveParams as ModelRetrieveParams
+from .metric_delete_response import MetricDeleteResponse as MetricDeleteResponse
 from .user_validate_response import UserValidateResponse as UserValidateResponse
 from .analyze_create_response import AnalyzeCreateResponse as AnalyzeCreateResponse
 from .inference_detect_params import InferenceDetectParams as InferenceDetectParams

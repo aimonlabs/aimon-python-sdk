@@ -116,7 +116,7 @@ class DatasetsResource(SyncAPIResource):
         # multipart/form-data; boundary=---abc--
         extra_headers = {"Content-Type": "multipart/form-data", **(extra_headers or {})}
         return self._post(
-            "/v1/dataset",
+            "/v2/dataset",
             body=maybe_transform(body, dataset_create_params.DatasetCreateParams),
             files=files,
             options=make_request_options(
@@ -233,7 +233,7 @@ class AsyncDatasetsResource(AsyncAPIResource):
         # multipart/form-data; boundary=---abc--
         extra_headers = {"Content-Type": "multipart/form-data", **(extra_headers or {})}
         return await self._post(
-            "/v1/dataset",
+            "/v2/dataset",
             body=await async_maybe_transform(body, dataset_create_params.DatasetCreateParams),
             files=files,
             options=make_request_options(

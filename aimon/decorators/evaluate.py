@@ -144,8 +144,8 @@ def evaluate(
         application_name,
         model_name,
         dataset_collection_name, 
-        headers,
-        evaluation_name=None, 
+        evaluation_name=None,
+        headers=None,
         api_key=None,
         aimon_client=None,
         config=None

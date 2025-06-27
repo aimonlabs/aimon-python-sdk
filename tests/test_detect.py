@@ -829,12 +829,12 @@ class TestDetectDecoratorWithRemoteService:
         """Test that the must_compute parameter is properly validated."""
         print("\n=== Testing must_compute validation ===")
         
-        # Test config with both hallucination and PII
+        # Test config with both hallucination and completeness
         test_config = {
             "hallucination": {
                 "detector_name": "default"
             },
-            "pii": {
+            "completeness": {
                 "detector_name": "default"
             }
         }

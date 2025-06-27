@@ -16,7 +16,6 @@ __all__ = [
     "BodyConfigHallucination",
     "BodyConfigHallucinationV0_2",
     "BodyConfigInstructionAdherence",
-    "BodyConfigPii",
     "BodyConfigToxicity",
 ]
 
@@ -48,11 +47,6 @@ class BodyConfigInstructionAdherence(TypedDict, total=False):
 class BodyConfigToxicity(TypedDict, total=False):
     detector_name: Literal["default"]
 
-
-class BodyConfigPii(TypedDict, total=False):
-    detector_name: Literal["default"]
-
-
 class BodyConfig(TypedDict, total=False):
     completeness: BodyConfigCompleteness
 
@@ -65,9 +59,6 @@ class BodyConfig(TypedDict, total=False):
     instruction_adherence: BodyConfigInstructionAdherence
 
     toxicity: BodyConfigToxicity
-
-    pii: BodyConfigPii
-
 
 class Body(TypedDict, total=False):
     context: Required[Union[List[str], str]]

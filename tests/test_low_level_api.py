@@ -286,8 +286,11 @@ class TestLowLevelAPIWithRealService:
             dataset_base_name = f"{self.prefix}_dataset_{i}.csv"
             try:
                 with open(temp_file_path, 'rb') as f:
-                    dataset_args = json.dumps({"name": dataset_base_name, "description": f"Test dataset {i}"})
-                    dataset = self.client.datasets.create(file=f, json_data=dataset_args)
+                    dataset = self.client.datasets.create(
+                        file=f,
+                        name=dataset_base_name,
+                        description=f"Test dataset {i}"
+                    )
                     dataset_shas.append(dataset.sha)
                     self.log_info(f"Prerequisite dataset {i} created: {dataset_base_name} (SHA: {dataset.sha})")
             except Exception as e:
@@ -339,9 +342,11 @@ class TestLowLevelAPIWithRealService:
             
             temp_file_path = self.create_temp_dataset_file()
             with open(temp_file_path, 'rb') as f:
-                 # Add description field to json_data
-                 dataset_args = json.dumps({"name": self.dataset_name, "description": f"Prereq dataset {self.timestamp}"})
-                 dataset = self.client.datasets.create(file=f, json_data=dataset_args)
+                dataset = self.client.datasets.create(
+                    file=f,
+                    name=self.dataset_name,
+                    description=f"Prereq dataset {self.timestamp}"
+                )
             
             # Add description to collection create call
             collection = self.client.datasets.collection.create(name=self.collection_name, dataset_ids=[dataset.sha], description=f"Prereq collection {self.timestamp}") 
@@ -400,9 +405,11 @@ class TestLowLevelAPIWithRealService:
             app = self.client.applications.create(name=self.app_name, model_name=model.name, stage="evaluation", type="qa")
             temp_file_path = self.create_temp_dataset_file()
             with open(temp_file_path, 'rb') as f:
-                 # Add description field to json_data
-                 dataset_args = json.dumps({"name": self.dataset_name, "description": f"Prereq dataset {self.timestamp}"})
-                 dataset = self.client.datasets.create(file=f, json_data=dataset_args)
+                dataset = self.client.datasets.create(
+                    file=f,
+                    name=self.dataset_name,
+                    description=f"Prereq dataset {self.timestamp}"
+                )
             # Add description to collection create call
             collection = self.client.datasets.collection.create(name=self.collection_name, dataset_ids=[dataset.sha], description=f"Prereq collection {self.timestamp}") 
             evaluation = self.client.evaluations.create(

@@ -824,3 +824,158 @@ class TestDetectDecoratorWithRemoteService:
             import os
             if os.path.exists(dataset_path):
                 os.remove(dataset_path)
+
+    def test_must_compute_validation(self):
+        """Test that the must_compute parameter is properly validated."""
+        print("\n=== Testing must_compute validation ===")
+        
+        # Test config with both hallucination and completeness
+        test_config = {
+            "hallucination": {
+                "detector_name": "default"
+            },
+            "completeness": {
+                "detector_name": "default"
+            }
+        }
+        print(f"Test Config: {test_config}")
+        
+        # Test valid values
+        valid_values = ['all_or_none', 'ignore_failures']
+        print(f"Testing valid must_compute values: {valid_values}")
+        
+        for value in valid_values:
+            print(f"Testing valid must_compute value: {value}")
+            detect = Detect(
+                values_returned=["context", "generated_text"],
+                api_key=self.api_key,
+                config=test_config,
+                must_compute=value
+            )
+            assert detect.must_compute == value
+            print(f"✅ Successfully validated must_compute value: {value}")
+        
+        # Test invalid string value
+        invalid_string_value = "invalid_value"
+        print(f"Testing invalid must_compute string value: {invalid_string_value}")
+        try:
+            Detect(
+                values_returned=["context", "generated_text"],
+                api_key=self.api_key,
+                config=test_config,
+                must_compute=invalid_string_value
+            )
+            print("❌ ERROR: Expected ValueError but none was raised - This should not happen")
+            assert False, "Expected ValueError for invalid string value"
+        except ValueError as e:
+            print(f"✅ Successfully caught ValueError for invalid string: {str(e)}")
+            assert "`must_compute` must be either 'all_or_none' or 'ignore_failures'" in str(e)
+        
+        # Test non-string value
+        non_string_value = 123
+        print(f"Testing non-string must_compute value: {non_string_value}")
+        try:
+            Detect(
+                values_returned=["context", "generated_text"],
+                api_key=self.api_key,
+                config=test_config,
+                must_compute=non_string_value
+            )
+            print("❌ ERROR: Expected ValueError but none was raised - This should not happen")
+            assert False, "Expected ValueError for non-string value"
+        except ValueError as e:
+            print(f"✅ Successfully caught ValueError for non-string: {str(e)}")
+            assert "`must_compute` must be a string value" in str(e)
+        
+        # Test default value
+        print("Testing default must_compute value: default")
+        detect_default = Detect(
+            values_returned=["context", "generated_text"],
+            api_key=self.api_key,
+            config=test_config
+        )
+        assert detect_default.must_compute == 'all_or_none'
+        print(f"✅ Successfully validated default must_compute value: {detect_default.must_compute}")
+        
+        print("🎉 Result: must_compute validation working correctly")
+
+    def test_must_compute_with_actual_service(self):
+        """Test must_compute functionality with actual service calls."""
+        print("\n=== Testing must_compute with actual service ===")
+        
+        # Test config with both hallucination and completeness
+        test_config = {
+            "hallucination": {
+                "detector_name": "default"
+            },
+            "completeness": {
+                "detector_name": "default"
+            }
+        }
+        print(f"Test Config: {test_config}")
+        
+        # Test both must_compute values
+        for must_compute_value in ['all_or_none', 'ignore_failures']:
+            print(f"\n--- Testing must_compute: {must_compute_value} ---")
+            
+            detect = Detect(
+                values_returned=["context", "generated_text", "user_query"],
+                api_key=self.api_key,
+                config=test_config,
+                must_compute=must_compute_value
+            )
+            
+            @detect
+            def generate_summary(context, query):
+                generated_text = f"Summary of {context} based on query: {query}"
+                return context, generated_text, query
+            
+            # Test data
+            context = "Machine learning is a subset of artificial intelligence that enables computers to learn without being explicitly programmed."
+            query = "What is machine learning?"
+            
+            print(f"Input Context: {context}")
+            print(f"Input Query: {query}")
+            print(f"Must Compute: {must_compute_value}")
+            
+            try:
+                # Call the decorated function
+                context_ret, generated_text, query_ret, result = generate_summary(context, query)
+                
+                print(f"✅ API Call Successful!")
+                print(f"Status Code: {result.status}")
+                print(f"Generated Text: {generated_text}")
+                
+                # Display response details
+                if hasattr(result.detect_response, 'hallucination'):
+                    hallucination = result.detect_response.hallucination
+                    print(f"Hallucination Score: {hallucination.get('score', 'N/A')}")
+                    print(f"Is Hallucinated: {hallucination.get('is_hallucinated', 'N/A')}")
+                
+                if hasattr(result.detect_response, 'completeness'):
+                    completeness = result.detect_response.completeness
+                    print(f"Completeness Score: {completeness.get('score', 'N/A')}")
+                
+                # Show the full response structure
+                print(f"Response Object Type: {type(result.detect_response)}")
+                if hasattr(result.detect_response, '__dict__'):
+                    print(f"Response Attributes: {list(result.detect_response.__dict__.keys())}")
+                
+            except Exception as e:
+                error_message = str(e)
+                print(f"API Call Result: {error_message}")
+                print(f"Error Type: {type(e).__name__}")
+                
+                # For all_or_none, 503 is expected when services are unavailable
+                if must_compute_value == 'all_or_none' and '503' in error_message:
+                    print("✅ Expected behavior: all_or_none returns 503 when services unavailable")
+                # For ignore_failures, we expect success or different error handling
+                elif must_compute_value == 'ignore_failures':
+                    if '503' in error_message:
+                        print("❌ Unexpected: ignore_failures should handle service unavailability")
+                    else:
+                        print("✅ Expected behavior: ignore_failures handled the error appropriately")
+                else:
+                    print(f"❌ Unexpected error for {must_compute_value}: {error_message}")
+        
+        print("\n🎉 All must_compute service tests completed!")

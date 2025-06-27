@@ -91,6 +91,8 @@ class Detect:
         The name of the application to use when publish is True.
     model_name : str, optional
         The name of the model to use when publish is True.
+    must_compute : str, optional
+        Indicates the computation strategy. Must be either 'all_or_none' or 'ignore_failures'. Default is 'all_or_none'.
 
     Example:
     --------
@@ -133,7 +135,7 @@ class Detect:
     """
     DEFAULT_CONFIG = {'hallucination': {'detector_name': 'default'}}
 
-    def __init__(self, values_returned, api_key=None, config=None, async_mode=False, publish=False, application_name=None, model_name=None):
+    def __init__(self, values_returned, api_key=None, config=None, async_mode=False, publish=False, application_name=None, model_name=None, must_compute='all_or_none'):
         """
         :param values_returned: A list of values in the order returned by the decorated function
                                 Acceptable values are 'generated_text', 'context', 'user_query', 'instructions'
@@ -144,6 +146,7 @@ class Detect:
         :param publish: Boolean, if True, the payload will be published to AIMon and can be viewed on the AIMon UI. Default is False.
         :param application_name: The name of the application to use when publish is True
         :param model_name: The name of the model to use when publish is True
+        :param must_compute: String, indicates the computation strategy. Must be either 'all_or_none' or 'ignore_failures'. Default is 'all_or_none'.
         """
         api_key = os.getenv('AIMON_API_KEY') if not api_key else api_key
         if api_key is None:
@@ -163,8 +166,15 @@ class Detect:
             if model_name is None:
                 raise ValueError("Model name must be provided if publish is True")    
 
+        # Validate must_compute parameter
+        if not isinstance(must_compute, str):
+            raise ValueError("`must_compute` must be a string value")
+        if must_compute not in ['all_or_none', 'ignore_failures']:
+            raise ValueError("`must_compute` must be either 'all_or_none' or 'ignore_failures'")
+        self.must_compute = must_compute
+
         self.application_name = application_name
-        self.model_name = model_name  
+        self.model_name = model_name
 
     def __call__(self, func):
         @wraps(func)
@@ -181,6 +191,7 @@ class Detect:
             aimon_payload['config'] = self.config
             aimon_payload['publish'] = self.publish
             aimon_payload['async_mode'] = self.async_mode
+            aimon_payload['must_compute'] = self.must_compute
 
             # Include application_name and model_name if publishing
             if self.publish:

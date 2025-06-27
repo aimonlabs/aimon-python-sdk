@@ -16,6 +16,7 @@ __all__ = [
     "BodyConfigHallucination",
     "BodyConfigHallucinationV0_2",
     "BodyConfigInstructionAdherence",
+    "BodyConfigPii",
     "BodyConfigToxicity",
 ]
 
@@ -48,6 +49,10 @@ class BodyConfigToxicity(TypedDict, total=False):
     detector_name: Literal["default"]
 
 
+class BodyConfigPii(TypedDict, total=False):
+    detector_name: Literal["default"]
+
+
 class BodyConfig(TypedDict, total=False):
     completeness: BodyConfigCompleteness
 
@@ -60,6 +65,8 @@ class BodyConfig(TypedDict, total=False):
     instruction_adherence: BodyConfigInstructionAdherence
 
     toxicity: BodyConfigToxicity
+
+    pii: BodyConfigPii
 
 
 class Body(TypedDict, total=False):
@@ -80,6 +87,9 @@ class Body(TypedDict, total=False):
 
     model_name: str
     """The model name for publishing metrics for an application."""
+
+    must_compute: str
+    """Indicates the computation strategy. Must be either 'all_or_none' or 'ignore_failures'."""
 
     publish: bool
     """Indicates whether to publish metrics."""

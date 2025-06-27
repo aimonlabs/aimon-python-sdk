@@ -825,3 +825,77 @@ class TestDetectDecoratorWithRemoteService:
             import os
             if os.path.exists(dataset_path):
                 os.remove(dataset_path)
+
+    def test_must_compute_validation(self):
+        """Test that the must_compute parameter is properly validated."""
+        print("\n=== Testing must_compute validation ===")
+        
+        # Test config with both hallucination and PII
+        test_config = {
+            "hallucination": {
+                "detector_name": "default"
+            },
+            "pii": {
+                "detector_name": "default"
+            }
+        }
+        print(f"Test Config: {test_config}")
+        
+        # Test valid values
+        valid_values = ['all_or_none', 'ignore_failures']
+        print(f"Testing valid must_compute values: {valid_values}")
+        
+        for value in valid_values:
+            print(f"Testing valid must_compute value: {value}")
+            detect = Detect(
+                values_returned=["context", "generated_text"],
+                api_key=self.api_key,
+                config=test_config,
+                must_compute=value
+            )
+            assert detect.must_compute == value
+            print(f"✅ Successfully validated must_compute value: {value}")
+        
+        # Test invalid string value
+        invalid_string_value = "invalid_value"
+        print(f"Testing invalid must_compute string value: {invalid_string_value}")
+        try:
+            Detect(
+                values_returned=["context", "generated_text"],
+                api_key=self.api_key,
+                config=test_config,
+                must_compute=invalid_string_value
+            )
+            print("❌ ERROR: Expected ValueError but none was raised - This should not happen")
+            assert False, "Expected ValueError for invalid string value"
+        except ValueError as e:
+            print(f"✅ Successfully caught ValueError for invalid string: {str(e)}")
+            assert "`must_compute` must be either 'all_or_none' or 'ignore_failures'" in str(e)
+        
+        # Test non-string value
+        non_string_value = 123
+        print(f"Testing non-string must_compute value: {non_string_value}")
+        try:
+            Detect(
+                values_returned=["context", "generated_text"],
+                api_key=self.api_key,
+                config=test_config,
+                must_compute=non_string_value
+            )
+            print("❌ ERROR: Expected ValueError but none was raised - This should not happen")
+            assert False, "Expected ValueError for non-string value"
+        except ValueError as e:
+            print(f"✅ Successfully caught ValueError for non-string: {str(e)}")
+            assert "`must_compute` must be a string value" in str(e)
+        
+        # Test default value
+        print("Testing default must_compute value: default")
+        detect_default = Detect(
+            values_returned=["context", "generated_text"],
+            api_key=self.api_key,
+            config=test_config
+        )
+        assert detect_default.must_compute == 'all_or_none'
+        print(f"✅ Successfully validated default must_compute value: {detect_default.must_compute}")
+        
+        print("🎉 Result: must_compute validation working correctly")

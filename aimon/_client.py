@@ -24,7 +24,7 @@ from ._utils import (
     get_async_library,
 )
 from ._version import __version__
-from .resources import users, models, analyze, inference, retrieval
+from .resources import users, models, analyze, metrics, inference, retrieval
 from ._streaming import Stream as Stream, AsyncStream as AsyncStream
 from ._exceptions import APIStatusError
 from ._base_client import (
@@ -48,6 +48,7 @@ class Client(SyncAPIClient):
     analyze: analyze.AnalyzeResource
     inference: inference.InferenceResource
     retrieval: retrieval.RetrievalResource
+    metrics: metrics.MetricsResource
     with_raw_response: ClientWithRawResponse
     with_streaming_response: ClientWithStreamedResponse
 
@@ -104,6 +105,7 @@ class Client(SyncAPIClient):
         self.analyze = analyze.AnalyzeResource(self)
         self.inference = inference.InferenceResource(self)
         self.retrieval = retrieval.RetrievalResource(self)
+        self.metrics = metrics.MetricsResource(self)
         self.with_raw_response = ClientWithRawResponse(self)
         self.with_streaming_response = ClientWithStreamedResponse(self)
 
@@ -221,6 +223,7 @@ class AsyncClient(AsyncAPIClient):
     analyze: analyze.AsyncAnalyzeResource
     inference: inference.AsyncInferenceResource
     retrieval: retrieval.AsyncRetrievalResource
+    metrics: metrics.AsyncMetricsResource
     with_raw_response: AsyncClientWithRawResponse
     with_streaming_response: AsyncClientWithStreamedResponse
 
@@ -277,6 +280,7 @@ class AsyncClient(AsyncAPIClient):
         self.analyze = analyze.AsyncAnalyzeResource(self)
         self.inference = inference.AsyncInferenceResource(self)
         self.retrieval = retrieval.AsyncRetrievalResource(self)
+        self.metrics = metrics.AsyncMetricsResource(self)
         self.with_raw_response = AsyncClientWithRawResponse(self)
         self.with_streaming_response = AsyncClientWithStreamedResponse(self)
 
@@ -395,6 +399,7 @@ class ClientWithRawResponse:
         self.analyze = analyze.AnalyzeResourceWithRawResponse(client.analyze)
         self.inference = inference.InferenceResourceWithRawResponse(client.inference)
         self.retrieval = retrieval.RetrievalResourceWithRawResponse(client.retrieval)
+        self.metrics = metrics.MetricsResourceWithRawResponse(client.metrics)
 
 
 class AsyncClientWithRawResponse:
@@ -407,6 +412,7 @@ class AsyncClientWithRawResponse:
         self.analyze = analyze.AsyncAnalyzeResourceWithRawResponse(client.analyze)
         self.inference = inference.AsyncInferenceResourceWithRawResponse(client.inference)
         self.retrieval = retrieval.AsyncRetrievalResourceWithRawResponse(client.retrieval)
+        self.metrics = metrics.AsyncMetricsResourceWithRawResponse(client.metrics)
 
 
 class ClientWithStreamedResponse:
@@ -419,6 +425,7 @@ class ClientWithStreamedResponse:
         self.analyze = analyze.AnalyzeResourceWithStreamingResponse(client.analyze)
         self.inference = inference.InferenceResourceWithStreamingResponse(client.inference)
         self.retrieval = retrieval.RetrievalResourceWithStreamingResponse(client.retrieval)
+        self.metrics = metrics.MetricsResourceWithStreamingResponse(client.metrics)
 
 
 class AsyncClientWithStreamedResponse:
@@ -431,6 +438,7 @@ class AsyncClientWithStreamedResponse:
         self.analyze = analyze.AsyncAnalyzeResourceWithStreamingResponse(client.analyze)
         self.inference = inference.AsyncInferenceResourceWithStreamingResponse(client.inference)
         self.retrieval = retrieval.AsyncRetrievalResourceWithStreamingResponse(client.retrieval)
+        self.metrics = metrics.AsyncMetricsResourceWithStreamingResponse(client.metrics)
 
 
 Client = Client

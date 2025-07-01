@@ -531,4 +531,46 @@ class TestEvaluateWithRealService:
             
         except Exception as e:
             self.log_info("Test error", str(e))
-            raise 
+            raise
+
+    def test_evaluate_without_evaluation_name(self):
+        """Test the evaluate function when no evaluation name is provided."""
+        if not self.api_key:
+            pytest.skip("AIMON_API_KEY environment variable not set")
+
+        try:
+            # Create test data
+            test_data = self.create_test_data()
+
+            headers = ["context_docs", "user_query", "output", "prompt", "task_definition"]
+            config = {'hallucination': {'detector_name': 'default'}}
+
+            self.log_info("Starting evaluate test without evaluation_name", {
+                "Application": self.app_name,
+                "Model": self.model_name,
+                "Collection": self.collection_name,
+                "Headers": headers,
+                "Config": config
+            })
+
+            # Call evaluate without providing evaluation_name
+            results = evaluate(
+                application_name=self.app_name,
+                model_name=self.model_name,
+                dataset_collection_name=self.collection_name,
+                headers=headers,  # evaluation_name omitted
+                api_key=self.api_key,
+                config=config
+            )
+
+            assert len(results) == 2
+            assert isinstance(results[0], EvaluateResponse)
+            assert results[0].output in ["Paris is the capital of France.", "Python is a versatile programming language."]
+            assert hasattr(results[0].response, 'status')
+            assert results[0].response.status == 200
+
+            self.log_info("Test completed successfully", "Auto-generated evaluation_name handled correctly")
+
+        except Exception as e:
+            self.log_info("Test error", str(e))
+            raise

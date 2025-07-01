@@ -1,5 +1,5 @@
 from functools import wraps
-
+from datetime import datetime
 from aimon import Client
 import inspect
 import warnings
@@ -144,8 +144,8 @@ def evaluate(
         application_name,
         model_name,
         dataset_collection_name, 
-        evaluation_name, 
-        headers, 
+        evaluation_name=None,
+        headers=None,
         api_key=None,
         aimon_client=None,
         config=None
@@ -221,6 +221,11 @@ def evaluate(
     client = aimon_client if aimon_client else Client(auth_header="Bearer {}".format(api_key))
     application = Application(name=application_name, stage="evaluation")
     model = Model(name=model_name, model_type="text")
+
+    # Auto-generate evaluation name if not provided
+    if not evaluation_name:
+        timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%S")
+        evaluation_name = f"{application_name}-{model_name}-{timestamp}"
 
     # Validata headers to be non-empty and contain atleast the context_docs column
     if not headers:

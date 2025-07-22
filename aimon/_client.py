@@ -19,10 +19,7 @@ from ._types import (
     ProxiesTypes,
     RequestOptions,
 )
-from ._utils import (
-    is_given,
-    get_async_library,
-)
+from ._utils import is_given, get_async_library
 from ._version import __version__
 from .resources import users, models, analyze, metrics, inference, retrieval
 from ._streaming import Stream as Stream, AsyncStream as AsyncStream
@@ -78,7 +75,7 @@ class Client(SyncAPIClient):
         # part of our public interface in the future.
         _strict_response_validation: bool = False,
     ) -> None:
-        """Construct a new synchronous client client instance."""
+        """Construct a new synchronous Client client instance."""
         self.auth_header = auth_header
 
         if base_url is None:
@@ -253,7 +250,7 @@ class AsyncClient(AsyncAPIClient):
         # part of our public interface in the future.
         _strict_response_validation: bool = False,
     ) -> None:
-        """Construct a new async client client instance."""
+        """Construct a new async AsyncClient client instance."""
         self.auth_header = auth_header
 
         if base_url is None:

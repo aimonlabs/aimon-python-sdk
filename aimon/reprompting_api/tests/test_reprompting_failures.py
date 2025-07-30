@@ -1,0 +1,123 @@
+import os
+import pytest
+from string import Template
+from together import Together
+from aimon.reprompting_api.config import RepromptingConfig
+from aimon.reprompting_api.runner import run_reprompting_pipeline
+
+TOGETHER_API_KEY = os.environ.get("TOGETHER_API_KEY")
+AIMON_API_KEY = os.environ.get("AIMON_API_KEY")
+client = Together(api_key=TOGETHER_API_KEY)
+
+# --- MOCKED LLM FUNCTIONS ---
+def my_llm(prompt_template: Template, system_prompt=None, context=None, user_query=None) -> str:
+    """Simulates a normal working LLM that returns a string response."""
+    filled_prompt = prompt_template.substitute(
+        system_prompt=system_prompt or "",
+        context=context or "",
+        user_query=user_query or ""
+    )
+    response = client.chat.completions.create(
+        model="mistralai/Mistral-7B-Instruct-v0.2",
+        messages=[{"role": "user", "content": filled_prompt}],
+        max_tokens=256,
+        temperature=0
+    )
+    return response.choices[0].message.content
+
+def llm_fn_failure(prompt_template: Template, system_prompt=None, context=None, user_query=None) -> str:
+    """Simulates an LLM call that fails every time."""
+    raise RuntimeError("LLM call failed intentionally for testing")
+
+def llm_fn_incorrect_return_value(prompt_template: Template, system_prompt=None, context=None, user_query=None):
+    """Simulates an LLM that returns an invalid type instead of a string."""
+    return 42
+
+# --- MOCKED CONFIG FACTORIES ---
+def get_config():
+    """Returns a valid base configuration for most tests."""
+    return RepromptingConfig(
+        aimon_api_key=AIMON_API_KEY,
+        publish=False,
+        return_telemetry=True,
+        return_aimon_summary=True,
+        application_name="api_test",
+        max_iterations=2,
+    )
+
+def get_config_with_invalid_aimon_api_key():
+    """Returns a config with an intentionally invalid AIMon API key."""
+    return RepromptingConfig(
+        aimon_api_key="invalid key",
+        publish=False,
+        return_telemetry=True,
+        return_aimon_summary=True,
+        application_name="api_test",
+        max_iterations=3,
+    )
+
+# --- TESTS EXPECTING FAILURES ---
+@pytest.mark.integration
+def test_llm_failure():
+    """Should raise RuntimeError when the LLM function always fails."""
+    config = get_config()
+    with pytest.raises(RuntimeError, match="LLM call failed or returned invalid type after maximum retries."):
+        run_reprompting_pipeline(
+            user_query="Test LLM failure handling",
+            context="Context for failure test",
+            llm_fn=llm_fn_failure,
+            reprompting_config=config,
+            user_instructions=[]
+        )
+
+@pytest.mark.integration
+def test_invalid_llm_fn():
+    """Should raise TypeError when LLM function is None."""
+    config = get_config()
+    with pytest.raises(TypeError):
+        run_reprompting_pipeline(
+            user_query="Test invalid LLM fn",
+            context="Context for failure test",
+            llm_fn=None,
+            reprompting_config=config,
+            user_instructions=[]
+        )
+
+@pytest.mark.integration
+def test_invalid_return_value():
+    """Should raise RuntimeError when the LLM returns a non-string value."""
+    config = get_config()
+    with pytest.raises(RuntimeError, match="LLM call failed or returned invalid type"):
+        run_reprompting_pipeline(
+            user_query="Test invalid return type",
+            context="Context for type error",
+            llm_fn=llm_fn_incorrect_return_value,
+            reprompting_config=config,
+            user_instructions=[]
+        )
+
+@pytest.mark.integration
+def test_empty_query():
+    """Empty query should raise a ValueError."""
+    config = get_config()
+    with pytest.raises(ValueError, match="user_query must be a non-empty string"):
+        run_reprompting_pipeline(
+            user_query="",
+            context="",
+            llm_fn=my_llm,
+            reprompting_config=config,
+            user_instructions=[]
+        )
+
+@pytest.mark.integration
+def test_invalid_api_key():
+    """Should fail due to invalid AIMon API key."""
+    config = get_config_with_invalid_aimon_api_key()
+    with pytest.raises(RuntimeError):
+        run_reprompting_pipeline(
+            user_query="Testing with invalid AIMon API key",
+            context="Context for invalid key test",
+            llm_fn=my_llm,
+            reprompting_config=config,
+            user_instructions=[]
+        )

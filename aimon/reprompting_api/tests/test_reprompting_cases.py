@@ -88,7 +88,7 @@ def config_iteration_limit():
         return_telemetry=True,
         return_aimon_summary=True,
         application_name="api_test",
-        max_iterations=-1,
+        max_iterations=1,
     )
 
 # --- Helper to print results nicely ---
@@ -132,7 +132,7 @@ def test_latency_limit(my_llm, config_high_latency):
 
 @pytest.mark.integration
 def test_iteration_limit(my_llm, config_iteration_limit):
-    """Test behavior when max_iterations is unlimited (-1)."""
+    """Test behavior when max_iterations is 1."""
     result = run_reprompting_pipeline(
         user_query="Our systems are showing vulnerability alerts but we can't find the patch file in the vendor portal. What should we do?",
         system_prompt="Keep the tone professionally neutral by avoiding emotionally charged words, exclamations, or informal phrases (e.g., awesome, ugh, or emojis)",
@@ -141,7 +141,7 @@ def test_iteration_limit(my_llm, config_iteration_limit):
         reprompting_config=config_iteration_limit,
         user_instructions=["do not use the letter e","only use the letter e"]
     )
-    print_result("Iteration Limit Test (-1 = unlimited)", result)
+    print_result("Iteration Limit Test (no re-prompting, only 1 iteration allowed)", result)
     assert "best_response" in result
 
 @pytest.mark.integration

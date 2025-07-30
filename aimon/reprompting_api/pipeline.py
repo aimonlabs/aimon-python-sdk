@@ -1,7 +1,7 @@
 from aimon.reprompting_api.config import RepromptingConfig, StopReasons
 from aimon.reprompting_api.telemetry import TelemetryLogger
 from aimon.reprompting_api.reprompter import Reprompter
-from aimon.reprompting_api.utils import toxicity_check, get_failed_instructions_count, get_failed_instructions, get_residual_error_score
+from aimon.reprompting_api.utils import toxicity_check, get_failed_instructions_count, get_failed_instructions, get_residual_error_score, get_failed_toxicity_instructions
 from aimon import Detect
 import time
 import random
@@ -326,9 +326,10 @@ class RepromptingPipeline:
             """
             scores = {
                 "groundedness": result.detect_response.groundedness.get("score", 0.0),
-                "instruction_adherence": result.detect_response.instruction_adherence.get("score", 0.0)
+                "instruction_adherence": result.detect_response.instruction_adherence.get("score", 0.0),
+                "toxicity": result.detect_response.toxicity.get("score", 0.0)
             }
-            feedback = get_failed_instructions(result)
+            feedback = get_failed_instructions(result) + get_failed_toxicity_instructions(result)
             return scores, feedback
     
     def _build_corrective_prompt(self, payload, result):

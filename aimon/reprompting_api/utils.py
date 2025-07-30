@@ -133,33 +133,30 @@ def get_residual_error_score(result):
     Compute a normalized residual error score (0–1) based on:
     - Groundedness follow probabilities
     - Instruction adherence follow probabilities
-    - Toxicity failures (adds a strong penalty)
+    - Toxicity (inverted: 1 - follow_probability)
 
     Logic:
-    1. Compute a base penalty using groundedness & adherence:
-       - Each instruction's penalty = (1 - p), doubled if p < 0.5.
-       - Average across all instructions for a base score.
-    2. Add a flat toxicity penalty (+0.3) if any toxicity failures exist.
-    3. Clamp the final score to [0,1].
-
-    Args:
-        result: AIMon detection result with `instruction_adherence`, `groundedness`, and `toxicity` sections.
-
-    Returns:
-        float: Residual error score (0 = perfect, 1 = worst). The float is rounded to two decimal places.
+    1. Collect follow probabilities for groundedness & adherence.
+    2. For toxicity, use 1 - follow_probability (since high follow = low error).
+    3. Compute a penalized average using the helper.
+    4. Clamp the final score to [0,1].
     """
-    combined_probs = [
-        item["follow_probability"]
-        for source in ["groundedness", "instruction_adherence"]
-        for item in getattr(result.detect_response, source, {}).get("instructions_list", [])
-    ]
-    base_penalty = penalized_average(combined_probs) if combined_probs else 0.0
+    combined_probs = []
 
-    toxicity_penalty = 0.3 if _count_toxicity_failures(result) > 0 else 0.0
+    for source in ["groundedness", "instruction_adherence"]:
+        combined_probs.extend([
+            item["follow_probability"]
+            for item in getattr(result.detect_response, source, {}).get("instructions_list", [])
+        ])
 
-    residual_error_score = base_penalty + toxicity_penalty
+    # For toxicity, invert the follow probability
+    combined_probs.extend([
+        1 - item["follow_probability"]
+        for item in getattr(result.detect_response, "toxicity", {}).get("instructions_list", [])
+    ])
+
+    residual_error_score = penalized_average(combined_probs) if combined_probs else 0.0
     residual_error_score = min(1.0, max(0.0, residual_error_score))
-
     return round(residual_error_score, 2)
 
 
@@ -167,7 +164,8 @@ def penalized_average(probs: List[float]) -> float:
     """
     Compute a penalized average of follow probabilities.
 
-    Penalizes probabilities <0.5 more heavily by doubling their penalty.
+    Penalizes probabilities <0.5 more heavily by doubling their penalty. 
+    Probabilities > 0.5 (passed instructions) recieve no penalty
 
     Args:
         probs (List[float]): A list of follow probabilities.
@@ -178,7 +176,7 @@ def penalized_average(probs: List[float]) -> float:
     penalties = []
     for p in probs:
         if p >= 0.5:
-            penalty = 1 - p
+            penalty = 0
         else:
             penalty = (1 - p) * 2  # heavier penalty
         penalties.append(penalty)

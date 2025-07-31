@@ -92,15 +92,18 @@ class RepromptingPipeline:
         Process:
           1. Build an initial prompt with query, context, and instructions.
           2. Call the LLM to generate a response.
-          3. Evaluate the response with AIMon detectors.
+          3. Evaluate the response with AIMon detectors for instruction adherence, toxicity, and groundedness.
+          Toxicity and groundedness are always evaluated. If user_instructions are empty / not provided, the 
+          instruction adherence detector is not used.
           4. If violations are found, iteratively generate corrective prompts and re-prompt the LLM.
-          5. Stop when all instructions are followed or iteration limits are reached.
+          5. Stop when all instructions are followed and response has no hallucination or toxicity or when iteration or latency limits are reached.
           6. Return the best response (lowest residual error) along with telemetry and a summary if configured.
         
         Args:
-            user_query (str): The user's query or instruction.
-            context (str): Contextual information to include in the prompt.
-            user_instructions (list[str]): Instructions the model must follow.
+            user_query (str): Must be a non-empty string. The user's query or instruction.
+            context (str): Contextual information to include in the prompt. May be an empty string, but it is recommended to be included. 
+            user_instructions (list[str]): Instructions the model must follow. May be an empty list, but it is highly recommended to be included.
+            system_prompt (str): A high‑level role or behavior definition for the model. May be an empty string.
 
         Returns:
             dict: 
@@ -130,7 +133,7 @@ class RepromptingPipeline:
         curr_result = self._detect_aimon_response(curr_payload, self.config.feedback_model_max_retries)
         logger.debug(f"AIMon evaluation result: {curr_result}")
         
-        # Get scores and detailed feedback on failured instructions
+        # Get scores and detailed feedback on failed instructions
         scores, feedback = self.get_response_feedback(curr_result)
         self._record_iteration_output(iteration_outputs, iteration_num, curr_generated_text, curr_result)
 
@@ -158,6 +161,7 @@ class RepromptingPipeline:
             curr_prompt = self._build_corrective_prompt(curr_payload, curr_result)
             
             # Retry LLM call with corrective prompt
+            curr_generated_text = self._call_llm(curr_prompt, self.config.user_model_max_retries)
             curr_generated_text = self._call_llm(curr_prompt,self.config.user_model_max_retries, system_prompt, context, user_query)
             # Re-evaluate the new response
             curr_payload = self._build_aimon_payload(context, user_query, user_instructions, curr_generated_text, system_prompt)

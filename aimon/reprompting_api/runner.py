@@ -31,19 +31,13 @@ def run_reprompting_pipeline(
     and `"[no context provided]"`) to ensure template consistency.
 
     Args:
-        llm_fn (Callable[[Template, str, str, str], str]): 
-            A function to call the LLM. Must accept a prompt template (recommended_prompt_template), 
-            `system_prompt`, `context`, and `user_query`.
-        user_query (str): 
-            The user’s query. Must be a non-empty string.
-        system_prompt (str, optional): 
-            A system-level instruction string. Defaults to `"[no system prompt provided]"` if None or empty.
-        context (str, optional): 
-            Supplemental context for the LLM. Defaults to `"[no context provided]"` if None or empty.
-        user_instructions (List[str], optional): 
-            A list of instructions for the model to follow. Defaults to an empty list.
-        reprompting_config (RepromptingConfig, optional): 
-            Configuration object for controlling pipeline behavior.
+        llm_fn (Callable[[Template, str, str, str], str]): A function to call the LLM. Must accept a prompt template (recommended_prompt_template), 
+        `system_prompt`, `context`, and `user_query`.
+        user_query (str): The user’s query. Must be a non-empty string.
+        system_prompt (str, optional): A system-level instruction string. Defaults to `"[no system prompt provided]"` if None or empty.
+        context (str, optional): Supplemental context for the LLM. Defaults to `"[no context provided]"` if None or empty.
+        user_instructions (List[str], optional): A list of instructions for the model to follow. Defaults to an empty list.
+        reprompting_config (RepromptingConfig, optional): Configuration object for controlling pipeline behavior.
 
     Returns:
         dict: A structured dictionary containing:

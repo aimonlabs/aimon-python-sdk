@@ -1,7 +1,7 @@
 from aimon.reprompting_api.config import RepromptingConfig, StopReasons
 from aimon.reprompting_api.telemetry import TelemetryLogger
 from aimon.reprompting_api.reprompter import Reprompter
-from aimon.reprompting_api.utils import toxicity_check, get_failed_instructions_count, get_failed_instructions, get_residual_error_score, get_failed_toxicity_instructions
+from aimon.reprompting_api.utils import retry, toxicity_check, get_failed_instructions_count, get_failed_instructions, get_residual_error_score, get_failed_toxicity_instructions
 from aimon import Detect
 import time
 import random
@@ -243,57 +243,50 @@ class RepromptingPipeline:
         }
         return payload
 
-    def _call_llm(self, prompt_template: Template, max_attempts, system_prompt=None, context=None, user_query=None, base_delay=1):
+    def _call_llm(self, prompt_template: Template, max_attempts, system_prompt=None, context=None, user_query=None):
         """
         Calls the LLM with exponential backoff. Retries if the LLM call fails
-        OR returns a non-string value. Raises an exception if all retries fail.
+        OR returns a non-string value.  If all retries fail, the last encountered
+        exception from the LLM call is re-raised.
 
         Args:
             prompt_template (Template): Prompt template for the LLM.
             max_attempts (int): Max retry attempts.
-            base_delay (float): Initial delay in seconds before backoff.
-
+            
         Returns:
             str: LLM response text.
 
         Raises:
-            RuntimeError: If the LLM call fails or returns an invalid type after all retries.
+            RuntimeError: If the LLM call repeatedly fails, re-raises the last encountered error.
+            TypeError: If the LLM call fails to return a string.
         """
-        last_exception = None
-        for attempt in range(max_attempts):
-            try:
-                logger.debug(f"LLM call attempt {attempt+1} with prompt template.")
-                result = self.llm_fn(prompt_template, system_prompt, context, user_query)
-                # Validate type
-                if not isinstance(result, str):
-                    raise TypeError(f"LLM returned invalid type {type(result).__name__}, expected str.")
-                return result
-            except Exception as e:
-                last_exception = e
-                logger.warning(f"LLM call failed on attempt {attempt+1}: {e}")
-                wait_time = base_delay * (2 ** attempt) + random.uniform(0, 0.1)
-                time.sleep(wait_time)
-        raise RuntimeError(f"LLM call failed or returned invalid type after maximum retries. Last error: {last_exception}")
+        @retry(exception_to_check=Exception, tries=max_attempts, delay=1, backoff=2, logger=logger)
+        def backoff_call():
+            result = self.llm_fn(prompt_template, system_prompt, context, user_query)
+            if not isinstance(result, str):
+                raise TypeError(f"LLM returned invalid type {type(result).__name__}, expected str.")
+            return result
+        return backoff_call()
     
-    def _detect_aimon_response(self, payload, max_attempts, base_delay=1):
+    def _detect_aimon_response(self, payload, max_attempts):
         """
         Calls AIMon Detect with exponential backoff and returns the detection result.
 
         This method wraps the AIMon evaluation call, retrying if it fails due to transient 
         errors (e.g., network issues or temporary service unavailability). It retries up to 
-        `max_attempts` times with exponential backoff before raising a RuntimeError.
+        `max_attempts` times with exponential backoff before raising the last encountered 
+        exception from the AIMon Detect call.
 
         Args:
             payload (dict): A dictionary containing 'context', 'user_query', 
                             'instructions', and 'generated_text' for evaluation.
             max_attempts (int): Maximum number of retry attempts.
-            base_delay (float): Initial delay in seconds before exponential backoff.
 
         Returns:
             object: The AIMon detection result containing evaluation scores and feedback.
 
         Raises:
-            RuntimeError: If AIMon Detect fails after all retry attempts.
+            RuntimeError: If AIMon Detect fails after all retry attempts, re-raises the last encountered error.
         """
         aimon_context = f"{payload['context']}\n\nUser Query:\n{payload['user_query']}"
         aimon_query = f"{payload['user_query']}\n\nInstructions:\n{payload['instructions']}"
@@ -302,21 +295,23 @@ class RepromptingPipeline:
         def run_detection(query, instructions, generated_text, context):
             return query, instructions, generated_text, context
 
-        for attempt in range(max_attempts):
-            try:
-                logger.debug(f"AIMon detect attempt {attempt+1} with payload: {payload}")
-                _, _, _, _, result = run_detection(
-                    aimon_query,
-                    payload['instructions'],
-                    payload['generated_text'],
-                    aimon_context
-                )
-                return result
-            except Exception as e:
-                logger.debug(f"AIMon detect failed on attempt {attempt+1}: {e}")
-                wait_time = base_delay * (2 ** attempt) + random.uniform(0, 0.1)
-                time.sleep(wait_time)
-        raise RuntimeError("AIMon detect call failed after maximum retries.")
+        @retry(
+            exception_to_check=Exception,
+            tries=max_attempts,
+            delay=1,
+            backoff=2,
+            logger=logger
+        )
+        def inner_detection():
+            logger.debug(f"AIMon detect call with payload: {payload}")
+            _, _, _, _, result = run_detection(
+                aimon_query,
+                payload['instructions'],
+                payload['generated_text'],
+                aimon_context
+            )
+            return result
+        return inner_detection()
 
     def get_response_feedback(self, result):
             """

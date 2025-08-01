@@ -2,6 +2,7 @@ import os
 import pytest
 from string import Template
 from together import Together
+import aimon
 from aimon.reprompting_api.config import RepromptingConfig
 from aimon.reprompting_api.runner import run_reprompting_pipeline
 
@@ -61,7 +62,7 @@ def get_config_with_invalid_aimon_api_key():
 def test_llm_failure():
     """Should raise RuntimeError when the LLM function always fails."""
     config = get_config()
-    with pytest.raises(RuntimeError, match="LLM call failed or returned invalid type after maximum retries."):
+    with pytest.raises(RuntimeError, match="LLM call failed intentionally for testing"):
         run_reprompting_pipeline(
             user_query="Test LLM failure handling",
             context="Context for failure test",
@@ -85,9 +86,9 @@ def test_invalid_llm_fn():
 
 @pytest.mark.integration
 def test_invalid_return_value():
-    """Should raise RuntimeError when the LLM returns a non-string value."""
+    """Should raise TypeError when the LLM returns a non-string value."""
     config = get_config()
-    with pytest.raises(RuntimeError, match="LLM call failed or returned invalid type"):
+    with pytest.raises(TypeError, match="LLM returned invalid type int, expected str."):
         run_reprompting_pipeline(
             user_query="Test invalid return type",
             context="Context for type error",
@@ -113,7 +114,7 @@ def test_empty_query():
 def test_invalid_api_key():
     """Should fail due to invalid AIMon API key."""
     config = get_config_with_invalid_aimon_api_key()
-    with pytest.raises(RuntimeError):
+    with pytest.raises(aimon.AuthenticationError):
         run_reprompting_pipeline(
             user_query="Testing with invalid AIMon API key",
             context="Context for invalid key test",

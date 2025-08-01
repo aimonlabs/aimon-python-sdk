@@ -1,30 +1,21 @@
 import os
 import pytest
 from string import Template
-from together import Together
 import aimon
 from aimon.reprompting_api.config import RepromptingConfig
 from aimon.reprompting_api.runner import run_reprompting_pipeline
 
-TOGETHER_API_KEY = os.environ.get("TOGETHER_API_KEY")
 AIMON_API_KEY = os.environ.get("AIMON_API_KEY")
-client = Together(api_key=TOGETHER_API_KEY)
 
 # --- MOCKED LLM FUNCTIONS ---
 def my_llm(prompt_template: Template, system_prompt=None, context=None, user_query=None) -> str:
-    """Simulates a normal working LLM that returns a string response."""
-    filled_prompt = prompt_template.substitute(
+    """Simulates a normal working LLM that returns a string response. Just returns filled_prompt for test"""
+    filled_prompt = prompt_template.safe_substitute(
         system_prompt=system_prompt or "",
         context=context or "",
         user_query=user_query or ""
     )
-    response = client.chat.completions.create(
-        model="mistralai/Mistral-7B-Instruct-v0.2",
-        messages=[{"role": "user", "content": filled_prompt}],
-        max_tokens=256,
-        temperature=0
-    )
-    return response.choices[0].message.content
+    return filled_prompt
 
 def llm_fn_failure(prompt_template: Template, system_prompt=None, context=None, user_query=None) -> str:
     """Simulates an LLM call that fails every time."""
@@ -58,7 +49,6 @@ def get_config_with_invalid_aimon_api_key():
     )
 
 # --- TESTS EXPECTING FAILURES ---
-@pytest.mark.integration
 def test_llm_failure():
     """Should raise RuntimeError when the LLM function always fails."""
     config = get_config()
@@ -71,7 +61,6 @@ def test_llm_failure():
             user_instructions=[]
         )
 
-@pytest.mark.integration
 def test_invalid_llm_fn():
     """Should raise TypeError when LLM function is None."""
     config = get_config()
@@ -84,7 +73,6 @@ def test_invalid_llm_fn():
             user_instructions=[]
         )
 
-@pytest.mark.integration
 def test_invalid_return_value():
     """Should raise TypeError when the LLM returns a non-string value."""
     config = get_config()
@@ -97,7 +85,6 @@ def test_invalid_return_value():
             user_instructions=[]
         )
 
-@pytest.mark.integration
 def test_empty_query():
     """Empty query should raise a ValueError."""
     config = get_config()
@@ -110,7 +97,6 @@ def test_empty_query():
             user_instructions=[]
         )
 
-@pytest.mark.integration
 def test_invalid_api_key():
     """Should fail due to invalid AIMon API key."""
     config = get_config_with_invalid_aimon_api_key()

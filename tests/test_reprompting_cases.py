@@ -1,14 +1,10 @@
 import os
 import pytest
 from string import Template
-from together import Together
 from aimon.reprompting_api.config import RepromptingConfig
 from aimon.reprompting_api.runner import run_reprompting_pipeline
 
-TOGETHER_API_KEY = os.environ.get("TOGETHER_API_KEY")
 AIMON_API_KEY = os.environ.get("AIMON_API_KEY")
-
-client = Together(api_key=TOGETHER_API_KEY)
 
 # --- Fixtures ---
 
@@ -16,22 +12,12 @@ client = Together(api_key=TOGETHER_API_KEY)
 def my_llm():
     """Mock LLM function for integration tests. Prints prompts and responses."""
     def _my_llm(recommended_prompt_template: Template, system_prompt, context, user_query) -> str:
-        filled_prompt = recommended_prompt_template.substitute(
+        filled_prompt = recommended_prompt_template.safe_substitute(
             system_prompt=system_prompt or "",
             context=context or "",
             user_query=user_query or ""
         )
-        print("\n==== LLM PROMPT SENT ====", flush=True)
-        print(filled_prompt, flush=True)
-        response = client.chat.completions.create(
-            model="mistralai/Mistral-7B-Instruct-v0.2",
-            messages=[{"role": "user", "content": filled_prompt}],
-            max_tokens=256,
-            temperature=0
-        )
-        print("\n==== LLM RAW RESPONSE ====", flush=True)
-        print(response.choices[0].message.content, flush=True)
-        return response.choices[0].message.content
+        return filled_prompt
     return _my_llm
 
 @pytest.fixture
@@ -104,7 +90,6 @@ def print_result(test_name, result):
 
 # --- Tests ---
 
-@pytest.mark.integration
 def test_low_latency_limit(my_llm, config_low_latency):
     """Test stopping behavior when latency limit is very low (100ms)."""
     result = run_reprompting_pipeline(
@@ -117,7 +102,6 @@ def test_low_latency_limit(my_llm, config_low_latency):
     print_result("Low Latency Limit Test (100ms)", result)
     assert "best_response" in result
 
-@pytest.mark.integration
 def test_latency_limit(my_llm, config_high_latency):
     """Test behavior with a high latency limit and contradictory instructions."""
     result = run_reprompting_pipeline(
@@ -130,7 +114,6 @@ def test_latency_limit(my_llm, config_high_latency):
     print_result("High Latency Limit Test (5000ms)", result)
     assert "best_response" in result
 
-@pytest.mark.integration
 def test_iteration_limit(my_llm, config_iteration_limit):
     """Test behavior when max_iterations is 1."""
     result = run_reprompting_pipeline(
@@ -144,7 +127,6 @@ def test_iteration_limit(my_llm, config_iteration_limit):
     print_result("Iteration Limit Test (no re-prompting, only 1 iteration allowed)", result)
     assert "best_response" in result
 
-@pytest.mark.integration
 def test_empty_context_and_instructions(my_llm, base_config):
     """Ensure pipeline works with no context, instructions, or system prompt."""
     result = run_reprompting_pipeline(
@@ -157,7 +139,6 @@ def test_empty_context_and_instructions(my_llm, base_config):
     print_result("Empty Context & Instructions Test", result)
     assert "best_response" in result
 
-@pytest.mark.integration
 def test_no_telemetry(my_llm, config_without_telemetry):
     """Confirm telemetry and summary are excluded when disabled in config."""
     result = run_reprompting_pipeline(
@@ -171,7 +152,6 @@ def test_no_telemetry(my_llm, config_without_telemetry):
     assert "telemetry" not in result
     assert "summary" not in result
 
-@pytest.mark.integration
 def test_no_system_prompt(my_llm, base_config):
     """Test behavior when system prompt is excluded."""
     result = run_reprompting_pipeline(

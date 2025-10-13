@@ -39,8 +39,8 @@ class TestDetectDecoratorWithRemoteService:
 
     def test_basic_detect_functionality(self, caplog):
         """Test that the Detect decorator works with basic functionality without raising exceptions."""
-        # Create the decorator
-        config = {'hallucination': {'detector_name': 'default'}}
+        # Create the decorator (using groundedness instead of deprecated hallucination)
+        config = {'groundedness': {'detector_name': 'default'}}
         values_returned = ["context", "generated_text", "user_query"]
         
         self.log_info("TEST", "Basic detect functionality")
@@ -71,11 +71,10 @@ class TestDetectDecoratorWithRemoteService:
         self.log_info("OUTPUT_GENERATED_TEXT", generated_text)
         self.log_info("OUTPUT_STATUS", result.status)
         
-        if hasattr(result.detect_response, 'hallucination'):
-            self.log_info("OUTPUT_HALLUCINATION", {
-                "is_hallucinated": result.detect_response.hallucination.get("is_hallucinated", ""),
-                "score": result.detect_response.hallucination.get("score", ""),
-                "sentences_count": len(result.detect_response.hallucination.get("sentences", []))
+        if hasattr(result.detect_response, 'groundedness'):
+            self.log_info("OUTPUT_GROUNDEDNESS", {
+                "score": result.detect_response.groundedness.get("score", ""),
+                "instructions_list": result.detect_response.groundedness.get("instructions_list", [])
             })
         
         # Verify return values
@@ -86,16 +85,14 @@ class TestDetectDecoratorWithRemoteService:
         # Verify response structure
         assert isinstance(result, DetectResult)
         assert result.status == 200
-        assert hasattr(result.detect_response, 'hallucination')
-        assert "is_hallucinated" in result.detect_response.hallucination
-        assert "score" in result.detect_response.hallucination
-        assert "sentences" in result.detect_response.hallucination
+        assert hasattr(result.detect_response, 'groundedness')
+        assert "score" in result.detect_response.groundedness
 
     def test_detect_with_multiple_detectors(self):
         """Test the Detect decorator with multiple detectors without raising exceptions."""
-        # Create the decorator with multiple detectors
+        # Create the decorator with multiple detectors (using groundedness instead of deprecated hallucination)
         config = {
-            'hallucination': {'detector_name': 'default'},
+            'groundedness': {'detector_name': 'default'},
             'instruction_adherence': {'detector_name': 'default'},
             'toxicity': {'detector_name': 'default'}
         }
@@ -131,25 +128,25 @@ class TestDetectDecoratorWithRemoteService:
         self.log_info("Output - Generated Text", generated_text)
         self.log_info("Output - Status", result.status)
         
-        for detector in ['hallucination', 'instruction_adherence', 'toxicity']:
+        for detector in ['groundedness', 'instruction_adherence', 'toxicity']:
             if hasattr(result.detect_response, detector):
                 self.log_info(f"Output - {detector.capitalize()} Response", 
                                 getattr(result.detect_response, detector))
         
         # Verify response structure
-        assert hasattr(result.detect_response, 'hallucination')
+        assert hasattr(result.detect_response, 'groundedness')
         assert hasattr(result.detect_response, 'instruction_adherence')
         assert hasattr(result.detect_response, 'toxicity')
         
         # Check key fields without verifying values
-        assert "score" in result.detect_response.hallucination
+        assert "score" in result.detect_response.groundedness
         assert "instructions_list" in result.detect_response.instruction_adherence
         assert "score" in result.detect_response.toxicity
 
     def test_detect_with_different_iterables(self):
         """Test the Detect decorator with different iterable types for values_returned."""
         # Create the decorator with a tuple for values_returned
-        config = {'hallucination': {'detector_name': 'default'}}
+        config = {'groundedness': {'detector_name': 'default'}}
         values_returned = ("context", "generated_text")
         
         self.log_info("Test", "Detect with different iterables (tuple)")
@@ -176,16 +173,16 @@ class TestDetectDecoratorWithRemoteService:
         self.log_info("Output - Generated Text", generated_text)
         self.log_info("Output - Status", result.status)
         
-        if hasattr(result.detect_response, 'hallucination'):
-            self.log_info("Output - Hallucination Response", 
-                          result.detect_response.hallucination)
+        if hasattr(result.detect_response, 'groundedness'):
+            self.log_info("Output - Groundedness Response", 
+                          result.detect_response.groundedness)
         
         # Verify return values and structure
         assert "Python" in context
         assert "data science" in generated_text
         assert isinstance(result, DetectResult)
-        assert hasattr(result.detect_response, 'hallucination')
-        assert "score" in result.detect_response.hallucination
+        assert hasattr(result.detect_response, 'groundedness')
+        assert "score" in result.detect_response.groundedness
 
     def test_detect_with_non_tuple_return(self):
         """Test the Detect decorator when the wrapped function returns a single value."""
@@ -235,7 +232,7 @@ class TestDetectDecoratorWithRemoteService:
         detect_with_list = Detect(
             values_returned=list_values,
             api_key=self.api_key,
-            config={'hallucination': {'detector_name': 'default'}}
+            config={'groundedness': {'detector_name': 'default'}}
         )
         
         # Test with a tuple
@@ -245,7 +242,7 @@ class TestDetectDecoratorWithRemoteService:
         detect_with_tuple = Detect(
             values_returned=tuple_values,
             api_key=self.api_key, 
-            config={'hallucination': {'detector_name': 'default'}}
+            config={'groundedness': {'detector_name': 'default'}}
         )
         
         # Test with a custom iterable
@@ -266,7 +263,7 @@ class TestDetectDecoratorWithRemoteService:
         detect_with_custom = Detect(
             values_returned=custom_iterable,
             api_key=self.api_key,
-            config={'hallucination': {'detector_name': 'default'}}
+            config={'groundedness': {'detector_name': 'default'}}
         )
         
         # If we got here without exceptions, the test passes
@@ -380,7 +377,7 @@ class TestDetectDecoratorWithRemoteService:
                 values_returned=["context", "generated_text"],
                 api_key=self.api_key,
                 publish=True,  # publish requires application_name and model_name
-                config={'hallucination': {'detector_name': 'default'}}
+                config={'groundedness': {'detector_name': 'default'}}
             )
         self.log_info("Error message (publish)", str(exc_info1.value))
         
@@ -391,7 +388,7 @@ class TestDetectDecoratorWithRemoteService:
                 values_returned=["context", "generated_text"],
                 api_key=self.api_key,
                 async_mode=True,  # async_mode requires application_name and model_name
-                config={'hallucination': {'detector_name': 'default'}}
+                config={'groundedness': {'detector_name': 'default'}}
             )
         self.log_info("Error message (async_mode)", str(exc_info2.value))
         
@@ -434,15 +431,15 @@ class TestDetectDecoratorWithRemoteService:
         assert hasattr(result.detect_response, 'toxicity')
         assert "score" in result.detect_response.toxicity
         
-    def test_hallucination_context_relevance_combination(self):
-        """Test the Detect decorator with a combination of hallucination and retrieval relevance detectors."""
+    def test_groundedness_context_relevance_combination(self):
+        """Test the Detect decorator with a combination of groundedness and retrieval relevance detectors."""
         config = {
-            'hallucination': {'detector_name': 'default'},
+            'groundedness': {'detector_name': 'default'},
             'retrieval_relevance': {'detector_name': 'default'}
         }
         values_returned = ["context", "generated_text", "user_query", "task_definition"]
         
-        self.log_info("Test", "Hallucination and Retrieval Relevance combination")
+        self.log_info("Test", "Groundedness and Retrieval Relevance combination")
         self.log_info("Configuration", config)
         self.log_info("Values returned", values_returned)
         
@@ -469,7 +466,7 @@ class TestDetectDecoratorWithRemoteService:
         self.log_info("Output - Generated Text", generated_text)
         self.log_info("Output - Status", result.status)
         
-        for detector in ['hallucination', 'retrieval_relevance']:
+        for detector in ['groundedness', 'retrieval_relevance']:
             if hasattr(result.detect_response, detector):
                 self.log_info(f"Output - {detector.capitalize()} Response", 
                               getattr(result.detect_response, detector))
@@ -477,7 +474,7 @@ class TestDetectDecoratorWithRemoteService:
         # Verify response structure
         assert isinstance(result, DetectResult)
         assert result.status == 200
-        assert hasattr(result.detect_response, 'hallucination')
+        assert hasattr(result.detect_response, 'groundedness')
         assert hasattr(result.detect_response, 'retrieval_relevance')
 
     def test_instruction_adherence_v1(self):
@@ -593,7 +590,7 @@ class TestDetectDecoratorWithRemoteService:
     def test_all_detectors_combination(self):
         """Test the Detect decorator with all available detectors."""
         config = {
-            'hallucination': {'detector_name': 'default'},
+            'groundedness': {'detector_name': 'default'},
             'toxicity': {'detector_name': 'default'},
             'instruction_adherence': {'detector_name': 'default'},
             'retrieval_relevance': {'detector_name': 'default'},
@@ -637,7 +634,7 @@ class TestDetectDecoratorWithRemoteService:
         self.log_info("Output - Status", result.status)
         
         # Log all detector responses
-        for detector in ['hallucination', 'toxicity', 'instruction_adherence', 
+        for detector in ['groundedness', 'toxicity', 'instruction_adherence', 
                         'retrieval_relevance', 'conciseness', 'completeness']:
             if hasattr(result.detect_response, detector):
                 self.log_info(f"Output - {detector.capitalize()} Response", 
@@ -648,7 +645,7 @@ class TestDetectDecoratorWithRemoteService:
         assert result.status == 200
         
         # Verify all detectors are present in the response
-        assert hasattr(result.detect_response, 'hallucination')
+        assert hasattr(result.detect_response, 'groundedness')
         assert hasattr(result.detect_response, 'toxicity')
         assert hasattr(result.detect_response, 'instruction_adherence')
         assert hasattr(result.detect_response, 'retrieval_relevance')
@@ -772,7 +769,7 @@ class TestDetectDecoratorWithRemoteService:
             
             # Configure evaluation
             eval_config = {
-                'hallucination': {'detector_name': 'default'},
+                'groundedness': {'detector_name': 'default'},
                 'toxicity': {'detector_name': 'default'}
             }
             
@@ -829,9 +826,9 @@ class TestDetectDecoratorWithRemoteService:
         """Test that the must_compute parameter is properly validated."""
         print("\n=== Testing must_compute validation ===")
         
-        # Test config with both hallucination and completeness
+        # Test config with both groundedness and completeness
         test_config = {
-            "hallucination": {
+            "groundedness": {
                 "detector_name": "default"
             },
             "completeness": {
@@ -903,9 +900,9 @@ class TestDetectDecoratorWithRemoteService:
         """Test must_compute functionality with actual service calls."""
         print("\n=== Testing must_compute with actual service ===")
         
-        # Test config with both hallucination and completeness
+        # Test config with both groundedness and completeness
         test_config = {
-            "hallucination": {
+            "groundedness": {
                 "detector_name": "default"
             },
             "completeness": {
@@ -947,10 +944,9 @@ class TestDetectDecoratorWithRemoteService:
                 print(f"Generated Text: {generated_text}")
                 
                 # Display response details
-                if hasattr(result.detect_response, 'hallucination'):
-                    hallucination = result.detect_response.hallucination
-                    print(f"Hallucination Score: {hallucination.get('score', 'N/A')}")
-                    print(f"Is Hallucinated: {hallucination.get('is_hallucinated', 'N/A')}")
+                if hasattr(result.detect_response, 'groundedness'):
+                    groundedness = result.detect_response.groundedness
+                    print(f"Groundedness Score: {groundedness.get('score', 'N/A')}")
                 
                 if hasattr(result.detect_response, 'completeness'):
                     completeness = result.detect_response.completeness

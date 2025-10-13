@@ -231,8 +231,8 @@ class TestResidualErrorScore:
         
         # Low toxicity score (0.1) means high toxicity, which should give high error
         # penalized_average with p=0.1 (< 0.5) gives penalty=(1-0.1)*2=1.8
-        # Result should be 1.8
-        assert score == 1.8
+        # But get_residual_error_score clamps to max 1.0, so result is 1.0
+        assert score == 1.0
     
     def test_residual_error_high_toxicity_score(self):
         """Test that high toxicity scores (non-toxic content) give low error."""

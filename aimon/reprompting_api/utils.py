@@ -11,7 +11,7 @@ These utilities are primarily used by the RepromptingPipeline to:
 - Guide corrective re-prompting logic.
 
 Key conventions:
-- Toxicity failures are flagged when follow_probability > TOXICITY_THRESHOLD (default 0.25).
+- Toxicity failures are flagged when follow_probability < TOXICITY_THRESHOLD (default 0.5). Lower scores indicate higher toxicity.
 - Residual error scoring penalizes low follow probabilities more heavily and adds a flat penalty for any toxicity failures.
 """
 from typing import Callable, Type, Union, Tuple, Optional, List

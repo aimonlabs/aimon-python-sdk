@@ -84,6 +84,9 @@ class Reprompter:
 
         Returns:
             str: Toxicity-specific feedback, or None if no toxicity detected.
+        
+        Note:
+            For toxicity, lower scores indicate higher toxicity. We invert the score to show confidence.
         """
         try:
             failed_instructions = get_failed_toxicity_instructions(result)
@@ -92,7 +95,8 @@ class Reprompter:
             logger.info(f"Toxicity violations detected: {len(failed_instructions)}")
             lines = ["Your reply contained toxic content. Remove any harmful, abusive, or unsafe language."]
             for i, failed_instruction in enumerate(failed_instructions, start=1):
-                confidence = failed_instruction.get("score", 0.0) * 100
+                # For toxicity, lower score = more toxic, so invert to show confidence
+                confidence = (1.0 - failed_instruction.get("score", 0.0)) * 100
                 confidence_str = f"{confidence:.2f}%"
                 lines.append(
                     f"{i}. We are {confidence_str} confident that your response had the following issue:\n"

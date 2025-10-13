@@ -11,7 +11,7 @@ These utilities are primarily used by the RepromptingPipeline to:
 - Guide corrective re-prompting logic.
 
 Key conventions:
-- Toxicity failures are flagged when follow_probability > TOXICITY_THRESHOLD (default 0.25).
+- Toxicity failures are flagged when follow_probability < TOXICITY_THRESHOLD (default 0.5). Lower scores indicate higher toxicity.
 - Residual error scoring penalizes low follow probabilities more heavily and adds a flat penalty for any toxicity failures.
 """
 from typing import Callable, Type, Union, Tuple, Optional, List
@@ -71,12 +71,13 @@ def retry(
         return f_retry
     return deco_retry
 
-# toxicity threshold for AIMon detection; Follow probabilities above this are considered failures
-TOXICITY_THRESHOLD = 0.25
+# toxicity threshold for AIMon detection; Follow probabilities below this are considered failures (lower score = more toxic)
+TOXICITY_THRESHOLD = 0.5
 
 def _count_toxicity_failures(result) -> int:
     """
-    Count the number of toxicity instructions whose follow probability exceeds the threshold.
+    Count the number of toxicity instructions whose follow probability is below the threshold.
+    Lower scores indicate higher toxicity.
 
     Args:
         result: AIMon detection result containing a `toxicity` section.
@@ -87,25 +88,27 @@ def _count_toxicity_failures(result) -> int:
     return sum(
         1
         for inst in result.detect_response.toxicity.get("instructions_list", [])
-        if inst.get("follow_probability", 0.0) > TOXICITY_THRESHOLD
+        if inst.get("follow_probability", 0.0) < TOXICITY_THRESHOLD
     )
 
 def toxicity_check(result) -> bool:
     """
-    Check whether any toxicity instructions exceed the threshold.
+    Check whether any toxicity instructions fall below the threshold.
+    Lower scores indicate higher toxicity.
 
     Args:
         result: AIMon detection result containing a `toxicity` section.
 
     Returns:
-        bool: True if at least one toxicity instruction exceeds the threshold, False otherwise.
+        bool: True if at least one toxicity instruction is below the threshold, False otherwise.
     """
     return _count_toxicity_failures(result) > 0
 
 
 def get_failed_toxicity_instructions(result) -> List[dict]:
     """
-    Extract failed toxicity instructions exceeding the threshold.
+    Extract failed toxicity instructions below the threshold.
+    Lower scores indicate higher toxicity.
 
     Args:
         result: AIMon detection result containing a `toxicity` section.
@@ -120,7 +123,7 @@ def get_failed_toxicity_instructions(result) -> List[dict]:
     """
     failed = []
     for inst in result.detect_response.toxicity.get("instructions_list", []):
-        if inst.get("follow_probability", 0.0) > TOXICITY_THRESHOLD:
+        if inst.get("follow_probability", 0.0) < TOXICITY_THRESHOLD:
             failed.append({
                 "type": "toxicity_failure",
                 "source": "toxicity",
@@ -188,13 +191,16 @@ def get_residual_error_score(result):
     Compute a normalized residual error score (0–1) based on:
     - Groundedness follow probabilities
     - Instruction adherence follow probabilities
-    - Toxicity (inverted: 1 - follow_probability)
+    - Toxicity follow probabilities (lower scores indicate higher toxicity)
 
     Logic:
-    1. Collect follow probabilities for groundedness & adherence.
-    2. For toxicity, use 1 - follow_probability (since high follow = low error).
+    1. Collect follow probabilities for groundedness, adherence, and toxicity.
+    2. For toxicity, use follow_probability directly (since lower scores = higher toxicity = higher error).
     3. Compute a penalized average using the helper.
     4. Clamp the final score to [0,1].
+    
+    Note: Unlike groundedness/adherence where high scores are good, toxicity scores are already
+    in the "error" direction (low score = toxic = bad), so no inversion is needed.
     """
     combined_probs = []
 
@@ -204,9 +210,9 @@ def get_residual_error_score(result):
             for item in getattr(result.detect_response, source, {}).get("instructions_list", [])
         ])
 
-    # For toxicity, invert the follow probability
+    # For toxicity, use the follow probability directly (lower = more toxic = higher error)
     combined_probs.extend([
-        1 - item["follow_probability"]
+        item["follow_probability"]
         for item in getattr(result.detect_response, "toxicity", {}).get("instructions_list", [])
     ])
 

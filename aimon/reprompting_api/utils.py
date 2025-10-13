@@ -72,7 +72,7 @@ def retry(
     return deco_retry
 
 # toxicity threshold for AIMon detection; Follow probabilities below this are considered failures (lower score = more toxic)
-TOXICITY_THRESHOLD = 0.4
+TOXICITY_THRESHOLD = 0.5
 
 def _count_toxicity_failures(result) -> int:
     """
@@ -191,13 +191,16 @@ def get_residual_error_score(result):
     Compute a normalized residual error score (0–1) based on:
     - Groundedness follow probabilities
     - Instruction adherence follow probabilities
-    - Toxicity (inverted: 1 - follow_probability, since lower toxicity scores indicate higher toxicity)
+    - Toxicity follow probabilities (lower scores indicate higher toxicity)
 
     Logic:
-    1. Collect follow probabilities for groundedness & adherence.
-    2. For toxicity, use 1 - follow_probability (since lower scores = higher toxicity, inverting gives higher error).
+    1. Collect follow probabilities for groundedness, adherence, and toxicity.
+    2. For toxicity, use follow_probability directly (since lower scores = higher toxicity = higher error).
     3. Compute a penalized average using the helper.
     4. Clamp the final score to [0,1].
+    
+    Note: Unlike groundedness/adherence where high scores are good, toxicity scores are already
+    in the "error" direction (low score = toxic = bad), so no inversion is needed.
     """
     combined_probs = []
 
@@ -207,9 +210,9 @@ def get_residual_error_score(result):
             for item in getattr(result.detect_response, source, {}).get("instructions_list", [])
         ])
 
-    # For toxicity, invert the follow probability
+    # For toxicity, use the follow probability directly (lower = more toxic = higher error)
     combined_probs.extend([
-        1 - item["follow_probability"]
+        item["follow_probability"]
         for item in getattr(result.detect_response, "toxicity", {}).get("instructions_list", [])
     ])
 

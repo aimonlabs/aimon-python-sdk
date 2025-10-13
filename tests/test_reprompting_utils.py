@@ -212,8 +212,8 @@ class TestResidualErrorScore:
         # Should have minimal error
         assert score < 0.3
     
-    def test_residual_error_toxicity_inversion(self):
-        """Test that toxicity scores are correctly inverted in residual error calculation."""
+    def test_residual_error_toxicity_no_inversion(self):
+        """Test that toxicity scores are used directly (not inverted) in residual error calculation."""
         result = MagicMock()
         
         # Empty groundedness and instruction_adherence
@@ -229,7 +229,29 @@ class TestResidualErrorScore:
         
         score = get_residual_error_score(result)
         
-        # Inverted score should be: 1 - 0.1 = 0.9
+        # Low toxicity score (0.1) means high toxicity, which should give high error
+        # penalized_average with p=0.1 (< 0.5) gives penalty=(1-0.1)*2=1.8
+        # Result should be 1.8
+        assert score == 1.8
+    
+    def test_residual_error_high_toxicity_score(self):
+        """Test that high toxicity scores (non-toxic content) give low error."""
+        result = MagicMock()
+        
+        # Empty groundedness and instruction_adherence
+        result.detect_response.groundedness = {"instructions_list": []}
+        result.detect_response.instruction_adherence = {"instructions_list": []}
+        
+        # Only toxicity score
+        result.detect_response.toxicity = {
+            "instructions_list": [
+                {"follow_probability": 0.9}  # Not toxic (high score)
+            ]
+        }
+        
+        score = get_residual_error_score(result)
+        
+        # High toxicity score (0.9) means NOT toxic, which should give low/no error
         # penalized_average with p=0.9 (>= 0.5) gives penalty=0
         # Result should be 0
         assert score == 0.0

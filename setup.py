@@ -12,7 +12,7 @@ setup(
     install_requires=[
         "annotated-types~=0.6.0",
         "anyio~=4.9.0",
-        "certifi~=2025.4.26",
+        "certifi",
         "distro~=1.9.0",
         "exceptiongroup~=1.2.2",
         "h11~=0.16.0",

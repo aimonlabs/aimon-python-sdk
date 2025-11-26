@@ -19,8 +19,7 @@ setup(
         "httpcore~=1.0.9",
         "httpx>=0.27.2,<1.0.0",
         "idna~=3.10",
-        "pydantic~=2.11.3",
-        "pydantic-core~=2.33.1",
+        "pydantic>=2.12.0",
         "sniffio~=1.3.1",
         "typing-extensions~=4.13.2"
     ],
@@ -30,3 +29,4 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
 )
+    

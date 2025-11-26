@@ -81,7 +81,7 @@ class Client(SyncAPIClient):
         if base_url is None:
             base_url = os.environ.get("CLIENT_BASE_URL")
         if base_url is None:
-            base_url = f"https://pbe-api.aimon.ai"
+            base_url = f"https://sdkbe-production.aimon.ai"
 
         super().__init__(
             version=__version__,
@@ -256,7 +256,7 @@ class AsyncClient(AsyncAPIClient):
         if base_url is None:
             base_url = os.environ.get("CLIENT_BASE_URL")
         if base_url is None:
-            base_url = f"https://pbe-api.aimon.ai"
+            base_url = f"https://sdkbe-production.aimon.ai"
 
         super().__init__(
             version=__version__,

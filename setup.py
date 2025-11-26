@@ -21,7 +21,7 @@ setup(
         "idna~=3.10",
         "pydantic>=2.12.0",
         "sniffio~=1.3.1",
-        "typing-extensions~=4.13.2"
+        "typing-extensions>=4.14.1"
     ],
     author='AIMon',
     author_email='info@aimon.ai',
